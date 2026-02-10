@@ -10,16 +10,15 @@
 #include <cstring>
 #include <string>
 
-#define BUFFERSIZE 20
+#define BUFFERSIZE 1
 
 int main() {
 	int serverFD, newSocket, readSize;
 	struct addrinfo prep, *res;
 	struct sockaddr_in address;
 	std::memset(&prep, 0, sizeof(addrinfo));
-	// std::memset(res, 0, sizeof(addrinfo));
 	std::string readBuffer;
-	// char readBuffer[BUFFERSIZE] = "";
+	std::string mainBuffer;
 	int status = 0;
 
 	prep.ai_family = AF_INET;
@@ -29,10 +28,8 @@ int main() {
 	address.sin_port = htons(8080);
 
 	readBuffer.resize(BUFFERSIZE);
-	// readBuffer.reserve(BUFFERSIZE);
-	// std::cout << "Cap before = " << readBuffer.capacity() << std::endl;
-	// std::cout << "Cap after = " << readBuffer.capacity() << std::endl;
-	
+	mainBuffer.resize(BUFFERSIZE);
+
 	if ((status = getaddrinfo("127.0.0.1", "8080", &prep, &res)) != 0)
 	{
 		std::cout << gai_strerror(status) << std::endl;
@@ -40,15 +37,15 @@ int main() {
 		freeaddrinfo(res);
 		return (1);
 	}
-	
-	if ((serverFD = socket(address.sin_family, SOCK_STREAM, 0)) < 0)
+
+	if ((serverFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0)
 	{
 		perror("socket");
 		freeaddrinfo(res);
 		return (1);
 	}
 
-	if (bind(serverFD, (struct sockaddr*)&address, sizeof(address)) < 0)
+	if (bind(serverFD, res->ai_addr, res->ai_addrlen) < 0)
 	{
 		perror("bind");
 		freeaddrinfo(res);
@@ -62,26 +59,32 @@ int main() {
 		return (1);
 	}
 
-	socklen_t addrlen = sizeof(address);
+	if ((newSocket = accept(serverFD, res->ai_addr, &res->ai_addrlen)) < 0)
+	{
+		perror("accept");
+		freeaddrinfo(res);
+		return (1);
+	}
 	
-	for (int i = 0; i < 6; i ++) {
-		if ((newSocket = accept(serverFD, (struct sockaddr*)&address, &addrlen)) < 0)
-		{
-			perror("accept");
-			freeaddrinfo(res);
-			return (1);
-		}
+	for (int i = 0; i < 1; i ++) {
+		
+		// EPOLL
 		readSize = -2;
-		if ((readSize = read(newSocket, &readBuffer[0], readBuffer.size())) < 0)
+		while ((readSize = read(newSocket, &readBuffer[0], readBuffer.size())) > 0)
 		{
-			perror("read");
-			freeaddrinfo(res);
-			return (1);
+			if (readSize < 0)
+			{
+				perror("read");
+				freeaddrinfo(res);
+				return (1);
+			}
+			std::cout << "Received size = " << readSize << std::endl;
+			mainBuffer.append(readBuffer.data(), readSize);
+			// std::string responseString = "Hello back";
+			// send(newSocket, responseString.c_str(), responseString.size(), 0);
 		}
-		std::cout << "Received size = " << readSize << std::endl;
-		std::cout << GREEN << "Read data from client:" << readBuffer << RESET << std::endl;
-		// std::string responseString = "Hello back";
-		// send(newSocket, responseString.c_str(), responseString.size(), 0);
+		std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
+		std::cout << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
 		close(newSocket);
 	}
 	close(serverFD);

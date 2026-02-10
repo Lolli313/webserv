@@ -2,13 +2,20 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
+#include <iostream>
 #include <unistd.h>
 #include <netdb.h>
 #include <string>
 
+#define BUFFERSIZE 1024
+
 int main() {
 	int clientFD;
 	struct addrinfo prep, *res;
+
+	std::string readBuffer;
+
+	readBuffer.resize(BUFFERSIZE);
 
 	prep.ai_family = AF_INET;
 	prep.ai_socktype = SOCK_STREAM;
@@ -23,4 +30,8 @@ int main() {
 	std::string str = "Hello!!!!";
 
 	send(clientFD, str.c_str(), str.size(), 0);
+
+	// read(clientFD, &readBuffer[0], readBuffer.size());
+
+	// std::cout << readBuffer << std::endl;
 }
