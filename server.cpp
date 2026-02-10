@@ -10,7 +10,7 @@
 #include <cstring>
 #include <string>
 
-#define BUFFERSIZE 1024
+#define BUFFERSIZE 20
 
 int main() {
 	int serverFD, newSocket, readSize;
@@ -18,7 +18,8 @@ int main() {
 	struct sockaddr_in address;
 	std::memset(&prep, 0, sizeof(addrinfo));
 	// std::memset(res, 0, sizeof(addrinfo));
-	char readBuffer[BUFFERSIZE] = "";
+	std::string readBuffer;
+	// char readBuffer[BUFFERSIZE] = "";
 	int status = 0;
 
 	prep.ai_family = AF_INET;
@@ -26,6 +27,11 @@ int main() {
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons(8080);
+
+	readBuffer.resize(BUFFERSIZE);
+	// readBuffer.reserve(BUFFERSIZE);
+	// std::cout << "Cap before = " << readBuffer.capacity() << std::endl;
+	// std::cout << "Cap after = " << readBuffer.capacity() << std::endl;
 	
 	if ((status = getaddrinfo("127.0.0.1", "8080", &prep, &res)) != 0)
 	{
@@ -66,7 +72,7 @@ int main() {
 			return (1);
 		}
 		readSize = -2;
-		if ((readSize = read(newSocket, &readBuffer, BUFFERSIZE)) < 0)
+		if ((readSize = read(newSocket, &readBuffer[0], readBuffer.size())) < 0)
 		{
 			perror("read");
 			freeaddrinfo(res);
