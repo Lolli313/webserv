@@ -5,6 +5,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <netdb.h>
+#include <cstring>
 #include <string>
 
 #define BUFFERSIZE 1024
@@ -16,6 +17,7 @@ int main() {
 	std::string readBuffer;
 
 	readBuffer.resize(BUFFERSIZE);
+	std::memset(&prep, 0, sizeof(addrinfo));
 
 	prep.ai_family = AF_INET;
 	prep.ai_socktype = SOCK_STREAM;
@@ -34,4 +36,7 @@ int main() {
 	// read(clientFD, &readBuffer[0], readBuffer.size());
 
 	// std::cout << readBuffer << std::endl;
+
+	close(clientFD);
+	freeaddrinfo(res);
 }
