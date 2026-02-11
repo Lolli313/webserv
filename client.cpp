@@ -25,18 +25,21 @@ int main() {
 
 	(void)status;
 
-	clientFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-
-	connect(clientFD, res->ai_addr, res->ai_addrlen);
+	
 	
 	std::string str = "Hello!!!!";
-
-	send(clientFD, str.c_str(), str.size(), 0);
+	
+	while (true) {
+		clientFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		connect(clientFD, res->ai_addr, res->ai_addrlen);
+		send(clientFD, str.c_str(), str.size(), 0);
+		close(clientFD);
+		sleep(4);
+	}
 
 	// read(clientFD, &readBuffer[0], readBuffer.size());
 
 	// std::cout << readBuffer << std::endl;
 
-	close(clientFD);
 	freeaddrinfo(res);
 }

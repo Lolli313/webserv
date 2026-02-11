@@ -13,15 +13,15 @@
 
 #define BUFFERSIZE 1
 #define MAX_EVENTS 5
-#define TIMEOUT 30000
+#define TIMEOUT -1
 
-bool createEpollEvent(int epollFD, int targetFd, int epollEventFlag) {
+bool createEpollEvent(int epollFD, int targetFd, int epollEvent, int epollEventFlag) {
 	struct epoll_event event;
 
 	event.events = epollEventFlag;
 	event.data.fd = targetFd;	
 
-	if (epoll_ctl(epollFD, EPOLL_CTL_ADD, targetFd, &event)) {
+	if (epoll_ctl(epollFD, epollEvent, targetFd, &event)) {
 		std::cerr << "Failed to create epoll event" << std::endl;
 		close(epollFD);
 		return (false);
@@ -79,41 +79,96 @@ int main() {
 		return (1);
 	}
 
-	if ((newSocket = accept(serverFD, res->ai_addr, &res->ai_addrlen)) < 0) { perror("accept"); freeaddrinfo(res); return (1); }
+	// if ((newSocket = accept(serverFD, res->ai_addr, &res->ai_addrlen)) < 0) {
+	// 	perror("accept");
+	// 	freeaddrinfo(res);
+	// 	return (1);
+	// }
 	
-	if (!createEpollEvent(epollFD, newSocket, EPOLLIN))
-	{
-		std::cerr << RED << "epoll creation" << RESET << std::endl;
+	if (!createEpollEvent(epollFD, serverFD, EPOLL_CTL_ADD, EPOLLIN)) {
+		std::cerr << RED << "Failed to add serverFD to epoll pool" << RESET << std::endl;
 		return 1;
 	}
 	struct epoll_event eventArray[MAX_EVENTS];
 
 	int eventCount;
-	bool running = true;
-	while (running)
-	{
+//	bool running = true;
+	while (true) {
 		eventCount = epoll_wait(epollFD, eventArray, MAX_EVENTS, TIMEOUT);
 		std::cout << PURPLE << eventCount << " events ready" << RESET << std::endl;
 		for (int i = 0; i < eventCount; i++) {
-			readSize = -2;
-			while ((readSize = read(newSocket, &readBuffer[0], readBuffer.size())) > 0) {
-				if (readSize < 0) {
-					perror("read");
+			int eventFD = eventArray[i].data.fd;
+			if (eventFD == serverFD) { // a new client requests a connection
+				std::cout << "Found a new connection" << std::endl;
+				if ((newSocket = accept(eventFD, res->ai_addr, &res->ai_addrlen)) < 0) {
 					freeaddrinfo(res);
+					perror("accept");
 					return (1);
 				}
-				std::cout << "Received size = " << readSize << std::endl;
-				mainBuffer.append(readBuffer.data(), readSize);
-				// std::string responseString = "Hello back";
-				// send(newSocket, responseString.c_str(), responseString.size(), 0);
+				createEpollEvent(epollFD, newSocket, EPOLL_CTL_ADD, EPOLLIN);
 			}
-			if (mainBuffer.find("stop") == std::string::npos)
-				running = false;
-			std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
-			std::cout << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
-			close(newSocket);
+			else { // old client wants to send data
+				std::cout << "Found a existing connection" << std::endl;
+				while (true) {
+					readSize = read(eventFD, &readBuffer[0], readBuffer.size());
+					if (readSize < 0) {
+						std::cout << "Read error" << std::endl;
+						// epoll_ctl(epollFD, EPOLL_CTL_DEL, eventFD, NULL);
+						createEpollEvent(epollFD, eventFD, EPOLL_CTL_DEL, EPOLLIN);
+						close(eventFD);
+						break;
+					}
+					else if (readSize == 0) {
+						std::cout << "Found the end of the message" << std::endl;
+						std::cout << "Client disconnected" << std::endl;
+						// epoll_ctl(epollFD, EPOLL_CTL_DEL, eventFD, NULL);
+						createEpollEvent(epollFD, eventFD, EPOLL_CTL_DEL, EPOLLIN);
+						close(eventFD);
+						break;
+					}
+					else {
+						std::cout << "Received size = " << readSize << std::endl;
+						mainBuffer.append(readBuffer.data(), readSize);
+						std::cout << "mainBuffer: " << mainBuffer << std::endl;
+					}
+						
+				}
+				std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
+				std::cout << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
+			}
 		}
 	}
+		// if ((newSocket = accept(serverFD, res->ai_addr, &res->ai_addrlen)) < 0) {
+		// 	perror("accept");
+		// 	freeaddrinfo(res);
+		// 	return (1);
+		// }
+	// 	while (running)
+	// 	{
+	// 		std::cout << PURPLE << eventCount << " events ready" << RESET << std::endl;
+	// 		for (int i = 0; i < eventCount; i++) {
+	// 			readSize = -2;
+	// 			while ((readSize = read(newSocket, &readBuffer[0], readBuffer.size())) > 0) {
+	// 				if (readSize < 0) {
+	// 					perror("read");
+	// 					freeaddrinfo(res);
+	// 					return (1);
+	// 				}
+	// 				std::cout << "Received size = " << readSize << std::endl;
+	// 				mainBuffer.append(readBuffer.data(), readSize);
+	// 				// std::string responseString = "Hello back";
+	// 				// send(newSocket, responseString.c_str(), responseString.size(), 0);
+	// 			}
+	// 			if (mainBuffer.find("stop") != std::string::npos) {
+	// 				std::cout << "Switching running boolean to false" << std::endl;
+	// 				running = false;
+	// 			}
+	// 			std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
+	// 			std::cout << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
+	// 			close(newSocket);
+	// 			sleep(3);
+	// 		}
+	// 	}
 	if (close(epollFD)) {
 		std::cerr << "Failed to close epoll file descriptor" << std::endl;
 		return 1;
