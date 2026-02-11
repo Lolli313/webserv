@@ -10,12 +10,20 @@
 #include <stdio.h>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #define BUFFERSIZE 1
 #define MAX_EVENTS 5
 #define TIMEOUT -1
 
-bool createEpollEvent(int epollFD, int targetFd, int epollEvent, int epollEventFlag) {
+/**
+ * Register , modify or delete a socket (targetFD) in the epoll intereset list.
+ * Types of epoll_events:
+ * - EPOLL_CTL_ADD
+ * - EPOLL_CTL_MOD = to change the epollEventFlag.
+ * - EPOLL_CTL_DEL
+ */
+bool epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventFlag) {
 	struct epoll_event event;
 
 	event.events = epollEventFlag;
@@ -67,14 +75,16 @@ int main() {
 		freeaddrinfo(res);
 		return (1);
 	}
-	if (!createEpollEvent(epollFD, serverFD, EPOLL_CTL_ADD, EPOLLIN)) {
+	if (!epollEventAction(epollFD, serverFD, EPOLL_CTL_ADD, EPOLLIN)) {
 		std::cerr << RED << "Failed to add serverFD to epoll pool" << RESET << std::endl;
 		return 1;
 	}
 	struct epoll_event eventArray[MAX_EVENTS];
 
+//	std::vector<int> clientList;
+
 	int eventCount;
-	while (true) {
+//	while (true) {
 		eventCount = epoll_wait(epollFD, eventArray, MAX_EVENTS, TIMEOUT);
 		std::cout << PURPLE << eventCount << " events ready" << RESET << std::endl;
 		for (int i = 0; i < eventCount; i++) {
@@ -87,7 +97,8 @@ int main() {
 					perror("accept");
 					return (1);
 				}
-				createEpollEvent(epollFD, newSocket, EPOLL_CTL_ADD, EPOLLIN);
+//				clientList.
+				epollEventAction(epollFD, newSocket, EPOLL_CTL_ADD, EPOLLIN);
 			}
 			else { // old client wants to send data
 				std::cout << "Found an existing connection" << std::endl;
@@ -95,14 +106,14 @@ int main() {
 					readSize = read(eventFD, &readBuffer[0], BUFFERSIZE);
 					if (readSize < 0) {
 						std::cout << "Read error" << std::endl;
-						createEpollEvent(epollFD, eventFD, EPOLL_CTL_DEL, EPOLLIN);
+						epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, EPOLLIN);
 						close(eventFD);
 						break;
 					}
 					else if (readSize == 0) {
 						std::cout << "Found the end of the message" << std::endl;
 						std::cout << "Client disconnected" << std::endl;
-						createEpollEvent(epollFD, eventFD, EPOLL_CTL_DEL, EPOLLIN);
+						epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, EPOLLIN);
 						close(eventFD);
 						std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
 						std::cout << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
@@ -116,7 +127,7 @@ int main() {
 				}
 			}
 		}
-	}
+//	}
 	if (close(epollFD)) {
 		std::cerr << "Failed to close epoll file descriptor" << std::endl;
 		freeaddrinfo(res);
