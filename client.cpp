@@ -5,12 +5,14 @@
 #include <iostream>
 #include <unistd.h>
 #include <netdb.h>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 
 #define BUFFERSIZE 1024
 
-int main() {
+int main(int ac, char **av) {
+	(void)ac;
 	int clientFD;
 	struct addrinfo prep, *res;
 
@@ -24,17 +26,16 @@ int main() {
 	int status = getaddrinfo("127.0.0.1", "8080", &prep, &res);
 
 	(void)status;
-
 	
-	
-	std::string str = "Hello!!!!";
-	
+	std::string str(av[1]);
+	str += " ";
 	while (true) {
+		str += "a";
 		clientFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		connect(clientFD, res->ai_addr, res->ai_addrlen);
 		send(clientFD, str.c_str(), str.size(), 0);
 		close(clientFD);
-		sleep(4);
+		sleep(std::atoi(av[2]));
 	}
 
 	// read(clientFD, &readBuffer[0], readBuffer.size());

@@ -110,7 +110,7 @@ int main() {
 			else { // old client wants to send data
 				std::cout << "Found a existing connection" << std::endl;
 				while (true) {
-					readSize = read(eventFD, &readBuffer[0], readBuffer.size());
+					readSize = read(eventFD, &readBuffer[0], BUFFERSIZE);
 					if (readSize < 0) {
 						std::cout << "Read error" << std::endl;
 						// epoll_ctl(epollFD, EPOLL_CTL_DEL, eventFD, NULL);
@@ -124,17 +124,16 @@ int main() {
 						// epoll_ctl(epollFD, EPOLL_CTL_DEL, eventFD, NULL);
 						createEpollEvent(epollFD, eventFD, EPOLL_CTL_DEL, EPOLLIN);
 						close(eventFD);
+						std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
+						std::cout << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
+						mainBuffer.clear();
 						break;
 					}
 					else {
 						std::cout << "Received size = " << readSize << std::endl;
 						mainBuffer.append(readBuffer.data(), readSize);
-						std::cout << "mainBuffer: " << mainBuffer << std::endl;
-					}
-						
+					}			
 				}
-				std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
-				std::cout << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
 			}
 		}
 	}
