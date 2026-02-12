@@ -11,7 +11,8 @@
 
 #define BUFFERSIZE 1024
 
-int main(int ac, char **av) {
+int main(int ac, char **av)
+{
 	(void)ac;
 	int clientFD;
 	struct addrinfo prep, *res;
@@ -26,17 +27,18 @@ int main(int ac, char **av) {
 	int status = getaddrinfo("127.0.0.1", "8080", &prep, &res);
 
 	(void)status;
-	
+
 	std::string str(av[1]);
 	str += " ";
 	clientFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	connect(clientFD, res->ai_addr, res->ai_addrlen);
-	while (true) {
+	while (true)
+	{
 		str += "a";
 		send(clientFD, str.c_str(), str.size(), 0);
 		sleep(std::atoi(av[2]));
 	}
-	
+
 	close(clientFD);
 	// read(clientFD, &readBuffer[0], readBuffer.size());
 

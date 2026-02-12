@@ -134,7 +134,7 @@ int main()
 				socklen_t clientLen = sizeof(clientAddr);
 
 				// ACCEPT ALL THE INCOMING CONNECTIONS
-				while ((newSocket = accept(eventFD, (sockaddr *)&clientAddr, &clientLen)) >= 0)
+				if ((newSocket = accept(eventFD, (sockaddr *)&clientAddr, &clientLen)) >= 0)
 				{
 					// SET THE FLAGS OF EVENTS THAT WE WNT TO MONITOR
 					std::cout << "Found a new connection" << std::endl;
@@ -146,7 +146,9 @@ int main()
 				// AN ERROR OCCURED
 				if (newSocket < 0)
 				{
+					std::cout << RED << "accept return value = " << newSocket << RESET << std::endl;
 					freeaddrinfo(res);
+					// close(eventFD);
 					perror("accept");
 					return (1);
 				}
@@ -167,13 +169,15 @@ int main()
 					continue;
 				}
 
-				// USE RCV() INSTEAD
+				// RECEIVING
 				if (currEvent & EPOLLIN)
 				{
-					readSize = recv(eventFD, &readBuffer[0], BUFFERSIZE, 0);
+					if ((readSize = recv(eventFD, &readBuffer[0], BUFFERSIZE, 0)) > 0)
 					{
 						mainBuffer.append(readBuffer.data(), readSize);
 						std::cout << "Received size = " << readSize << std::endl;
+						std::cout << GREEN_BRIGHT << "Received content: " << readBuffer << RESET << std::endl;
+						std::cout << LIGHT_BLUE << "All content received: " << mainBuffer << RESET << std::endl;
 					}
 
 					std::cout << RED << "HERE=======================" << RESET << std::endl;
@@ -181,7 +185,7 @@ int main()
 					// ERROR
 					if (readSize < 0)
 					{
-						std::cout << "Read error" << std::endl;
+						std::cout << "Rcv error" << std::endl;
 						epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
 						close(eventFD);
 					}
@@ -207,14 +211,14 @@ int main()
 				}
 			}
 		}
-		if (close(epollFD))
-		{
-			std::cerr << "Failed to close epoll file descriptor" << std::endl;
-			freeaddrinfo(res);
-			return 1;
-		}
-		close(serverFD);
-		freeaddrinfo(res);
-		return (0);
 	}
+	if (close(epollFD))
+	{
+		std::cerr << "Failed to close epoll file descriptor" << std::endl;
+		freeaddrinfo(res);
+		return 1;
+	}
+	close(serverFD);
+	freeaddrinfo(res);
+	return (0);
 }
