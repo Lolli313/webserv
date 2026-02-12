@@ -90,7 +90,13 @@ int main()
 		return (1);
 	}
 
-	fcntl(serverFD, F_SETFL, O_NONBLOCK);
+	if (fcntl(serverFD, F_SETFL, O_NONBLOCK) < 0)
+	{
+		perror("fcntl");
+		close(serverFD);
+		freeaddrinfo(res);
+		return (1);
+	}
 
 	if (bind(serverFD, res->ai_addr, res->ai_addrlen) < 0)
 	{
@@ -218,10 +224,6 @@ int main()
 						// END OF RECEPTION, PRINT THE OUTPUT OF THE CLIENT
 						std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
 						std::cout << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
-
-						// HARDCODED IMPLEMENTATION TO STOP THE SERVER
-						if (!mainBuffer.find("stop"))
-							running = false;
 						mainBuffer.clear();
 						continue;
 					}
