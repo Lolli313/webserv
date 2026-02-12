@@ -29,15 +29,15 @@ int main(int ac, char **av) {
 	
 	std::string str(av[1]);
 	str += " ";
+	clientFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+	connect(clientFD, res->ai_addr, res->ai_addrlen);
 	while (true) {
 		str += "a";
-		clientFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-		connect(clientFD, res->ai_addr, res->ai_addrlen);
 		send(clientFD, str.c_str(), str.size(), 0);
-		close(clientFD);
 		sleep(std::atoi(av[2]));
 	}
-
+	
+	close(clientFD);
 	// read(clientFD, &readBuffer[0], readBuffer.size());
 
 	// std::cout << readBuffer << std::endl;
