@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#define BUFFERSIZE 4096
+#define BUFFERSIZE 2
 #define MAX_EVENTS 5
 #define TIMEOUT -1
 
@@ -34,7 +34,7 @@ bool epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventF
 	if (epoll_ctl(epollFD, epollEvent, targetFd, &event))
 	{
 		std::cerr << "Failed to create epoll event" << std::endl;
-		close(epollFD);
+		// close(epollFD);
 		return (false);
 	}
 	return (true);
@@ -109,6 +109,7 @@ int main()
 	if (!epollEventAction(epollFD, serverFD, EPOLL_CTL_ADD, EPOLLIN))
 	{
 		std::cerr << RED << "Failed to add serverFD to epoll pool" << RESET << std::endl;
+		close(epollFD);
 		return 1;
 	}
 
@@ -141,16 +142,23 @@ int main()
 					int registerEvents = EPOLLIN | EPOLLRDHUP | EPOLLERR;
 
 					fcntl(newSocket, F_SETFL, O_NONBLOCK);
-					epollEventAction(epollFD, newSocket, EPOLL_CTL_ADD, registerEvents);
+					if (!epollEventAction(epollFD, newSocket, EPOLL_CTL_ADD, registerEvents))
+					{
+						close(newSocket); // Should we close it ?
+						close(eventFD);
+						freeaddrinfo(res);
+						break;
+					}
 				}
 				// AN ERROR OCCURED
 				if (newSocket < 0)
 				{
 					std::cout << RED << "accept return value = " << newSocket << RESET << std::endl;
 					freeaddrinfo(res);
-					// close(eventFD);
+					close(eventFD);
 					perror("accept");
-					return (1);
+					break;
+					// return (1);
 				}
 			}
 
@@ -178,6 +186,15 @@ int main()
 						std::cout << "Received size = " << readSize << std::endl;
 						std::cout << GREEN_BRIGHT << "Received content: " << readBuffer << RESET << std::endl;
 						std::cout << LIGHT_BLUE << "All content received: " << mainBuffer << RESET << std::endl;
+						if (mainBuffer.find("stop") != std::string::npos)
+						{
+							close(eventFD);
+							close(epollFD);
+							close(serverFD);
+							freeaddrinfo(res);
+							return (1);
+						}
+						std::cout << "NOT FOUND" << std::endl;
 					}
 
 					std::cout << RED << "HERE=======================" << RESET << std::endl;
