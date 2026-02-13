@@ -11,6 +11,8 @@ Tools::~Tools() {};
 
 Tools::Tools(const Tools &obj) { *this = obj; };
 
+Tools::CustomException::CustomException()
+
 /*
 =================================================================
 ===== OPERATORS =================================================

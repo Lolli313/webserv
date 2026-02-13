@@ -1,4 +1,5 @@
 
+#include "Tools.hpp"
 #include "NetworkConfig.hpp"
 #include <cstring>
 #include <iostream>
@@ -63,14 +64,15 @@ bool NetworkConfig::prepareAddressInfo()
 
 	prep.ai_family = AF_INET;
 	prep.ai_socktype = SOCK_STREAM;
-	int status = 0;
-	if ((status = getaddrinfo("127.0.0.1", "8080", &prep, &_res)) != 0)
-	{
-		custom::exeption(404, "text");
-		freeaddrinfo(_res);
-		servException(404, "wtf is weorn");
-		throw std::exception::what(){gai_strerror(status)};
-		return false;
-	}
+	int status = getaddrinfo("127.0.0.1", "8080", &prep, &_res);
+	if (status != 0)
+		throw Tools::CustomException(gai_strerror(status));
 	return true;
+}
+
+try {
+	_netwConf.prepareAddressInfo();
+}
+catch (Tools::CustomException& e) {
+	std::cout << e.what() << std:endl;
 }
