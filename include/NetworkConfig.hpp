@@ -29,6 +29,7 @@ public:
 	struct sockaddr *getAdrr() const;
 	socklen_t getAddrLen() const;
 
+	bool prepareAddressInfo();
 	bool freeNetworkConfig(struct addrinfo *obj);
 };
 

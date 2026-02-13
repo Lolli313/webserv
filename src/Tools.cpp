@@ -1,23 +1,22 @@
-#include "ServerSocket.hpp"
+#include "Tools.hpp"
 
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-ServerSocket::ServerSocket() {};
+Tools::Tools() {};
 
-ServerSocket::~ServerSocket() {};
+Tools::~Tools() {};
 
-ServerSocket::ServerSocket(const ServerSocket &obj) { *this = obj; };
+Tools::Tools(const Tools &obj) { *this = obj; };
 
 /*
 =================================================================
 ===== OPERATORS =================================================
 =================================================================
 */
-
-ServerSocket &ServerSocket::operator=(const ServerSocket &obj)
+Tools &Tools::operator=(const Tools &obj)
 {
 	if (this != &obj)
 	{
@@ -31,20 +30,8 @@ ServerSocket &ServerSocket::operator=(const ServerSocket &obj)
 =================================================================
 */
 
-int ServerSocket::getServerFD() const { return _serverFD; };
-
 /*
 =================================================================
 ===== METHODS ===================================================
 =================================================================
 */
-
-bool ServerSocket::createServerSocket()
-{
-}
-bool ServerSocket::setSocketOptions()
-{
-}
-bool ServerSocket::connectSocketToPort()
-{
-}
