@@ -12,6 +12,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <map>
 
 #define BUFFERSIZE 2
 #define MAX_EVENTS 5
@@ -47,16 +48,13 @@ int main()
 	std::memset(&prep, 0, sizeof(addrinfo));
 	std::string readBuffer, mainBuffer;
 
-	if ((epollFD = epoll_create1(0)) < 0)
-	{
-		std::cerr << "Failed to create epoll file descriptor" << std::endl;
-		return (1);
-	}
-	prep.ai_family = AF_INET;
-	prep.ai_socktype = SOCK_STREAM;
-
 	readBuffer.resize(BUFFERSIZE);
 	mainBuffer.resize(BUFFERSIZE);
+
+	// SOCKET =========================================================================================
+
+	prep.ai_family = AF_INET;
+	prep.ai_socktype = SOCK_STREAM;
 
 	int status = 0;
 	if ((status = getaddrinfo("127.0.0.1", "8080", &prep, &res)) != 0)
@@ -112,12 +110,21 @@ int main()
 		return (1);
 	}
 
+	// EPOLL =========================================================================================
+	if ((epollFD = epoll_create1(0)) < 0)
+	{
+		std::cerr << "Failed to create epoll file descriptor" << std::endl;
+		return (1);
+	}
+
 	if (!epollEventAction(epollFD, serverFD, EPOLL_CTL_ADD, EPOLLIN))
 	{
 		std::cerr << RED << "Failed to add serverFD to epoll pool" << RESET << std::endl;
 		close(epollFD);
 		return 1;
 	}
+
+	std::map<int, std::string> clientMap;
 
 	// SERVER LOOP
 	struct epoll_event eventArray[MAX_EVENTS];
@@ -155,6 +162,7 @@ int main()
 						freeaddrinfo(res);
 						break;
 					}
+					clientMap.insert(std::make_pair(newSocket, std::string()));
 				}
 				// AN ERROR OCCURED
 				if (newSocket < 0)
@@ -168,7 +176,7 @@ int main()
 				}
 			}
 
-			// CLIENT EVENT
+			// EXISTING CLIENT EVENT
 			else
 			{
 				std::cout << "Found an existing connection" << std::endl;
@@ -194,13 +202,16 @@ int main()
 						std::cout << LIGHT_BLUE << "All content received: " << mainBuffer << RESET << std::endl;
 						if (mainBuffer.find("stop") != std::string::npos)
 						{
+							// CLOSE ALL FDS OF THE MAP TO STOP SERVER CLEAN
 							close(eventFD);
+							clientMap.erase(eventFD);
+
+							// UNIQUE FDS
 							close(epollFD);
 							close(serverFD);
 							freeaddrinfo(res);
 							return (1);
 						}
-						std::cout << "NOT FOUND" << std::endl;
 					}
 
 					std::cout << RED << "HERE=======================" << RESET << std::endl;
@@ -211,6 +222,7 @@ int main()
 						std::cout << "Rcv error" << std::endl;
 						epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
 						close(eventFD);
+						clientMap.erase(eventFD);
 					}
 
 					// CLIENT IS DONE SENDING
@@ -220,6 +232,7 @@ int main()
 						std::cout << "Client disconnected" << std::endl;
 						epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
 						close(eventFD);
+						clientMap.erase(eventFD);
 
 						// END OF RECEPTION, PRINT THE OUTPUT OF THE CLIENT
 						std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
