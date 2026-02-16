@@ -12,7 +12,7 @@
 */
 NetworkConfig::NetworkConfig() {};
 
-NetworkConfig::~NetworkConfig() {};
+NetworkConfig::~NetworkConfig() { freeNetworkConfig(); }
 
 NetworkConfig::NetworkConfig(const NetworkConfig &obj) { *this = obj; };
 
@@ -57,22 +57,17 @@ socklen_t NetworkConfig::getAddrLen() const { return _res->ai_addrlen; }
 =================================================================
 */
 
-bool NetworkConfig::prepareAddressInfo()
+// Exception on failure.
+void NetworkConfig::prepareAddressInfo(const std::string &ipAddr, const std::string &port)
 {
 	struct addrinfo prep;
 	std::memset(&prep, 0, sizeof(addrinfo));
 
 	prep.ai_family = AF_INET;
 	prep.ai_socktype = SOCK_STREAM;
-	int status = getaddrinfo("127.0.0.1", "8080", &prep, &_res);
+	int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &prep, &_res);
 	if (status != 0)
-		throw Tools::CustomException(gai_strerror(status));
-	return true;
+		throw Tools::Exception(gai_strerror(status));
 }
 
-try {
-	_netwConf.prepareAddressInfo();
-}
-catch (Tools::CustomException& e) {
-	std::cout << e.what() << std:endl;
-}
+void NetworkConfig::freeNetworkConfig() { freeaddrinfo(this->_res); }

@@ -3,30 +3,37 @@
 #include <string>
 #include <exception>
 
-class Tools {
-/* Tools Orthodox Canonical Form is in private so that it cannot be used from outside of this class
-   since it shouldn't be used anywhere */
+class Tools
+{
+	/* Tools Orthodox Canonical Form is in private so that it cannot be used from outside of this class
+	   since it shouldn't be used anywhere */
 private:
 	Tools();
-	Tools(const Tools& src);
-	Tools& operator=(const Tools& src);
+	Tools(const Tools &src);
+	Tools &operator=(const Tools &src);
 	~Tools();
 
 public:
-	class CustomException : public std::exception {
+	class Exception : public std::exception
+	{
 	private:
-		int _returnCode;
+		int _returnCode; // If not defined, return code = 0
 		std::string _msgLog;
 
+		Exception();
+		Exception(const Exception &obj);
+		Exception &operator=(const Exception &obj);
+
 	public:
-		CustomException(int returnCode, const std::string &msgLog);
-		CustomException(const std::string &msgLog);
-		CustomException(const CustomException &obj);
-		CustomException &operator=(const CustomException &obj);
-		virtual ~CustomException() throw(); /* the destructor of std::exception has the throw() specifier
+		Exception(int returnCode, const std::string &msgLog);
+		Exception(const std::string &msgLog);
+		virtual ~Exception() throw(); /* the destructor of std::exception has the throw() specifier
 		which means that the destructor of the child class has to match its parent's "danger level" */
 
 		virtual const char *what() const throw() { return _msgLog.c_str(); }
+
+		int getReturnCode() const;
+		const std::string &getMsgLog() const;
 	};
 
 	// class HTTPErrorException : public std::exception {

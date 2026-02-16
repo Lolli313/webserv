@@ -53,17 +53,17 @@ int main()
 
 	// SOCKET =========================================================================================
 
-	prep.ai_family = AF_INET;
-	prep.ai_socktype = SOCK_STREAM;
+	// prep.ai_family = AF_INET;
+	// prep.ai_socktype = SOCK_STREAM;
 
-	int status = 0;
-	if ((status = getaddrinfo("127.0.0.1", "8080", &prep, &res)) != 0)
-	{
-		std::cout << gai_strerror(status) << std::endl;
-		std::cout << res->ai_flags << std::endl;
-		freeaddrinfo(res);
-		return (1);
-	}
+	// int status = 0;
+	// if ((status = getaddrinfo("127.0.0.1", "8080", &prep, &res)) != 0)
+	// {
+	// 	std::cout << gai_strerror(status) << std::endl;
+	// 	std::cout << res->ai_flags << std::endl;
+	// 	freeaddrinfo(res);
+	// 	return (1);
+	// }
 
 	if ((serverFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0)
 	{

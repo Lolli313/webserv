@@ -7,6 +7,9 @@
 #include <netdb.h>
 #include <string>
 
+#define DEFAULT_LOCAL_IP "127.0.0.1"
+#define DEFAULT_LOCAL_PORT "8080"
+
 class NetworkConfig
 {
 private:
@@ -29,8 +32,8 @@ public:
 	struct sockaddr *getAdrr() const;
 	socklen_t getAddrLen() const;
 
-	bool prepareAddressInfo();
-	bool freeNetworkConfig(struct addrinfo *obj);
+	void prepareAddressInfo(const std::string &ipAddr, const std::string &port);
+	void freeNetworkConfig();
 };
 
 #endif
