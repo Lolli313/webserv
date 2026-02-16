@@ -20,6 +20,7 @@ private:
 public:
 	NetworkConfig();
 	NetworkConfig(const std::string &ipAddr, const std::string &port);
+	NetworkConfig(const std::string &port);
 	NetworkConfig(const NetworkConfig &obj);
 	NetworkConfig &operator=(const NetworkConfig &obj);
 	~NetworkConfig();

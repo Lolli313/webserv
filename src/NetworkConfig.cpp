@@ -15,7 +15,15 @@ NetworkConfig::NetworkConfig() : _ipAddr(DEFAULT_LOCAL_IP), _port(DEFAULT_LOCAL_
 	prepareAddressInfo(_ipAddr, _port);
 }
 
-NetworkConfig::NetworkConfig(const std::string &ipAddr, const std::string &port);
+NetworkConfig::NetworkConfig(const std::string &ipAddr, const std::string &port) : _ipAddr(ipAddr), _port(port)
+{
+	prepareAddressInfo(_ipAddr, _port);
+}
+
+NetworkConfig::NetworkConfig(const std::string &port) : _ipAddr(DEFAULT_LOCAL_IP), _port(port)
+{
+	prepareAddressInfo(_ipAddr, _port);
+}
 
 NetworkConfig::~NetworkConfig() { freeNetworkConfig(); }
 

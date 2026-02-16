@@ -117,12 +117,12 @@ int main()
 	// 	return (1);
 	// }
 
-	if (!epollEventAction(epollFD, serverFD, EPOLL_CTL_ADD, EPOLLIN))
-	{
-		std::cerr << RED << "Failed to add serverFD to epoll pool" << RESET << std::endl;
-		close(epollFD);
-		return 1;
-	}
+	// if (!epollEventAction(epollFD, serverFD, EPOLL_CTL_ADD, EPOLLIN))
+	// {
+	// 	std::cerr << RED << "Failed to add serverFD to epoll pool" << RESET << std::endl;
+	// 	close(epollFD);
+	// 	return 1;
+	// }
 
 	std::map<int, std::string> clientMap;
 

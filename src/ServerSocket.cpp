@@ -74,11 +74,3 @@ bool ServerSocket::connectSocketToPort()
 	if (listen(_servSockFD, 5) < 0)
 		throw Tools::Exception("listen");
 }
-
-try
-	_netwConf.prepareAddressInfo();
-
-catch (Tools::CustomException &e)
-{
-	std::cout << e.what() << std::endl;
-}
