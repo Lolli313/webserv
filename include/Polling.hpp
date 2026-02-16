@@ -1,12 +1,13 @@
 
-
 #ifndef POLLING_CLASS_HPP
 #define POLLING_CLASS_HPP
 
 #include <sys/epoll.h>
+#include "Client.hpp"
 #include <utility>
 #include <map>
-#include "Client.hpp"
+
+#define MAX_EVENTS 5
 
 class Polling
 {
@@ -26,6 +27,7 @@ public:
 
 	void createEpoll();
 	void addFDtoEpoll(int targetFD);
+	void addClientToEpoll(Client client);
 	void epollLoop();
 };
 

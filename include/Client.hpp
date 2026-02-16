@@ -15,6 +15,8 @@ public:
 	Client(const Client &obj);
 	Client &operator=(const Client &obj);
 	~Client();
+
+	int getFD();
 };
 
 #endif

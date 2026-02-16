@@ -44,10 +44,18 @@ int Polling::getEpollFD() const { return _epollFD; }
 =================================================================
 */
 
+// Exception on failure
 void Polling::addFDtoEpoll(int targetFD)
 {
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, EPOLLIN | EPOLLRDHUP | EPOLLERR);
-	_clientMap.insert(std::make_pair(targetFD, std::string()));
+	_clientMap.insert(std::make_pair(targetFD, Client(targetFD)));
+}
+
+// Exception on failure
+void Polling::addClientToEpoll(Client client)
+{
+	epollEventAction(_epollFD, client.getFD(), EPOLL_CTL_ADD, EPOLLIN | EPOLLRDHUP | EPOLLERR);
+	_clientMap.insert(std::make_pair(client.getFD(), client));
 }
 
 /**
@@ -80,10 +88,13 @@ void Polling::createEpoll()
 
 void epollLoop()
 {
-	try
+	struct epoll_event eventArray[MAX_EVENTS];
+	int eventCount;
+	bool running = true;
+	while (running)
 	{
 	}
-	catch (Tools::Exception &e)
+	try catch (Tools::Exception &e)
 	{
 		if (
 		if (e.returnCode == 0)

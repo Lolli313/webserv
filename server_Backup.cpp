@@ -15,7 +15,6 @@
 #include <map>
 
 #define BUFFERSIZE 2
-#define MAX_EVENTS 5
 #define TIMEOUT -1
 
 /**
@@ -124,7 +123,7 @@ int main()
 	// 	return 1;
 	// }
 
-	std::map<int, std::string> clientMap;
+	// std::map<int, std::string> clientMap;
 
 	// SERVER LOOP
 	struct epoll_event eventArray[MAX_EVENTS];
