@@ -65,50 +65,50 @@ int main()
 	// 	return (1);
 	// }
 
-	if ((serverFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0)
-	{
-		perror("socket");
-		freeaddrinfo(res);
-		return (1);
-	}
+	// if ((serverFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0)
+	// {
+	// 	perror("socket");
+	// 	freeaddrinfo(res);
+	// 	return (1);
+	// }
 
-	int option = 1;
-	if (setsockopt(serverFD, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0)
-	{
-		perror("setsockeopt REUSEADDR");
-		close(serverFD);
-		freeaddrinfo(res);
-		return (1);
-	}
-	if (setsockopt(serverFD, SOL_SOCKET, SO_KEEPALIVE, &option, sizeof(option)) < 0)
-	{
-		perror("setsockeopt SO_KEEPALIVE");
-		close(serverFD);
-		freeaddrinfo(res);
-		return (1);
-	}
+	// int option = 1;
+	// if (setsockopt(serverFD, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0)
+	// {
+	// 	perror("setsockeopt REUSEADDR");
+	// 	close(serverFD);
+	// 	freeaddrinfo(res);
+	// 	return (1);
+	// }
+	// if (setsockopt(serverFD, SOL_SOCKET, SO_KEEPALIVE, &option, sizeof(option)) < 0)
+	// {
+	// 	perror("setsockeopt SO_KEEPALIVE");
+	// 	close(serverFD);
+	// 	freeaddrinfo(res);
+	// 	return (1);
+	// }
 
-	if (fcntl(serverFD, F_SETFL, O_NONBLOCK) < 0)
-	{
-		perror("fcntl");
-		close(serverFD);
-		freeaddrinfo(res);
-		return (1);
-	}
+	// if (fcntl(serverFD, F_SETFL, O_NONBLOCK) < 0)
+	// {
+	// 	perror("fcntl");
+	// 	close(serverFD);
+	// 	freeaddrinfo(res);
+	// 	return (1);
+	// }
 
-	if (bind(serverFD, res->ai_addr, res->ai_addrlen) < 0)
-	{
-		perror("bind");
-		freeaddrinfo(res);
-		return (1);
-	}
+	// if (bind(serverFD, res->ai_addr, res->ai_addrlen) < 0)
+	// {
+	// 	perror("bind");
+	// 	freeaddrinfo(res);
+	// 	return (1);
+	// }
 
-	if (listen(serverFD, 5) < 0)
-	{
-		perror("listen");
-		freeaddrinfo(res);
-		return (1);
-	}
+	// if (listen(serverFD, 5) < 0)
+	// {
+	// 	perror("listen");
+	// 	freeaddrinfo(res);
+	// 	return (1);
+	// }
 
 	// EPOLL =========================================================================================
 	if ((epollFD = epoll_create1(0)) < 0)

@@ -10,7 +10,12 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-NetworkConfig::NetworkConfig() {};
+NetworkConfig::NetworkConfig() : _ipAddr(DEFAULT_LOCAL_IP), _port(DEFAULT_LOCAL_PORT)
+{
+	prepareAddressInfo(_ipAddr, _port);
+}
+
+NetworkConfig::NetworkConfig(const std::string &ipAddr, const std::string &port);
 
 NetworkConfig::~NetworkConfig() { freeNetworkConfig(); }
 
@@ -25,6 +30,13 @@ NetworkConfig &NetworkConfig::operator=(const NetworkConfig &obj)
 {
 	if (this != &obj)
 	{
+		if (_info)
+		{
+			freeaddrinfo(_info);
+		}
+		_ipAddr = obj._ipAddr;
+		_port = obj._port;
+		prepareAddressInfo(_ipAddr, _port);
 	}
 	return (*this);
 };
@@ -35,22 +47,22 @@ NetworkConfig &NetworkConfig::operator=(const NetworkConfig &obj)
 =================================================================
 */
 
-/*
-Exeption on failure.
-*/
+struct addrinfo *NetworkConfig::getInfo() { return _info; }
+
+// Exeption on failure.
 void NetworkConfig::setIpAddr(std::string ipAddr) { _ipAddr = ipAddr; }
 
 const std::string &NetworkConfig::getIpAddr() const { return _ipAddr; }
 
-int NetworkConfig::getProtocol() const { return _res->ai_protocol; }
+int NetworkConfig::getProtocol() const { return _info->ai_protocol; }
 
-int NetworkConfig::getFamily() const { return _res->ai_family; }
+int NetworkConfig::getFamily() const { return _info->ai_family; }
 
-int NetworkConfig::getSockType() const { return _res->ai_socktype; }
+int NetworkConfig::getSockType() const { return _info->ai_socktype; }
 
-struct sockaddr *NetworkConfig::getAdrr() const { return _res->ai_addr; }
+struct sockaddr *NetworkConfig::getAdrr() const { return _info->ai_addr; }
 
-socklen_t NetworkConfig::getAddrLen() const { return _res->ai_addrlen; }
+socklen_t NetworkConfig::getAddrLen() const { return _info->ai_addrlen; }
 /*
 =================================================================
 ===== METHODS ===================================================
@@ -65,9 +77,9 @@ void NetworkConfig::prepareAddressInfo(const std::string &ipAddr, const std::str
 
 	prep.ai_family = AF_INET;
 	prep.ai_socktype = SOCK_STREAM;
-	int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &prep, &_res);
+	int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &prep, &_info);
 	if (status != 0)
 		throw Tools::Exception(gai_strerror(status));
 }
 
-void NetworkConfig::freeNetworkConfig() { freeaddrinfo(this->_res); }
+void NetworkConfig::freeNetworkConfig() { freeaddrinfo(this->_info); }

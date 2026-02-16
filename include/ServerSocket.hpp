@@ -5,12 +5,16 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
+#include "Tools.hpp"
+#include <unistd.h>
 #include <netdb.h>
+#include <fcntl.h>
 
+// 1 per port
 class ServerSocket
 {
 private:
-	int _serverFD;
+	int _servSockFD;
 	NetworkConfig _netwConf;
 
 public:
@@ -19,10 +23,11 @@ public:
 	ServerSocket &operator=(const ServerSocket &obj);
 	~ServerSocket();
 
-	int getServerFD() const;
+	int getServSockFD() const;
+	NetworkConfig getNetwConf() const;
 
-	bool createServerSocket();
-	bool setSocketOptions();
+	void createServerSocket();
+	void setSocketOptions();
 	bool connectSocketToPort();
 };
 
