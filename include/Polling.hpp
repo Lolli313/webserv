@@ -4,16 +4,21 @@
 
 #include <sys/epoll.h>
 #include "Client.hpp"
+#include <iostream>
 #include <utility>
 #include <map>
 
 #define MAX_EVENTS 5
+
+// TODO add servSockFDs to this class
 
 class Polling
 {
 private:
 	int _epollFD;
 	std::map<int, Client> _clientMap;
+	int _eventCount;
+	struct epoll_event _eventArray[MAX_EVENTS];
 
 	Polling();
 
@@ -29,6 +34,7 @@ public:
 	void addFDtoEpoll(int targetFD);
 	void addClientToEpoll(Client client);
 	void epollLoop();
+	void runEventLoop();
 };
 
 #endif

@@ -86,22 +86,40 @@ void Polling::createEpoll()
 		throw Tools::Exception("createEpoll");
 }
 
-void epollLoop()
+void Polling::runEventLoop()
 {
-	struct epoll_event eventArray[MAX_EVENTS];
-	int eventCount;
+	eventCount = epoll_wait(epollFD, eventArray, MAX_EVENTS, TIMEOUT);
+	std::cout << PURPLE << eventCount << " events ready" << RESET << std::endl;
+
+	// NEW EVENTS: GO THROUGH EACH EVENT
+	for (int i = 0; i < eventCount; i++)
+	{
+		int eventFD = eventArray[i].data.fd;
+
+		// REGISTER NEW SOCKET / CLIENT
+		if (eventFD ==)
+	}
+}
+
+void Polling::epollLoop()
+{
 	bool running = true;
 	while (running)
 	{
-	}
-	try catch (Tools::Exception &e)
-	{
-		if (
-		if (e.returnCode == 0)
-			std::clog <<
-	}
-	catch (std::exception &e)
-	{
-		// unexpected exception.
+		waitLoop();
+		try
+		{
+			runEventLoop();
+		}
+		catch (Tools::Exception &e)
+		{
+			if (
+			if (e.returnCode == 0)
+				std::clog <<
+		}
+		catch (std::exception &e)
+		{
+			// unexpected exception.
+		}
 	}
 }
