@@ -17,6 +17,8 @@ public:
 	~Client();
 
 	int getFD();
+	std::string &getBuffer();
+	char *getBufferEnd();
 };
 
 #endif

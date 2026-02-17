@@ -32,6 +32,10 @@ Client &Client::operator=(const Client &obj)
 
 int Client::getFD() { return _clientFD; }
 
+std::string &Client::getBuffer() { return _buffer; }
+
+char *Client::getBufferEnd() { return _buffer.data() + _buffer.size(); }
+
 /*
 =================================================================
 ===== METHODS ===================================================
