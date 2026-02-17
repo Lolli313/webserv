@@ -23,6 +23,7 @@ private:
 	int _epollFD;
 	int _servSockFD;
 	int _currEventFD;
+	const int _newClientFlags;
 
 	Polling();
 
@@ -37,14 +38,13 @@ public:
 	int getCurrEventFD() const;
 
 	void createEpoll();
-	void addFDtoEpollAndClientMap(int targetFD);
+	void addFDtoEpollAndClientMap(int targetFD, int eventFlags);
 	
 	void addClientToEpoll(Client &client);
 	bool deleteCLient(Client &client);
 	void registerNewClient(int eventFD);
 	void handleExistingClient(int eventFD, uint32_t currEvent);
 	void handleClientInput(Client &client);
-	bool receiveInput(Client &client);
 
 	void epollLoop();
 	void runEventLoop();

@@ -8,10 +8,10 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Polling::Polling(const int servSockFD) : _servSockFD(servSockFD)
+Polling::Polling(const int servSockFD) : _servSockFD(servSockFD), _newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
-	addFDtoEpollAndClientMap(servSockFD);
+	addFDtoEpollAndClientMap(servSockFD, _newClientFlags);
 }
 
 Polling::~Polling() {};
@@ -50,9 +50,9 @@ int Polling::getCurrEventFD() const { return _currEventFD; }
 */
 
 // Exception on failure
-void Polling::addFDtoEpollAndClientMap(int targetFD)
+void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
 {
-	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, EPOLLIN | EPOLLRDHUP | EPOLLERR);
+	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
 	_clientMap.insert(std::make_pair(targetFD, Client(targetFD)));
 }
 
@@ -100,67 +100,64 @@ void Polling::createEpoll()
 		throw Tools::Exception("createEpoll");
 }
 
-void Polling::successfulNewSocket(int eventFD, int newSocket) {
-	// SET THE FLAGS OF EVENTS THAT WE WANT TO MONITOR
-	std::cout << "Found a new connection" << std::endl;
-	int registerEvents = EPOLLIN | EPOLLRDHUP | EPOLLERR;
-
+void Polling::successfulNewSocket(int serverSocketFD, int newSocket) {
 	fcntl(newSocket, F_SETFL, O_NONBLOCK);
-	// in server_backup we close some FDs on error, will have to see how to handle it 
-	addFDtoEpollAndClientMap(newSocket);
+	addFDtoEpollAndClientMap(newSocket, _newClientFlags);
 }
 
 void failedNewSocket(int eventFD, int newSocket) {
-	std::cout << RED << "accept return value = " << newSocket << RESET << std::endl;
-	close(eventFD);
 	throw Tools::Exception("failedNewSocket");
 }
 
 
-void Polling::registerNewClient(int eventFD) {
+void Polling::registerNewClient(int serverSocketFD) {
 	int newSocket;
 	sockaddr_in clientAddr;
 	socklen_t clientLen = sizeof(clientAddr);
 
-	newSocket = accept(eventFD, (sockaddr *)&clientAddr, &clientLen);
-	// ACCEPT ALL THE INCOMING CONNECTIONS
+	newSocket = accept(serverSocketFD, (sockaddr *)&clientAddr, &clientLen);
 	if (newSocket >= 0)
-		successfulNewSocket(eventFD, newSocket);
+		successfulNewSocket(serverSocketFD, newSocket);
 	else
-		failedNewSocket(eventFD);
-}
-
-bool Polling::receiveInput(Client &client)
-{
-	int readSize = recv(_currEventFD, client.getBufferEnd(), BUFFERSIZE, 0);
-	if (readSize > 0)
-	{
-
-	}
+		failedNewSocket(serverSocketFD);
 }
 
 void Polling::handleClientInput(Client &client)
 {
-	if (!receiveInput())
+	int readSize = recv(_currEventFD, client.getBufferEnd(), BUFFERSIZE, 0);
+	if (readSize < 0)
 	{
-
+		deleteCLient(client);
+		throw Tools::Exception("error at receiving client input");
 	}
-	if 
+	else if (readSize == 0)
+		client.setReceivingStatus(true);
+
 }
 
 // Exception on failure
 void Polling::handleExistingClient(int clientFD, uint32_t currEvent) {
 	std::cout << "Found an exising connection" << std::endl;
 
+	std::map<const unsigned int, Client>::iterator itClient = _clientMap.find(clientFD);
+	
+	if (itClient == _clientMap.end())
+		throw Tools::Exception("client not found");
 	// CLIENT DISCONNECTED
 	if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
 	{
-		if (!deleteCLient(_clientMap.at(clientFD)))
+		if (!deleteCLient(itClient->second))
 			throw Tools::Exception("error at deleting client fd " + clientFD);
 	}
+	// CLINT INPUT
 	else if (currEvent & EPOLLIN)
 	{
-		
+		handleClientInput(itClient->second);
+	}
+
+	if (itClient->second.doneReceiving())
+	{
+		// Handle end of reception of the client
 	}
 }
 

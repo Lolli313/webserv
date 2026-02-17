@@ -9,6 +9,7 @@ class Client
 private:
 	int _clientFD;
 	std::string _buffer;
+	bool _doneReceiving;
 
 public:
 	Client(int fd);
@@ -19,6 +20,8 @@ public:
 	int getFD();
 	std::string &getBuffer();
 	char *getBufferEnd();
+	void setReceivingStatus(bool status);
+	bool doneReceiving();
 };
 
 #endif

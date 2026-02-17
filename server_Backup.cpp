@@ -193,24 +193,24 @@ int main()
 				// RECEIVING
 				if (currEvent & EPOLLIN)
 				{
-					if ((readSize = recv(eventFD, &readBuffer[0], BUFFERSIZE, 0)) > 0)
-					{
-						mainBuffer.append(readBuffer.data(), readSize);
-						std::cout << "Received size = " << readSize << std::endl;
-						std::cout << GREEN_BRIGHT << "Received content: " << readBuffer << RESET << std::endl;
-						std::cout << LIGHT_BLUE << "All content received: " << mainBuffer << RESET << std::endl;
-						if (mainBuffer.find("stop") != std::string::npos)
-						{
-							// CLOSE ALL FDS OF THE MAP TO STOP SERVER CLEAN
-							close(eventFD);
-							clientMap.erase(eventFD);
+					// if ((readSize = recv(eventFD, &readBuffer[0], BUFFERSIZE, 0)) > 0)
+					// {
+					// 	mainBuffer.append(readBuffer.data(), readSize);
+					// 	std::cout << "Received size = " << readSize << std::endl;
+					// 	std::cout << GREEN_BRIGHT << "Received content: " << readBuffer << RESET << std::endl;
+					// 	std::cout << LIGHT_BLUE << "All content received: " << mainBuffer << RESET << std::endl;
+					// 	if (mainBuffer.find("stop") != std::string::npos)
+					// 	{
+					// 		// CLOSE ALL FDS OF THE MAP TO STOP SERVER CLEAN
+					// 		close(eventFD);
+					// 		clientMap.erase(eventFD);
 
-							// UNIQUE FDS
-							close(epollFD);
-							close(serverFD);
-							freeaddrinfo(res);
-							return (1);
-						}
+					// 		// UNIQUE FDS
+					// 		close(epollFD);
+					// 		close(serverFD);
+					// 		freeaddrinfo(res);
+					// 		return (1);
+					// 	}
 					}
 
 					std::cout << RED << "HERE=======================" << RESET << std::endl;
