@@ -19,6 +19,7 @@ private:
 
 public:
 	ServerSocket();
+	ServerSocket(std::string port);
 	ServerSocket(const ServerSocket &obj);
 	ServerSocket &operator=(const ServerSocket &obj);
 	~ServerSocket();
@@ -28,7 +29,7 @@ public:
 
 	void createServerSocket();
 	void setSocketOptions();
-	bool connectSocketToPort();
+	void connectSocketToPort();
 };
 
 #endif

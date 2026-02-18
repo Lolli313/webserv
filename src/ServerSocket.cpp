@@ -6,10 +6,19 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
+
+// Exception on failure
 ServerSocket::ServerSocket()
 {
 	createServerSocket();
 	setSocketOptions();
+}
+
+// Exception on failure
+ServerSocket::ServerSocket(std::string port) : _netwConf(NetworkConfig(port)) {
+	createServerSocket();
+	setSocketOptions();
+	connectSocketToPort();
 }
 
 ServerSocket::~ServerSocket() { close(_servSockFD); }
@@ -66,7 +75,7 @@ void ServerSocket::setSocketOptions()
 }
 
 // Exception on failure
-bool ServerSocket::connectSocketToPort()
+void ServerSocket::connectSocketToPort()
 {
 	if (bind(_servSockFD, _netwConf.getAdrr(), _netwConf.getAddrLen()) < 0)
 		throw Tools::Exception("bind");

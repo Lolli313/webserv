@@ -9,15 +9,18 @@
 =================================================================
 */
 
-Polling::Polling(const int servSockFD) : _servSockFD(servSockFD), _newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
+Polling::Polling(const std::vector<ServerSocket>& servSockets) :
+	_servSockFDs(setupAddServSockFDs(servSockets)),
+	_newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
-	addFDtoEpollAndClientMap(servSockFD, _newClientFlags);
+	for (std::size_t i = 0; i < servSockets.size(); i++)
+		addFDtoEpollAndClientMap(servSockets[i].getServSockFD(), _newClientFlags);
 }
 
 Polling::~Polling() {};
 
-Polling::Polling(const Polling &obj) : _newClientFlags(this->_newClientFlags) { *this = obj; };
+Polling::Polling(const Polling &obj) : _newClientFlags(obj._newClientFlags) { *this = obj; };
 
 /*
 =================================================================
@@ -44,11 +47,60 @@ void Polling::setCurrEventFD(int fd) { _currEventFD = fd; }
 
 int Polling::getCurrEventFD() const { return _currEventFD; }
 
+// int Polling::getServSockFD(int i) const { return _servSockFDs[i]; }
+
+int Polling::getEventCount() const { return _eventCount; }
+
+const epoll_event *Polling::getEventArray() const { return _eventArray; }
+
+int Polling::getNewClientFlags() const { return _newClientFlags; }
+
+// Exception on failure
+Client &Polling::getClient(const unsigned int fd) { 
+	std::map<const unsigned int, Client>::iterator itClient = _clientMap.find(fd);	
+	if (itClient == _clientMap.end())
+		Tools::Exception("Client not found");
+	return itClient->second; 
+
+}
 /*
 =================================================================
 ===== METHODS ===================================================
 =================================================================
 */
+
+/**
+ * Exception on failure
+ *
+ * Register , modify or delete a socket (targetFD) in the epoll intereset list.
+ * Types of epoll_events:
+ * - EPOLL_CTL_ADD
+ * - EPOLL_CTL_MOD = to change the epollEventFlag.
+ * - EPOLL_CTL_DEL
+ */
+void epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventFlag)
+{
+	struct epoll_event event;
+
+	event.events = epollEventFlag;
+	event.data.fd = targetFd;
+
+	if (epoll_ctl(epollFD, epollEvent, targetFd, &event))
+		throw Tools::Exception("epollEventAction");
+}
+
+std::vector<int> Polling::setupAddServSockFDs(const std::vector<ServerSocket>& servSockets) {
+	std::vector<int> temp;
+	for (std::size_t i = 0; i < servSockets.size(); i++) {
+		temp.push_back(servSockets[i].getServSockFD());
+	}
+	return temp;
+}
+
+void Polling::addFdToEpoll(int targetFD, int eventFlags)
+{
+	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
+}
 
 // Exception on failure
 void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
@@ -73,26 +125,6 @@ bool Polling::deleteCLient(Client &client)
 	return (true);
 }
 
-/**
- * Exception on failure
- *
- * Register , modify or delete a socket (targetFD) in the epoll intereset list.
- * Types of epoll_events:
- * - EPOLL_CTL_ADD
- * - EPOLL_CTL_MOD = to change the epollEventFlag.
- * - EPOLL_CTL_DEL
- */
-void epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventFlag)
-{
-	struct epoll_event event;
-
-	event.events = epollEventFlag;
-	event.data.fd = targetFd;
-
-	if (epoll_ctl(epollFD, epollEvent, targetFd, &event))
-		throw Tools::Exception("epollEventAction for " + targetFd);
-}
-
 // Exception on failure
 void Polling::createEpoll()
 {
@@ -101,16 +133,17 @@ void Polling::createEpoll()
 		throw Tools::Exception("createEpoll");
 }
 
-void Polling::successfulNewSocket(int serverSocketFD, int newSocket) {
+// Exception on failure
+void Polling::successfulNewSocket(int newSocket) {
 	fcntl(newSocket, F_SETFL, O_NONBLOCK);
 	addFDtoEpollAndClientMap(newSocket, _newClientFlags);
 }
 
-void Polling::failedNewSocket(int eventFD) {
+void Polling::failedNewSocket() {
 	throw Tools::Exception("failedNewSocket");
 }
 
-
+// Exception on failure
 void Polling::registerNewClient(int serverSocketFD) {
 	int newSocket;
 	sockaddr_in clientAddr;
@@ -118,25 +151,30 @@ void Polling::registerNewClient(int serverSocketFD) {
 
 	newSocket = accept(serverSocketFD, (sockaddr *)&clientAddr, &clientLen);
 	if (newSocket >= 0)
-		successfulNewSocket(serverSocketFD, newSocket);
+		successfulNewSocket(newSocket);
 	else
-		failedNewSocket(serverSocketFD);
+		failedNewSocket();
 }
 
+// Exception on failure
 void Polling::handleClientInput(Client &client)
 {
-	int readSize = recv(_currEventFD, client.getBufferEnd(), BUFFERSIZE, 0);
+	int readSize = recv(_currEventFD, client.getTmpBufferPtr(), BUFFERSIZE, 0);
 	if (readSize < 0)
 	{
 		deleteCLient(client);
 		throw Tools::Exception("error at receiving client input");
 	}
 	else if (readSize == 0)
+	{
+		client.getBuffer().append(client.getTmpBufferPtr(), readSize);
 		client.setReceivingStatus(true);
-
+	}
 }
 
 // Exception on failure
+//
+// Receives client input and client diconnection
 void Polling::handleExistingClient(int clientFD, uint32_t currEvent) {
 	std::cout << "Found an exising connection" << std::endl;
 
@@ -144,65 +182,21 @@ void Polling::handleExistingClient(int clientFD, uint32_t currEvent) {
 	
 	if (itClient == _clientMap.end())
 		throw Tools::Exception("Client not found");
+
 	// CLIENT DISCONNECTED
 	if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
 	{
 		if (!deleteCLient(itClient->second))
-			throw Tools::Exception("Error at deleting client fd " + clientFD);
+			throw Tools::Exception("Error at deleting client");
 	}
 	// CLIENT INPUT
 	else if (currEvent & EPOLLIN)
 	{
 		handleClientInput(itClient->second);
 	}
-
-	if (itClient->second.doneReceiving())
-	{
-		// Handle end of reception of the client
-	}
 }
 
-void Polling::runEventLoop()
+void Polling::epollWaitEvent()
 {
 	_eventCount = epoll_wait(_epollFD, _eventArray, MAX_EVENTS, TIMEOUT);
-	std::cout << PURPLE << _eventCount << " events ready" << RESET << std::endl;
-
-	// NEW EVENTS: GO THROUGH EACH EVENT
-	for (int i = 0; i < _eventCount; i++)
-	{
-		int eventFD = _eventArray[i].data.fd;
-		_currEventFD = _eventArray[i].events;
-
-		// REGISTER NEW SOCKET / CLIENT
-		if (eventFD == _servSockFD)
-			registerNewClient(eventFD);
-		else
-			handleExistingClient(eventFD, _currEventFD);
-	}
-}
-
-void Polling::epollLoop()
-{
-	bool running = true;
-	while (running)
-	{
-		runEventLoop();
-		try
-		{
-			runEventLoop();
-		}
-		catch (Tools::Exception &e)
-		{
-			if (e.returnCode == 0)
-				std::clog <<
-		}
-		catch (std::exception &e)
-		{
-			// unexpected exception.
-		}
-		catch (...)
-		{
-
-		}
-	}
 }

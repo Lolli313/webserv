@@ -24,31 +24,31 @@
  * - EPOLL_CTL_MOD = to change the epollEventFlag.
  * - EPOLL_CTL_DEL
  */
-bool epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventFlag)
-{
-	struct epoll_event event;
+// bool epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventFlag)
+// {
+// 	struct epoll_event event;
 
-	event.events = epollEventFlag;
-	event.data.fd = targetFd;
+// 	event.events = epollEventFlag;
+// 	event.data.fd = targetFd;
 
-	if (epoll_ctl(epollFD, epollEvent, targetFd, &event))
-	{
-		std::cerr << "Failed to create epoll event" << std::endl;
-		// close(epollFD);
-		return (false);
-	}
-	return (true);
-}
+// 	if (epoll_ctl(epollFD, epollEvent, targetFd, &event))
+// 	{
+// 		std::cerr << "Failed to create epoll event" << std::endl;
+// 		// close(epollFD);
+// 		return (false);
+// 	}
+// 	return (true);
+// }
 
 int main()
 {
-	int serverFD, readSize, epollFD = -2;
-	struct addrinfo prep, *res;
-	std::memset(&prep, 0, sizeof(addrinfo));
-	std::string readBuffer, mainBuffer;
+	// int serverFD, readSize, epollFD = -2;
+	// struct addrinfo prep, *res;
+	// std::memset(&prep, 0, sizeof(addrinfo));
+	// std::string readBuffer, mainBuffer;
 
-	readBuffer.resize(BUFFERSIZE);
-	mainBuffer.resize(BUFFERSIZE);
+	// readBuffer.resize(BUFFERSIZE);
+	// mainBuffer.resize(BUFFERSIZE);
 
 	// SOCKET =========================================================================================
 
@@ -142,53 +142,53 @@ int main()
 			// REGISTER NEW SOCKET / CLIENT
 			if (eventFD == serverFD)
 			{
-				int newSocket;
-				sockaddr_in clientAddr;
-				socklen_t clientLen = sizeof(clientAddr);
+				// int newSocket;
+				// sockaddr_in clientAddr;
+				// socklen_t clientLen = sizeof(clientAddr);
 
-				// ACCEPT ALL THE INCOMING CONNECTIONS
-				if ((newSocket = accept(eventFD, (sockaddr *)&clientAddr, &clientLen)) >= 0)
-				{
-					// SET THE FLAGS OF EVENTS THAT WE WNT TO MONITOR
-					std::cout << "Found a new connection" << std::endl;
-					int registerEvents = EPOLLIN | EPOLLRDHUP | EPOLLERR;
+				// // ACCEPT ALL THE INCOMING CONNECTIONS
+				// if ((newSocket = accept(eventFD, (sockaddr *)&clientAddr, &clientLen)) >= 0)
+				// {
+				// 	// SET THE FLAGS OF EVENTS THAT WE WNT TO MONITOR
+				// 	std::cout << "Found a new connection" << std::endl;
+				// 	int registerEvents = EPOLLIN | EPOLLRDHUP | EPOLLERR;
 
-					fcntl(newSocket, F_SETFL, O_NONBLOCK);
-					if (!epollEventAction(epollFD, newSocket, EPOLL_CTL_ADD, registerEvents))
-					{
-						close(newSocket); // Should we close it ?
-						close(eventFD);
-						freeaddrinfo(res);
-						break;
-					}
-					clientMap.insert(std::make_pair(newSocket, std::string()));
-				}
+				// 	fcntl(newSocket, F_SETFL, O_NONBLOCK);
+				// 	if (!epollEventAction(epollFD, newSocket, EPOLL_CTL_ADD, registerEvents))
+				// 	{
+				// 		close(newSocket); // Should we close it ?
+				// 		close(eventFD);
+				// 		freeaddrinfo(res);
+				// 		break;
+				// 	}
+				// 	clientMap.insert(std::make_pair(newSocket, std::string()));
+				// }
 				// AN ERROR OCCURED
-				if (newSocket < 0)
-				{
-					std::cout << RED << "accept return value = " << newSocket << RESET << std::endl;
-					freeaddrinfo(res);
-					close(eventFD);
-					perror("accept");
-					break;
-					// return (1);
-				}
+				// if (newSocket < 0)
+				// {
+				// 	std::cout << RED << "accept return value = " << newSocket << RESET << std::endl;
+				// 	freeaddrinfo(res);
+				// 	close(eventFD);
+				// 	perror("accept");
+				// 	break;
+				// 	// return (1);
+				// }
 			}
 
-			// EXISTING CLIENT EVENT
-			else
-			{
-				std::cout << "Found an existing connection" << std::endl;
+			// // EXISTING CLIENT EVENT
+			// else
+			// {
+			// 	std::cout << "Found an existing connection" << std::endl;
 
-				// CLIENT DISCONNECTED
-				uint32_t currEvent = eventArray[i].events;
-				if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
-				{
-					std::cout << "Client disconnected or error" << std::endl;
-					epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
-					close(eventFD);
-					continue;
-				}
+			// 	// CLIENT DISCONNECTED
+			// 	uint32_t currEvent = eventArray[i].events;
+			// 	if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
+			// 	{
+			// 		std::cout << "Client disconnected or error" << std::endl;
+			// 		epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
+			// 		close(eventFD);
+			// 		continue;
+			// 	}
 
 				// RECEIVING
 				if (currEvent & EPOLLIN)
@@ -211,33 +211,33 @@ int main()
 					// 		freeaddrinfo(res);
 					// 		return (1);
 					// 	}
-					}
+					// }
 
-					std::cout << RED << "HERE=======================" << RESET << std::endl;
+					// std::cout << RED << "HERE=======================" << RESET << std::endl;
 
-					// ERROR
-					if (readSize < 0)
-					{
-						std::cout << "Rcv error" << std::endl;
-						epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
-						close(eventFD);
-						clientMap.erase(eventFD);
-					}
+					// // ERROR
+					// if (readSize < 0)
+					// {
+					// 	std::cout << "Rcv error" << std::endl;
+					// 	epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
+					// 	close(eventFD);
+					// 	clientMap.erase(eventFD);
+					// }
 
-					// CLIENT IS DONE SENDING
-					else if (readSize == 0)
-					{
-						std::cout << "Found the end of the message" << std::endl;
-						std::cout << "Client disconnected" << std::endl;
-						epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
-						close(eventFD);
-						clientMap.erase(eventFD);
+					// // CLIENT IS DONE SENDING
+					// else if (readSize == 0)
+					// {
+					// 	std::cout << "Found the end of the message" << std::endl;
+					// 	std::cout << "Client disconnected" << std::endl;
+					// 	epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
+					// 	close(eventFD);
+					// 	clientMap.erase(eventFD);
 
-						// END OF RECEPTION, PRINT THE OUTPUT OF THE CLIENT
-						std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
-						std::cout << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
-						mainBuffer.clear();
-						continue;
+					// 	// END OF RECEPTION, PRINT THE OUTPUT OF THE CLIENT
+					// 	std::cout << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
+					// 	std::cout << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
+					// 	mainBuffer.clear();
+					// 	continue;
 					}
 				}
 			}

@@ -8,7 +8,7 @@
 Tools::Exception::Exception() {};
 Tools::Exception::Exception(int returnCode, const std::string &msgLog) : _returnCode(returnCode), _msgLog(msgLog) {}
 Tools::Exception::Exception(const std::string &msgLog) : _returnCode(0), _msgLog(msgLog) {}
-Tools::Exception::Exception(const Exception &obj) { *this = obj; };
+//Tools::Exception::Exception(const Exception &obj) { *this = obj; };
 Tools::Exception::~Exception() throw() {}
 
 /*
