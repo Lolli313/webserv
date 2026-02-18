@@ -20,6 +20,7 @@ public:
 	int getFD();
 	std::string &getBuffer();
 	char *getBufferEnd();
+	bool getReceivingStatus() const;
 	void setReceivingStatus(bool status);
 	bool doneReceiving();
 };

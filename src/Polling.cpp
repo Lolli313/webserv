@@ -8,6 +8,7 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
+
 Polling::Polling(const int servSockFD) : _servSockFD(servSockFD), _newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
@@ -16,7 +17,7 @@ Polling::Polling(const int servSockFD) : _servSockFD(servSockFD), _newClientFlag
 
 Polling::~Polling() {};
 
-Polling::Polling(const Polling &obj) { *this = obj; };
+Polling::Polling(const Polling &obj) : _newClientFlags(this->_newClientFlags) { *this = obj; };
 
 /*
 =================================================================
@@ -105,7 +106,7 @@ void Polling::successfulNewSocket(int serverSocketFD, int newSocket) {
 	addFDtoEpollAndClientMap(newSocket, _newClientFlags);
 }
 
-void failedNewSocket(int eventFD, int newSocket) {
+void Polling::failedNewSocket(int eventFD) {
 	throw Tools::Exception("failedNewSocket");
 }
 
@@ -142,14 +143,14 @@ void Polling::handleExistingClient(int clientFD, uint32_t currEvent) {
 	std::map<const unsigned int, Client>::iterator itClient = _clientMap.find(clientFD);
 	
 	if (itClient == _clientMap.end())
-		throw Tools::Exception("client not found");
+		throw Tools::Exception("Client not found");
 	// CLIENT DISCONNECTED
 	if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
 	{
 		if (!deleteCLient(itClient->second))
-			throw Tools::Exception("error at deleting client fd " + clientFD);
+			throw Tools::Exception("Error at deleting client fd " + clientFD);
 	}
-	// CLINT INPUT
+	// CLIENT INPUT
 	else if (currEvent & EPOLLIN)
 	{
 		handleClientInput(itClient->second);
