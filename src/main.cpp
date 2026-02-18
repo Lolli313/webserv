@@ -6,7 +6,6 @@ int main(int ac, char **av) {
 	(void)av;
 	std::vector<std::string> temp;
 	temp.push_back("8080");
-	temp.push_back("400");
 	try {
 		Server server(temp);
 

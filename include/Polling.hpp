@@ -7,7 +7,7 @@
 #include <sys/epoll.h>
 #include "Client.hpp"
 #include <iostream>
-#include <stdlib.h>
+#include <cstring>
 #include <cstdlib>
 #include <fcntl.h>
 #include <utility>

@@ -8,20 +8,23 @@
 */
 
 // Exception on failure
-ServerSocket::ServerSocket()
-{
-	createServerSocket();
-	setSocketOptions();
-}
+// ServerSocket::ServerSocket()
+// {
+// 	createServerSocket();
+// 	setSocketOptions();
+// }
 
 // Exception on failure
-ServerSocket::ServerSocket(std::string port) : _netwConf(NetworkConfig(port)) {
+ServerSocket::ServerSocket(std::string port) : _servSockFD(-1), _netwConf(NetworkConfig(port)) {
 	createServerSocket();
 	setSocketOptions();
 	connectSocketToPort();
 }
 
-ServerSocket::~ServerSocket() { close(_servSockFD); }
+ServerSocket::~ServerSocket() { 
+	if (_servSockFD != -1)
+		close(_servSockFD); 
+	}
 
 ServerSocket::ServerSocket(const ServerSocket &obj) { *this = obj; };
 

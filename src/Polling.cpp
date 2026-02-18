@@ -81,6 +81,7 @@ Client &Polling::getClient(const unsigned int fd) {
 void epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventFlag)
 {
 	struct epoll_event event;
+	std::memset(&event, 0, sizeof(event));
 
 	event.events = epollEventFlag;
 	event.data.fd = targetFd;

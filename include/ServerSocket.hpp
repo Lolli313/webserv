@@ -16,9 +16,9 @@ class ServerSocket
 private:
 	int _servSockFD;
 	NetworkConfig _netwConf;
+	ServerSocket();
 
 public:
-	ServerSocket();
 	ServerSocket(std::string port);
 	ServerSocket(const ServerSocket &obj);
 	ServerSocket &operator=(const ServerSocket &obj);

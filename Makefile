@@ -9,7 +9,7 @@ DIR_TPP = templates
 # pas plus bas juste au-dessus
 
 CXX = c++
-FLAGS = -Wall -Wextra -Werror -std=c++98 -I$(DIR_INC) -I$(DIR_TPP)
+FLAGS = -g -Wall -Wextra -Werror -std=c++98 -I$(DIR_INC) -I$(DIR_TPP)
 
 SRCS = $(shell find $(DIR_SRC) -name "*.cpp" 2>/dev/null)
 OBJS = $(patsubst $(DIR_SRC)/%.cpp, $(DIR_OBJ)/%.o, $(SRCS))
