@@ -24,7 +24,7 @@ class Polling
 private:
 	epoll_event _eventArray[MAX_EVENTS];
 	std::map<const unsigned int, Client> _clientMap;
-	std::vector<int> _servSockFDs;
+	std::vector<int> *_servSockFDs;
 	std::vector<ServerSocket*> _servSockets;
 	int _eventCount;
 	int _epollFD;
@@ -49,7 +49,7 @@ public:
 
 	const epoll_event *getEventArray() const;
 
-	std::vector<int> setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets);
+	std::vector<int> *setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets);
 
 	void epollWaitEvent();
 	void createEpoll();

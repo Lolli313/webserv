@@ -15,8 +15,9 @@ Polling::Polling(const std::vector<ServerSocket*>& servSockets) :
 	_newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
+	std::cout << PURPLE << "socket seize is: " << servSockets.size() << RESET << std::endl;
 	for (std::size_t i = 0; i < servSockets.size(); i++) {
-		addFDtoEpollAndClientMap(servSockets[i]->getServSockFD(), _newClientFlags);
+		addFdToEpoll(servSockets[i]->getServSockFD(), _newClientFlags);
 	}
 }
 
@@ -90,11 +91,11 @@ void epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventF
 		throw Tools::Exception("epollEventAction");
 }
 
-std::vector<int> Polling::setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets) {
-	std::vector<int> temp;
+std::vector<int> *Polling::setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets) {
+	std::vector<int> *temp = new std::vector<int>;
 	for (std::size_t i = 0; i < servSockets.size(); i++) {
 		std::cout << servSockets[i]->getServSockFD() << std::endl;
-		temp.push_back(servSockets[i]->getServSockFD());
+		temp->push_back(servSockets[i]->getServSockFD());
 	}
 	return temp;
 }
@@ -108,7 +109,7 @@ void Polling::addFdToEpoll(int targetFD, int eventFlags)
 void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
 {
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
-	_clientMap.insert(std::make_pair(targetFD, Client(targetFD)));
+	_clientMap.insert(std::make_pair(targetFD, targetFD));
 }
 
 // Exception on failure

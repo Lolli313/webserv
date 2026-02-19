@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include <string>
+#include "terminalColors.hpp"
 
 #define DEFAULT_LOCAL_IP "0.0.0.0"
 #define DEFAULT_LOCAL_PORT "8080"

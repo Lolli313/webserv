@@ -22,6 +22,7 @@ NetworkConfig::NetworkConfig(const std::string &ipAddr, const std::string &port)
 
 NetworkConfig::NetworkConfig(const std::string &port) : _ipAddr(DEFAULT_LOCAL_IP), _port(port)
 {
+	std::cout << RED << "netwowrkconfig constructor" << RESET << std::endl;
 	prepareAddressInfo(_ipAddr, _port);
 }
 
@@ -85,6 +86,7 @@ void NetworkConfig::prepareAddressInfo(const std::string &ipAddr, const std::str
 
 	prep.ai_family = AF_INET;
 	prep.ai_socktype = SOCK_STREAM;
+	std::cout << RED << ipAddr.c_str() << " and " << port.c_str() << RESET << std::endl;
 	int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &prep, &_info);
 	if (status != 0)
 		throw Tools::Exception(gai_strerror(status));

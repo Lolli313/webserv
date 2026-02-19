@@ -1,13 +1,19 @@
 #include "Client.hpp"
+#include <iostream>
+#include "terminalColors.hpp"
 
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Client::Client(int fd) : _clientFD(fd), _doneReceiving(false) {}
+Client::Client(int fd) : _clientFD(fd), _doneReceiving(false) {
+	std::cout << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
+}
 
-Client::~Client() { close(_clientFD); }
+Client::~Client() {
+	std::cout << RED << "Closing client fd = " << _clientFD << RESET << std::endl;
+	close(_clientFD); }
 
 Client::Client(const Client &obj) : _clientFD(obj._clientFD) { *this = obj; };
 
