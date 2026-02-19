@@ -1,5 +1,7 @@
 #include "Server.hpp"
 
+void freeServSocket(ServerSocket* tmp);
+
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
@@ -10,7 +12,9 @@ Server::Server(std::vector<std::string> ports) :
 	_servSockets(setupServSockets(ports)), 
 	_polling(_servSockets) {}
 
-Server::~Server() {};
+Server::~Server() {
+	std::for_each(_servSockets.begin(), _servSockets.end(), freeServSocket);
+};
 
 /*
 =================================================================
@@ -25,6 +29,11 @@ Server::~Server() {};
 */
 
 // Loop through the ports and call ServerSocket(ports[i])
+
+void freeServSocket(ServerSocket* tmp) {
+	delete tmp;
+}
+
 std::vector<ServerSocket*> Server::setupServSockets(std::vector<std::string> ports)
 {
 	std::vector<ServerSocket*> tempVector;

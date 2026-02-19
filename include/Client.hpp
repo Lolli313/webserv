@@ -16,7 +16,7 @@ private:
 	// HttpRequest class
 
 	Client &operator=(const Client &obj);
-
+	
 public:
 	Client(int fd);
 	Client(const Client &obj);

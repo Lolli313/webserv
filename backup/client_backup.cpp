@@ -1,4 +1,5 @@
-#include "include/terminalColors.hpp"
+
+#include "../include/terminalColors.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
@@ -32,6 +33,7 @@ int main(int ac, char **av)
 	std::string str(av[1]);
 	str += " ";
 	clientFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+	std::cout << clientFD << std::endl;
 	connect(clientFD, res->ai_addr, res->ai_addrlen);
 	while (true)
 	{

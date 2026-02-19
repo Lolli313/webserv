@@ -17,11 +17,11 @@ private:
 	int _servSockFD;
 	NetworkConfig _netwConf;
 	ServerSocket();
+	ServerSocket &operator=(const ServerSocket &obj);
 
 public:
 	ServerSocket(std::string port);
 	ServerSocket(const ServerSocket &obj);
-	ServerSocket &operator=(const ServerSocket &obj);
 	~ServerSocket();
 
 	int getServSockFD() const;

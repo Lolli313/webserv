@@ -28,13 +28,13 @@ Polling::Polling(const Polling &obj) : _newClientFlags(obj._newClientFlags) { *t
 ===== OPERATORS =================================================
 =================================================================
 */
-Polling &Polling::operator=(const Polling &obj)
-{
-	if (this != &obj)
-	{
-	}
-	return (*this);
-};
+// Polling &Polling::operator=(const Polling &obj)
+// {
+// 	if (this != &obj)
+// 	{
+// 	}
+// 	return (*this);
+// };
 
 /*
 =================================================================

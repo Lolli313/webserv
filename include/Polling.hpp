@@ -4,6 +4,7 @@
 
 #include "ServerSocket.hpp"
 #include <netinet/in.h>
+#include <algorithm>
 #include <sys/epoll.h>
 #include "Client.hpp"
 #include <iostream>
@@ -30,11 +31,11 @@ private:
 	const int _newClientFlags;
 
 	Polling();
+	Polling &operator=(const Polling &obj);
 
 public:
 	Polling(const std::vector<ServerSocket*>& servSockets);
 	Polling(const Polling &obj);
-	Polling &operator=(const Polling &obj);
 	~Polling();
 
 	int getEpollFD() const;
