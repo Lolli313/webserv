@@ -8,7 +8,7 @@ int main(int ac, char **av) {
 	temp.push_back("8080");
 	try {
 		Server server(temp);
-
+		server.mainLoop();
 	}
 	catch (Tools::Exception& e){
 		if (e.getReturnCode() == 0)

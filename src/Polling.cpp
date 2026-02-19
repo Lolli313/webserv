@@ -9,13 +9,14 @@
 =================================================================
 */
 
-Polling::Polling(const std::vector<ServerSocket>& servSockets) :
+Polling::Polling(const std::vector<ServerSocket*>& servSockets) :
 	_servSockFDs(setupAddServSockFDs(servSockets)),
 	_newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
-	for (std::size_t i = 0; i < servSockets.size(); i++)
-		addFDtoEpollAndClientMap(servSockets[i].getServSockFD(), _newClientFlags);
+	for (std::size_t i = 0; i < servSockets.size(); i++) {
+		addFDtoEpollAndClientMap(servSockets[i]->getServSockFD(), _newClientFlags);
+	}
 }
 
 Polling::~Polling() {};
@@ -90,10 +91,10 @@ void epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventF
 		throw Tools::Exception("epollEventAction");
 }
 
-std::vector<int> Polling::setupAddServSockFDs(const std::vector<ServerSocket>& servSockets) {
+std::vector<int> Polling::setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets) {
 	std::vector<int> temp;
 	for (std::size_t i = 0; i < servSockets.size(); i++) {
-		temp.push_back(servSockets[i].getServSockFD());
+		temp.push_back(servSockets[i]->getServSockFD());
 	}
 	return temp;
 }
@@ -146,6 +147,7 @@ void Polling::failedNewSocket() {
 
 // Exception on failure
 void Polling::registerNewClient(int serverSocketFD) {
+	std::cout << "Registering a new client" << std::endl;
 	int newSocket;
 	sockaddr_in clientAddr;
 	socklen_t clientLen = sizeof(clientAddr);

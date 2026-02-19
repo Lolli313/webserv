@@ -1,4 +1,4 @@
-#include "terminalColors.hpp"
+#include "include/terminalColors.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
@@ -10,6 +10,7 @@
 #include <string>
 
 #define BUFFERSIZE 1024
+#define PORT "8080"
 
 int main(int ac, char **av)
 {
@@ -24,7 +25,7 @@ int main(int ac, char **av)
 
 	prep.ai_family = AF_INET;
 	prep.ai_socktype = SOCK_STREAM;
-	int status = getaddrinfo("127.0.0.1", "8080", &prep, &res);
+	int status = getaddrinfo("127.0.0.1", PORT, &prep, &res);
 
 	(void)status;
 

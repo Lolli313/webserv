@@ -32,7 +32,7 @@ private:
 	Polling();
 
 public:
-	Polling(const std::vector<ServerSocket>& servSockets);
+	Polling(const std::vector<ServerSocket*>& servSockets);
 	Polling(const Polling &obj);
 	Polling &operator=(const Polling &obj);
 	~Polling();
@@ -47,7 +47,7 @@ public:
 
 	const epoll_event *getEventArray() const;
 
-	std::vector<int> setupAddServSockFDs(const std::vector<ServerSocket>& servSockets);
+	std::vector<int> setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets);
 
 	void epollWaitEvent();
 	void createEpoll();

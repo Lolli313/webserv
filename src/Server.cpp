@@ -8,9 +8,7 @@
 
 Server::Server(std::vector<std::string> ports) : 
 	_servSockets(setupServSockets(ports)), 
-	_polling(_servSockets) 
-{
-}
+	_polling(_servSockets) {}
 
 Server::~Server() {};
 
@@ -27,12 +25,12 @@ Server::~Server() {};
 */
 
 // Loop through the ports and call ServerSocket(ports[i])
-std::vector<ServerSocket> Server::setupServSockets(std::vector<std::string> ports)
+std::vector<ServerSocket*> Server::setupServSockets(std::vector<std::string> ports)
 {
-	std::vector<ServerSocket> tempVector;
+	std::vector<ServerSocket*> tempVector;
 	for (std::size_t i = 0; i < ports.size(); i++)
 	{
-		ServerSocket tempServSocket = ServerSocket(ports[i]);
+		ServerSocket *tempServSocket = new ServerSocket(ports[i]);
 		tempVector.push_back(tempServSocket);
 	}
 	return tempVector;
@@ -59,7 +57,7 @@ bool Server::matchServerFD(int eventFD) const
 {
 	for (std::size_t i = 0; i < _servSockets.size(); i++)
 	{
-		if (eventFD == _servSockets[i].getServSockFD())
+		if (eventFD == _servSockets[i]->getServSockFD())
 			return true;
 	}
 	return false;
@@ -91,21 +89,17 @@ void Server::mainLoop()
 	bool running = true;
 	while (running)
 	{
-		try
-		{
+		try {
 			eventLoop();
 		}
-		catch (Tools::Exception &e)
-		{
+		catch (Tools::Exception &e) {
 			if (e.getReturnCode() == 0)
 				std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
 		}
-		catch (std::exception &e)
-		{
+		catch (std::exception &e) {
 			std::clog << ORANGE << e.what() << RESET << std::endl;
 		}
-		catch (...)
-		{
+		catch (...) {
 			std::clog << RED << "Undefined error" << RESET << std::endl;
 		}
 	}

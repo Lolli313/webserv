@@ -8,7 +8,7 @@
 class Server
 {
 private:
-	std::vector<ServerSocket> _servSockets;
+	std::vector<ServerSocket*> _servSockets;
 	Polling _polling;
 //	ServerSocket _servSock;
 	
@@ -20,7 +20,7 @@ public:
 	Server(std::vector<std::string> ports);
 	~Server();
 
-	std::vector<ServerSocket> setupServSockets(std::vector<std::string> ports);
+	std::vector<ServerSocket*> setupServSockets(std::vector<std::string> ports);
 	void pollingSetup();
 	void mainLoop();
 	void eventLoop();
