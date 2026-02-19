@@ -11,6 +11,7 @@
 
 Polling::Polling(const std::vector<ServerSocket*>& servSockets) :
 	_servSockFDs(setupAddServSockFDs(servSockets)),
+	_servSockets(servSockets),
 	_newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
@@ -28,13 +29,11 @@ Polling::Polling(const Polling &obj) : _newClientFlags(obj._newClientFlags) { *t
 ===== OPERATORS =================================================
 =================================================================
 */
-// Polling &Polling::operator=(const Polling &obj)
-// {
-// 	if (this != &obj)
-// 	{
-// 	}
-// 	return (*this);
-// };
+Polling &Polling::operator=(const Polling &obj)
+{
+	(void)obj;
+	return (*this);
+};
 
 /*
 =================================================================
@@ -94,6 +93,7 @@ void epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventF
 std::vector<int> Polling::setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets) {
 	std::vector<int> temp;
 	for (std::size_t i = 0; i < servSockets.size(); i++) {
+		std::cout << servSockets[i]->getServSockFD() << std::endl;
 		temp.push_back(servSockets[i]->getServSockFD());
 	}
 	return temp;
@@ -201,5 +201,6 @@ void Polling::handleExistingClient(int clientFD, uint32_t currEvent) {
 
 void Polling::epollWaitEvent()
 {
+	std::cout << _servSockets[0]->getServSockFD() << std::endl;
 	_eventCount = epoll_wait(_epollFD, _eventArray, MAX_EVENTS, TIMEOUT);
 }

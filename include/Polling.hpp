@@ -25,6 +25,7 @@ private:
 	epoll_event _eventArray[MAX_EVENTS];
 	std::map<const unsigned int, Client> _clientMap;
 	std::vector<int> _servSockFDs;
+	std::vector<ServerSocket*> _servSockets;
 	int _eventCount;
 	int _epollFD;
 	int _currEventFD;

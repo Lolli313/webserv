@@ -1,5 +1,5 @@
 
-#include ".terminalColors.hpp"
+#include "../include/terminalColors.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>

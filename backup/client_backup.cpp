@@ -34,7 +34,7 @@ int main(int ac, char **av)
 	str += " ";
 	clientFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	std::cout << clientFD << std::endl;
-	connect(clientFD, res->ai_addr, res->ai_addrlen);
+	std::cout << connect(clientFD, res->ai_addr, res->ai_addrlen) << std::endl;
 	while (true)
 	{
 		str += "a";

@@ -18,11 +18,11 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD) { *this = obj; };
 */
 
 // Undefined behavior / deprecated
-// Client &Client::operator=(const Client &obj)
-// {
-// 	(void)obj;
-// 	return (*this);
-// };
+Client &Client::operator=(const Client &obj)
+{
+	(void)obj;
+	return (*this);
+};
 
 /*
 =================================================================

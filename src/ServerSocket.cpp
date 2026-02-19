@@ -34,13 +34,11 @@ ServerSocket::ServerSocket(const ServerSocket &obj) { *this = obj; };
 =================================================================
 */
 
-// ServerSocket &ServerSocket::operator=(const ServerSocket &obj)
-// {
-// 	if (this != &obj)
-// 	{
-// 	}
-// 	return (*this);
-// };
+ServerSocket &ServerSocket::operator=(const ServerSocket &obj)
+{
+	(void)obj;
+	return (*this);
+};
 
 /*
 =================================================================
