@@ -21,7 +21,9 @@ Polling::Polling(const std::vector<ServerSocket*>& servSockets) :
 	}
 }
 
-Polling::~Polling() {};
+Polling::~Polling() {
+	std::cout << "Calling Polling destructor" << std::endl;
+};
 
 Polling::Polling(const Polling &obj) : _newClientFlags(obj._newClientFlags) { *this = obj; };
 
@@ -110,6 +112,7 @@ void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
 {
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
 	_clientMap.insert(std::make_pair(targetFD, targetFD));
+	std::cout << "Adding FD to epoll and client maps" << std::endl;
 }
 
 // Exception on failure
@@ -123,6 +126,7 @@ void Polling::addClientToEpoll(Client &client)
 // returns true if client deleted, false on error
 bool Polling::deleteCLient(Client &client)
 {
+	std::cout << BLUE << "DELETE CLIENT" << RESET << std::endl;
 	if ((_clientMap.erase(client.getFD())) != 1)
 		return (false);
 	return (true);
@@ -138,6 +142,7 @@ void Polling::createEpoll()
 
 // Exception on failure
 void Polling::successfulNewSocket(int newSocket) {
+	std::cout << "Succesfully created new socket for client :)" << std::endl;
 	fcntl(newSocket, F_SETFL, O_NONBLOCK);
 	addFDtoEpollAndClientMap(newSocket, _newClientFlags);
 }
@@ -190,6 +195,7 @@ void Polling::handleExistingClient(int clientFD, uint32_t currEvent) {
 	// CLIENT DISCONNECTED
 	if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
 	{
+		std::cout << LIGHT_BLUE << "CLIENT DISCONNECTED" << RESET << std::endl;
 		if (!deleteCLient(itClient->second))
 			throw Tools::Exception("Error at deleting client");
 	}

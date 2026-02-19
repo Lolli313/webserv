@@ -48,18 +48,19 @@ std::vector<ServerSocket*> Server::setupServSockets(std::vector<std::string> por
 void Server::existingClient(unsigned int i, int eventFD)
 {
 	_polling.handleExistingClient(eventFD, _polling.getNewClientFlags());
-	try
-	{
-		Client client = _polling.getClient(i);
-		if (client.doneReceiving())
-		{
-			// HttpRequestParsing
-		}
-	}
-	catch (Tools::Exception &e)
-	{
+	(void)i;
+	// try
+	// {
+	// 	// // Client client = _polling.getClient(i);
+	// 	// if (client.doneReceiving())
+	// 	{
+	// 		// HttpRequestParsing
+	// 	}
+	// }
+	// catch (Tools::Exception &e)
+	// {
 
-	}
+	// }
 }
 
 bool Server::matchServerFD(int eventFD) const

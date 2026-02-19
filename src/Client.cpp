@@ -15,7 +15,10 @@ Client::~Client() {
 	std::cout << RED << "Closing client fd = " << _clientFD << RESET << std::endl;
 	close(_clientFD); }
 
-Client::Client(const Client &obj) : _clientFD(obj._clientFD) { *this = obj; };
+Client::Client(const Client &obj) : _clientFD(obj._clientFD) { 
+	std::cout << PINK << "Client copy constructor" << RESET << std::endl;
+	// *this = obj; 
+};
 
 /*
 =================================================================
@@ -26,6 +29,7 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD) { *this = obj; };
 // Undefined behavior / deprecated
 Client &Client::operator=(const Client &obj)
 {
+	std::cout << PINK << "Client = operator" << RESET << std::endl;
 	(void)obj;
 	return (*this);
 };
@@ -43,9 +47,13 @@ std::string &Client::getBuffer() { return _buffer; }
 char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
 
-bool Client::doneReceiving() const { return _doneReceiving; }
+bool Client::doneReceiving() const { 
+	std::cout << "Done receiving :)" << std::endl;
+	return _doneReceiving; }
 
-void Client::setReceivingStatus(bool status) { _doneReceiving = status; } 
+void Client::setReceivingStatus(bool status) {
+	_doneReceiving = status;
+	std::cout << "Done receiving status is: " << status << std::endl; } 
 
 /*
 =================================================================
