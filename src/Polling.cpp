@@ -3,6 +3,8 @@
 #include "Polling.hpp"
 #include "Tools.hpp"
 
+void cleanClientMap();
+
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
@@ -23,7 +25,9 @@ Polling::Polling(const std::vector<ServerSocket*>& servSockets) :
 
 Polling::~Polling() {
 	std::cout << "Calling Polling destructor" << std::endl;
-};
+	cleanClientMap();
+	cleanServerSockFDs();
+}
 
 Polling::Polling(const Polling &obj) : _newClientFlags(obj._newClientFlags) { *this = obj; };
 
@@ -36,7 +40,7 @@ Polling &Polling::operator=(const Polling &obj)
 {
 	(void)obj;
 	return (*this);
-};
+}
 
 /*
 =================================================================
@@ -71,6 +75,16 @@ Client &Polling::getClient(const unsigned int fd) {
 ===== METHODS ===================================================
 =================================================================
 */
+
+void Polling::cleanServerSockFDs() {
+	delete _servSockFDs;
+}
+
+void Polling::cleanClientMap()
+{
+	for (std::map<const unsigned int, Client>::iterator it = _clientMap.begin(); it != _clientMap.end(); it++)
+		delete &it->second;
+}
 
 /**
  * Exception on failure
@@ -127,10 +141,11 @@ void Polling::addClientToEpoll(Client &client)
 bool Polling::deleteCLient(Client *client)
 {
 	std::cout << BLUE << "DELETE CLIENT" << RESET << std::endl;
+	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
+	close(client->getFD());
+	//delete client;
 	if ((_clientMap.erase(client->getFD())) != 1)
 		return (false);
-	close(client->getFD());
-	delete client;
 	return (true);
 }
 
@@ -196,12 +211,13 @@ void Polling::handleExistingClient(int clientFD, uint32_t currEvent) {
 		throw Tools::Exception("Client not found");
 
 	// CLIENT DISCONNECTED
-	// if (currEvent & (EPOLLERR | /*EPOLLHUP | */EPOLLRDHUP))
-	// {
-	// 	std::cout << LIGHT_BLUE << "CLIENT DISCONNECTED" << RESET << std::endl;
-	// 	if (!deleteCLient(&itClient->second))
-	// 		throw Tools::Exception("Error at deleting client");
-	// }
+	if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
+	{
+		std::cout << LIGHT_BLUE << "CLIENT DISCONNECTED" << RESET << std::endl;
+		if (!deleteCLient(&itClient->second))
+			throw Tools::Exception("Error at deleting client");
+		
+	}
 	// CLIENT INPUT
 	else if (currEvent & EPOLLIN)
 	{

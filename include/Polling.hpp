@@ -25,7 +25,7 @@ private:
 	epoll_event _eventArray[MAX_EVENTS];
 	std::map<const unsigned int, Client> _clientMap;
 	std::vector<int> *_servSockFDs;
-	std::vector<ServerSocket*> _servSockets;
+	std::vector<ServerSocket*> _servSockets; // Reference to the Server._servSockets
 	int _eventCount;
 	int _epollFD;
 	int _currEventFD;
@@ -62,10 +62,15 @@ public:
 	void handleExistingClient(int eventFD, uint32_t currEvent);
 	void handleClientInput(Client &client);
 
+	void cleanClientMap();
+	void cleanServerSockFDs();
+
 	void epollLoop();
 	void runEventLoop();
 	void successfulNewSocket(int newSocket);
 	void failedNewSocket();
+
+
 };
 
 #endif

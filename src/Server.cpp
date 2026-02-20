@@ -1,6 +1,9 @@
 #include "Server.hpp"
 
+int _sigStop = 0;
+
 void freeServSocket(ServerSocket* tmp);
+void handle_signals(int sig);
 
 /*
 =================================================================
@@ -9,11 +12,14 @@ void freeServSocket(ServerSocket* tmp);
 */
 
 Server::Server(std::vector<std::string> ports) : 
-	_servSockets(setupServSockets(ports)), 
-	_polling(_servSockets) {}
+_servSockets(setupServSockets(ports)),
+_polling(_servSockets) {
+	std::signal(SIGINT, &handle_signals);
+}
 
 Server::~Server() {
-	std::for_each(_servSockets.begin(), _servSockets.end(), freeServSocket);
+	std::cout << "Calling Server's destructor" << std::endl;
+	std::for_each(_servSockets.begin(), _servSockets.end(), &freeServSocket);
 };
 
 /*
@@ -28,11 +34,17 @@ Server::~Server() {
 =================================================================
 */
 
-// Loop through the ports and call ServerSocket(ports[i])
+void handle_signals(int sig)
+{
+	if (sig == SIGINT)
+		_sigStop = 1;
+}
 
 void freeServSocket(ServerSocket* tmp) {
 	delete tmp;
 }
+
+// Loop through the ports and call ServerSocket(ports[i])
 
 std::vector<ServerSocket*> Server::setupServSockets(std::vector<std::string> ports)
 {
@@ -80,10 +92,15 @@ bool Server::matchServerFD(int eventFD) const
 void Server::eventLoop()
 {
 	std::clog << YELLOW << "bonjour" << RESET << std::endl;
-	while (1)
+	while (!_sigStop)
 	{
 		std::clog << YELLOW << "ca va ?" << RESET << std::endl;
 		_polling.epollWaitEvent();
+		if (_polling.getEventCount() == -1)
+		{
+			if (errno == EINTR)
+				return ;
+		}
 		std::clog << YELLOW << "bah ecoute pas trop mal" << RESET << std::endl;
 		const epoll_event *eventArray = _polling.getEventArray();
 
@@ -104,9 +121,7 @@ void Server::eventLoop()
 // Main loop that catches the exceptions and react accordingly
 void Server::mainLoop()
 {
-	bool running = true;
-	while (running)
-
+	while (!_sigStop)
 	{
 		try {
 			eventLoop();

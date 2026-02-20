@@ -1,5 +1,6 @@
-
 #include "Server.hpp"
+
+// int g_stop_flag = 0;
 
 int main(int ac, char **av) {
 	(void)ac;
@@ -13,6 +14,10 @@ int main(int ac, char **av) {
 	catch (Tools::Exception& e){
 		if (e.getReturnCode() == 0)
 			std::clog << "Custom exception: " << PINK << e.getMsgLog() << RESET << std::endl;
+		else if (e.getReturnCode() == 1)
+			std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+		else
+			std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
 	}
 	catch (std::exception &e)
 	{

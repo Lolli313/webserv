@@ -33,8 +33,10 @@ int main()
 	std::cout << clientFD << std::endl;
 	std::cout << connect(clientFD, res->ai_addr, res->ai_addrlen) << std::endl;
 	std::string str;
-	while (std::getline(std::cin, str))
+	while (true)
 	{
+		if (!std::getline(std::cin, str))
+			break;
 		if (str == "stop")
 			break;
 		send(clientFD, str.c_str(), str.size(), 0);

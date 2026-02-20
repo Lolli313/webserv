@@ -4,6 +4,8 @@
 #include "ServerSocket.hpp"
 #include "Polling.hpp"
 #include "terminalColors.hpp"
+#include <csignal>
+#include <cerrno>
 
 class Server
 {
@@ -24,8 +26,10 @@ public:
 	void pollingSetup();
 	void mainLoop();
 	void eventLoop();
+	void handleSignal(int sig);
 	void existingClient(unsigned int i, int eventFD);
 	bool matchServerFD(int eventFD) const;
+//	void freeServSocket(ServerSocket* tmp);
 };
 
 #endif
