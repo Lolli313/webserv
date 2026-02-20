@@ -69,7 +69,10 @@ bool Server::matchServerFD(int eventFD) const
 	{
 		std::cout << "match server fd" << std::endl;
 		if (eventFD == _servSockets[i]->getServSockFD())
+		{
+			std::cout << ORANGE << "matchServerFD new client found" << RESET << std::endl;
 			return true;
+		}
 	}
 	return false;
 }
@@ -88,7 +91,7 @@ void Server::eventLoop()
 		for (int i = 0; i < _polling.getEventCount(); i++)
 		{
 			int eventFD = eventArray[i].data.fd;
-			_polling.setCurrEventFD(eventArray[i].events);
+			_polling.setCurrEventFD(eventFD);
 
 			if (matchServerFD(eventFD))
 				_polling.registerNewClient(eventFD);

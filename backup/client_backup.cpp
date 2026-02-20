@@ -13,9 +13,8 @@
 #define BUFFERSIZE 1024
 #define PORT "8080"
 
-int main(int ac, char **av)
+int main()
 {
-	(void)ac;
 	int clientFD;
 	struct addrinfo prep, *res;
 
@@ -30,16 +29,15 @@ int main(int ac, char **av)
 
 	(void)status;
 
-	std::string str(av[1]);
-	str += " ";
 	clientFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	std::cout << clientFD << std::endl;
 	std::cout << connect(clientFD, res->ai_addr, res->ai_addrlen) << std::endl;
-	while (true)
+	std::string str;
+	while (std::getline(std::cin, str))
 	{
-		str += "a";
+		if (str == "stop")
+			break;
 		send(clientFD, str.c_str(), str.size(), 0);
-		sleep(std::atoi(av[2]));
 	}
 
 	close(clientFD);

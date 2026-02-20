@@ -12,8 +12,9 @@ Client::Client(int fd) : _clientFD(fd), _doneReceiving(false) {
 }
 
 Client::~Client() {
-	std::cout << RED << "Closing client fd = " << _clientFD << RESET << std::endl;
-	close(_clientFD); }
+//	std::cout << RED << "Closing client fd = " << _clientFD << RESET << std::endl;
+//	close(_clientFD); 
+}
 
 Client::Client(const Client &obj) : _clientFD(obj._clientFD) { 
 	std::cout << PINK << "Client copy constructor" << RESET << std::endl;

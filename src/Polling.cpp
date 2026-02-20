@@ -124,11 +124,13 @@ void Polling::addClientToEpoll(Client &client)
 }
 
 // returns true if client deleted, false on error
-bool Polling::deleteCLient(Client &client)
+bool Polling::deleteCLient(Client *client)
 {
 	std::cout << BLUE << "DELETE CLIENT" << RESET << std::endl;
-	if ((_clientMap.erase(client.getFD())) != 1)
+	if ((_clientMap.erase(client->getFD())) != 1)
 		return (false);
+	close(client->getFD());
+	delete client;
 	return (true);
 }
 
@@ -168,10 +170,11 @@ void Polling::registerNewClient(int serverSocketFD) {
 // Exception on failure
 void Polling::handleClientInput(Client &client)
 {
+	std::cout << GREEN_BRIGHT << "HandleClientInput for fd = " << _currEventFD << RESET << std::endl;
 	int readSize = recv(_currEventFD, client.getTmpBufferPtr(), BUFFERSIZE, 0);
 	if (readSize < 0)
 	{
-		deleteCLient(client);
+		deleteCLient(&client);
 		throw Tools::Exception("error at receiving client input");
 	}
 	else if (readSize == 0)
@@ -193,12 +196,12 @@ void Polling::handleExistingClient(int clientFD, uint32_t currEvent) {
 		throw Tools::Exception("Client not found");
 
 	// CLIENT DISCONNECTED
-	if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
-	{
-		std::cout << LIGHT_BLUE << "CLIENT DISCONNECTED" << RESET << std::endl;
-		if (!deleteCLient(itClient->second))
-			throw Tools::Exception("Error at deleting client");
-	}
+	// if (currEvent & (EPOLLERR | /*EPOLLHUP | */EPOLLRDHUP))
+	// {
+	// 	std::cout << LIGHT_BLUE << "CLIENT DISCONNECTED" << RESET << std::endl;
+	// 	if (!deleteCLient(&itClient->second))
+	// 		throw Tools::Exception("Error at deleting client");
+	// }
 	// CLIENT INPUT
 	else if (currEvent & EPOLLIN)
 	{
