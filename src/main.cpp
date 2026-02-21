@@ -3,8 +3,12 @@
 // int g_stop_flag = 0;
 
 int main(int ac, char **av) {
-	(void)ac;
-	(void)av;
+	// (void)ac;
+	// (void)av;
+	if (ac != 2) {
+		std::clog << "Please include one config file" << std::endl;
+		return 1;
+	}
 	std::vector<std::string> temp;
 	temp.push_back("8080");
 	try {
