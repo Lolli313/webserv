@@ -14,7 +14,6 @@ void handle_signals(int sig);
 Server::Server(std::vector<std::string> ports) : 
 _servSockets(setupServSockets(ports)),
 _polling(_servSockets) {
-	std::signal(SIGINT, &handle_signals);
 }
 
 Server::~Server() {
@@ -33,12 +32,6 @@ Server::~Server() {
 ===== METHODS ===================================================
 =================================================================
 */
-
-void handle_signals(int sig)
-{
-	if (sig == SIGINT)
-		_sigStop = 1;
-}
 
 void freeServSocket(ServerSocket* tmp) {
 	delete tmp;

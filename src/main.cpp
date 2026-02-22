@@ -1,6 +1,14 @@
-#include "Server.hpp"
 
-// int g_stop_flag = 0;
+#include "Server.hpp"
+#include "parsing/ParseConfig.hpp"
+
+int _sigStop = 0;
+
+void handle_signals(int sig)
+{
+	if (sig == SIGINT)
+		_sigStop = 1;
+}
 
 int main(int ac, char **av) {
 	// (void)ac;
@@ -9,6 +17,10 @@ int main(int ac, char **av) {
 		std::clog << "Please include one config file" << std::endl;
 		return 1;
 	}
+	std::signal(SIGINT, &handle_signals);
+	
+	ParseConfig pc(std::string(av[1]));
+
 	std::vector<std::string> temp;
 	temp.push_back("8080");
 	try {

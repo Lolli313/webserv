@@ -1,18 +1,19 @@
-#include "Config.hpp"
+
+#include "parsing/ParseConfig.hpp"
 
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Config::Config() {};
+ParseConfig::ParseConfig() {};
 
-Config::~Config() {};
+ParseConfig::~ParseConfig() {};
 
-Config::Config(const Config &obj) { *this = obj; };
+ParseConfig::ParseConfig(const ParseConfig &obj) { *this = obj; };
 
-Config::Config(const std::string& filePath) : _fileName(filePath) {
-	std::ifstream infile(_fileName);
+ParseConfig::ParseConfig(const std::string& filePath) : _fileName(filePath) {
+	std::ifstream infile(_fileName.c_str());
 	if (!infile.is_open())
 		throw Tools::Exception("Error opening config file");
 	
@@ -23,7 +24,7 @@ Config::Config(const std::string& filePath) : _fileName(filePath) {
 ===== OPERATORS =================================================
 =================================================================
 */
-Config &Config::operator=(const Config &obj)
+ParseConfig &ParseConfig::operator=(const ParseConfig &obj)
 {
 	if (this != &obj)
 	{
