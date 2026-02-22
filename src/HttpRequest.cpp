@@ -5,7 +5,12 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-HttpRequest::HttpRequest() {};
+
+// 1. Parse the request.
+// 2. Analyse and throw errors accordingly if found.
+HttpRequest::HttpRequest(const std::string &request) {
+
+};
 
 HttpRequest::~HttpRequest() {};
 
@@ -33,3 +38,5 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &obj) {
 ===== METHODS ===================================================
 =================================================================
 */
+
+bool HttpRequest::hasBody() { return !_body.empty(); }
