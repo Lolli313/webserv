@@ -1,9 +1,7 @@
+
 #include "Server.hpp"
 
-int _sigStop = 0;
-
 void freeServSocket(ServerSocket* tmp);
-void handle_signals(int sig);
 
 /*
 =================================================================
@@ -11,15 +9,12 @@ void handle_signals(int sig);
 =================================================================
 */
 
-Server::Server(std::vector<std::string> ports) : 
-_servSockets(setupServSockets(ports)),
-_polling(_servSockets) {
-}
+Server::Server(const std::string &port) : _servSocket(port) {}
 
 Server::~Server() {
 	std::cout << "Calling Server's destructor" << std::endl;
-	std::for_each(_servSockets.begin(), _servSockets.end(), &freeServSocket);
-};
+	delete _servSocket;
+}
 
 /*
 =================================================================
@@ -33,12 +28,7 @@ Server::~Server() {
 =================================================================
 */
 
-void freeServSocket(ServerSocket* tmp) {
-	delete tmp;
-}
-
 // Loop through the ports and call ServerSocket(ports[i])
-
 std::vector<ServerSocket*> Server::setupServSockets(std::vector<std::string> ports)
 {
 	std::vector<ServerSocket*> tempVector;
@@ -70,10 +60,10 @@ void Server::existingClient(unsigned int i, int eventFD)
 
 bool Server::matchServerFD(int eventFD) const
 {
-	for (std::size_t i = 0; i < _servSockets.size(); i++)
+	for (std::size_t i = 0; i < _servSocket.size(); i++)
 	{
 		std::cout << "match server fd" << std::endl;
-		if (eventFD == _servSockets[i]->getServSockFD())
+		if (eventFD == _servSocket[i]->getServSockFD())
 		{
 			std::cout << ORANGE << "matchServerFD new client found" << RESET << std::endl;
 			return true;

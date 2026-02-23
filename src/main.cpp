@@ -1,8 +1,8 @@
 
-#include "Server.hpp"
+#include "ServerManager.hpp"
 #include "parsing/ParseConfig.hpp"
 
-int _sigStop = 0;
+// extern int _sigStop = 0;
 
 void handle_signals(int sig)
 {
