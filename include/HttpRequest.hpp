@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "Tools.hpp"
+
 #define URI_MAX_LENGTH // To be defined if any.
 #define DEFAULT_PORT 80
 #define DEFAULT_PATH "/" // ROOT
