@@ -93,8 +93,6 @@ public:
   ~HttpRequest();
 
   bool hasBody();
-  std::string::iterator &whileSpace(std::string::iterator &); // Iterate while SPACE, but returns error if no space
-  std::vector<std::string> splitString(const std::string &str, const std::string &separator);
 };
 
 #endif
