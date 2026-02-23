@@ -27,7 +27,8 @@ private:
 	std::map<std::string, std::map<std::string, std::string> > _locations;
 	long _clientMaxBodySize;
 	std::map<int, std::string> _errorPages;
-	
+	std::vector<int> _allowMethods;
+	std::pair<int, std::string> _return;
 	
 	
 	Server(const Server &obj);

@@ -7,26 +7,9 @@
 #include <vector>
 
 #include "Tools.hpp"
+#include "HttpTools.hpp"
 
 #define URI_MAX_LENGTH // To be defined if any.
-#define DEFAULT_PORT 80
-#define DEFAULT_PATH "/" // ROOT
-#define SPACE " "
-#define CR "\r"     // Carriage return
-#define LF "\n"     // New line / linefeed
-#define CRLF "\r\n" // Use to separate blocs in HTTP messages (headers, body...)
-
-enum httpMethods
-{
-  OPTION,
-  GET,
-  HEAD,
-  POST,
-  PUT,
-  DELETE,
-  TRACE,
-  CONNECT
-};
 
 // All valid HTTP1.1 request headers.
 class HttpRequestHeaders
