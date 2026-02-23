@@ -2,7 +2,9 @@
 #define HTTPREQUEST_CLASS_HPP
 
 #include <set>
+#include <map>
 #include <string>
+#include <vector>
 
 #define URI_MAX_LENGTH // To be defined if any.
 #define DEFAULT_PORT 80
@@ -12,14 +14,27 @@
 #define LF "\n"     // New line / linefeed
 #define CRLF "\r\n" // Use to separate blocs in HTTP messages (headers, body...)
 
-enum httpMethods { OPTION, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT };
+enum httpMethods
+{
+  OPTION,
+  GET,
+  HEAD,
+  POST,
+  PUT,
+  DELETE,
+  TRACE,
+  CONNECT
+};
 
 // All valid HTTP1.1 request headers.
-class HttpRequestHeaders {
+class HttpRequestHeaders
+{
 public:
-  static const std::set<std::string> &get() {
+  static const std::set<std::string> &get()
+  {
     static std::set<std::string> headers;
-    if (headers.empty()) {
+    if (headers.empty())
+    {
       headers.insert("Accept");
       headers.insert("Accept-Charset");
       headers.insert("Accept-Encoding");
@@ -44,23 +59,27 @@ public:
   }
 };
 
-class HttpRequest {
+class HttpRequest
+{
 private:
+  // METHOD (GET / POST / PUT / DELETE...)
+  httpMethods _method;
+
   // HTTP VERSION
   std::string _httpVersion;
   int _httpVersionMinor;
   int _httpVersionMajor;
 
   // UNIFORM RESSOURCE IDENTIFIERS (URI)
-  std::string _host;
   int _port;
+  std::string _host;
   std::string _absPath;
   std::string _query;
   std::string _ressource;
   std::string _requestURI; // Request line
 
-  // METHOD (GET / POST / PUT / DELETE...)
-  httpMethods _method;
+  // HEADERS
+  std::map<std::string, std::string> _headersMap;
 
   // BODY
   std::string _body;
@@ -74,6 +93,8 @@ public:
   ~HttpRequest();
 
   bool hasBody();
+  std::string::iterator &whileSpace(std::string::iterator &); // Iterate while SPACE, but returns error if no space
+  std::vector<std::string> splitString(const std::string &str, const std::string &separator);
 };
 
 #endif
