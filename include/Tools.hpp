@@ -2,6 +2,7 @@
 
 #include <string>
 #include <exception>
+#include <vector>
 
 class Tools
 {
@@ -21,7 +22,7 @@ public:
 		std::string _msgLog;
 
 		Exception();
-//		Exception(const Exception &obj);
+		//		Exception(const Exception &obj);
 		Exception &operator=(const Exception &obj);
 
 	public:
@@ -35,6 +36,11 @@ public:
 		int getReturnCode() const;
 		const std::string &getMsgLog() const;
 	};
+
+	// ========================================================================================================
+	// PARSING TOOLS ==========================================================================================
+	// ========================================================================================================
+	std::vector<std::string> splitString(const std::string &str, const std::string &separator);
 
 	// class HTTPErrorException : public std::exception {
 	// private:
