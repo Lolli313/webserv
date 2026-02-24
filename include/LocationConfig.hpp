@@ -1,19 +1,15 @@
 #pragma once
 
+#include "ConfigBase.hpp"
+
 #include <string>
 #include <set>
 #include <map>
 
-class LocationConfig
+class LocationConfig : public ConfigBase
 {
 private:
-	std::string _root;
-	std::string _index;
-	bool _autoindex;
-	long _clientMaxBodySize;
-	std::set<std::string> _allowedMethods;
-	std::map<int, std::string> _error_pages;
-	std::map<int, std::string> _return;
+	
 
 public:
 	LocationConfig();
