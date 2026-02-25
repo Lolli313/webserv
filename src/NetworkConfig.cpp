@@ -30,7 +30,13 @@ NetworkConfig::~NetworkConfig() { freeNetworkConfig();
 	std::cout << RED << "netwowrkconfig destructor" << RESET << std::endl;
 }
 
-NetworkConfig::NetworkConfig(const NetworkConfig &obj) { *this = obj; };
+NetworkConfig::NetworkConfig(const NetworkConfig &obj) :
+	_ipAddr(obj.getIpAddr()),
+	_port(obj.getPort()),
+	_info(obj.getInfo())
+	{
+	std::cout << BLUE << "NetworkConfig copy constructor" << RESET << std::endl;
+	}
 
 /*
 =================================================================
@@ -58,7 +64,7 @@ NetworkConfig &NetworkConfig::operator=(const NetworkConfig &obj)
 =================================================================
 */
 
-struct addrinfo *NetworkConfig::getInfo() { return _info; }
+struct addrinfo *NetworkConfig::getInfo() const { return _info; }
 
 // Exeption on failure.
 void NetworkConfig::setIpAddr(std::string ipAddr) { _ipAddr = ipAddr; }
@@ -74,6 +80,8 @@ int NetworkConfig::getSockType() const { return _info->ai_socktype; }
 struct sockaddr *NetworkConfig::getAdrr() const { return _info->ai_addr; }
 
 socklen_t NetworkConfig::getAddrLen() const { return _info->ai_addrlen; }
+
+const std::string &NetworkConfig::getPort() const { return _port; }
 /*
 =================================================================
 ===== METHODS ===================================================

@@ -27,8 +27,12 @@ ServerSocket::~ServerSocket() {
 	// 	close(_servSockFD); 
 	}
 
-ServerSocket::ServerSocket(const ServerSocket &obj) { *this = obj; };
-
+ServerSocket::ServerSocket(const ServerSocket &obj) :
+	_servSockFD(obj.getServSockFD()),
+	_netwConf(obj.getNetwConf()) 
+	{
+	std::cout << BLUE << "ServerSocket copy constructor" << RESET << std::endl;
+	}
 /*
 =================================================================
 ===== OPERATORS =================================================
@@ -61,6 +65,7 @@ void ServerSocket::createServerSocket()
 {
 	std::cout << _netwConf.getFamily() << " and " << _netwConf.getSockType() << " and " << _netwConf.getProtocol() << std::endl;
 	_servSockFD = socket(_netwConf.getFamily(), _netwConf.getSockType(), _netwConf.getProtocol());
+	std::cout << PINK << "servSocketFD inside ServerSocket class is: " << _servSockFD << RESET << std::endl;
 	if (_servSockFD < 0)
 		throw Tools::Exception("createServerSocket");
 }

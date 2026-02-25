@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <netdb.h>
+#include <iostream>
 #include <string>
 #include "terminalColors.hpp"
 
@@ -25,16 +26,17 @@ public:
 	NetworkConfig(const NetworkConfig &obj);
 	NetworkConfig &operator=(const NetworkConfig &obj);
 	~NetworkConfig();
-
+	
 	void setIpAddr(std::string ipAdrr);
-	const std::string &getIpAddr() const;
+	const std::string& getIpAddr() const;
+	const std::string& getPort() const;
 
 	int getProtocol() const;
 	int getFamily() const;
 	int getSockType() const;
 	struct sockaddr *getAdrr() const;
 	socklen_t getAddrLen() const;
-	struct addrinfo *getInfo();
+	struct addrinfo *getInfo() const;
 
 	void prepareAddressInfo(const std::string &ipAddr, const std::string &port);
 	void freeNetworkConfig();

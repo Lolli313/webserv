@@ -52,6 +52,7 @@ std::vector<Server> setupServers(std::vector<std::string> ports) {
 	std::vector<Server> tempServers;
 	for (std::size_t i = 0; i < ports.size(); i++) {
 		tempServers.push_back(ports[i]);
+		std::cout << CYAN_BRIGHT << "setupServers for fd = " << tempServers[i].getServSockFD() << RESET << std::endl;
 	}
 	return tempServers;
 }
@@ -59,7 +60,11 @@ std::vector<Server> setupServers(std::vector<std::string> ports) {
 std::set<int> ServerManager::setupServSockFDs() {
 	std::set<int> tempServSockFDs;
 	for (std::vector<Server>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
+	{
+		std::cout << YELLOW_BRIGHT << "setupServSockFDs for fd = " << it->getServSockFD() << RESET << std::endl;
 		tempServSockFDs.insert(it->getServSockFD());
+	}
+
 	return tempServSockFDs;
 }
 
