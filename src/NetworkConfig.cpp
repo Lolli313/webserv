@@ -26,16 +26,17 @@ NetworkConfig::NetworkConfig(const std::string &port) : _ipAddr(DEFAULT_LOCAL_IP
 	prepareAddressInfo(_ipAddr, _port);
 }
 
-NetworkConfig::~NetworkConfig() { freeNetworkConfig(); 
+NetworkConfig::~NetworkConfig() {
+	freeNetworkConfig(); 
 	std::cout << RED << "netwowrkconfig destructor" << RESET << std::endl;
 }
 
 NetworkConfig::NetworkConfig(const NetworkConfig &obj) :
 	_ipAddr(obj.getIpAddr()),
-	_port(obj.getPort()),
-	_info(obj.getInfo())
+	_port(obj.getPort())
 	{
-	std::cout << BLUE << "NetworkConfig copy constructor" << RESET << std::endl;
+		prepareAddressInfo(_ipAddr, _port);
+		std::cout << BLUE << "NetworkConfig copy constructor" << RESET << std::endl;
 	}
 
 /*

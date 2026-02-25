@@ -31,7 +31,7 @@ ServerSocket::ServerSocket(const ServerSocket &obj) :
 	_servSockFD(obj.getServSockFD()),
 	_netwConf(obj.getNetwConf()) 
 	{
-	std::cout << BLUE << "ServerSocket copy constructor" << RESET << std::endl;
+		std::cout << BLUE << "ServerSocket copy constructor" << RESET << std::endl;
 	}
 /*
 =================================================================

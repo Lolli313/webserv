@@ -10,7 +10,7 @@ std::vector<Server> setupServers(std::vector<std::string> ports);
 
 ServerManager::~ServerManager()
 {
-	std::cout << "Calling ServerManager's destructor" << std::endl;
+	std::cout << RED << "Calling ServerManager's destructor" << RESET << std::endl;
 	for (std::set<int>::iterator it = _servSockFDs.begin(); it != _servSockFDs.end(); it++)
 		close(*it);
 }

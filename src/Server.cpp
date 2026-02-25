@@ -21,7 +21,7 @@ Server::Server(const Server &obj) :
 	}
 
 Server::~Server() {
-	std::cout << "Calling Server's destructor" << std::endl;
+	std::cout << RED << "Calling Server's destructor" << RESET << std::endl;
 }
 
 /*
