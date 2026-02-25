@@ -13,8 +13,9 @@ extern int _sigStop = 0;
 class ServerManager
 {
 private:
-	std::vector<Server*> _servers;
-	std::vector<ServerSocket*> _servSockets;
+	std::vector<Server> serverArray; // To store the servers, that will be retrieved throw the following map
+	std::map<std::pair<int /*port*/, std::string /*serverName*/>, Server*> _serversMap; // map<pair<port, serverName>, Sever *>
+	std::set<int> _servSockFDs; // fd as para, to know if the fd is a server one.
 	Polling _polling;
 	ServerManager();
 	ServerManager(const ServerManager &obj);
@@ -22,13 +23,13 @@ private:
 
 public:
 	ServerManager(std::vector<std::string> ports);
+	// ServerManager(ParseConfig); // Constructor with
 	~ServerManager();
 
-	std::vector<ServerSocket*> setupServSockets(std::vector<std::string> ports);
-	void ServerManager::existingClient(unsigned int i, int eventFD);
-	bool ServerManager::matchServerFD(int eventFD) const;
-	void ServerManager::eventLoop();
-	void ServerManager::mainLoop();
+	void existingClient(unsigned int i, int eventFD);
+	bool matchServerFD(int eventFD) const;
+	void eventLoop();
+	void mainLoop();
 };
 
 #endif

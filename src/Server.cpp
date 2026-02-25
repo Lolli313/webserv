@@ -1,4 +1,3 @@
-
 #include "Server.hpp"
 
 void freeServSocket(ServerSocket* tmp);
@@ -9,11 +8,10 @@ void freeServSocket(ServerSocket* tmp);
 =================================================================
 */
 
-Server::Server(const std::string &port) : _servSocket(port) {}
+Server::Server(const std::string &port) : _servSocket(port), _port(std::atoi(port.c_str())) {}
 
 Server::~Server() {
 	std::cout << "Calling Server's destructor" << std::endl;
-	delete _servSocket;
 }
 
 /*
@@ -22,102 +20,12 @@ Server::~Server() {
 =================================================================
 */
 
+int Server::getPort() const { return _port; }
+int Server::getServSockFD() const { return _servSocket.getServSockFD(); }
+const std::set<std::string>& Server::getServerNames() const { return _serverNames; }
+
 /*
 =================================================================
 ===== METHODS ===================================================
 =================================================================
 */
-
-// Loop through the ports and call ServerSocket(ports[i])
-std::vector<ServerSocket*> Server::setupServSockets(std::vector<std::string> ports)
-{
-	std::vector<ServerSocket*> tempVector;
-	for (std::size_t i = 0; i < ports.size(); i++)
-	{
-		ServerSocket *tempServSocket = new ServerSocket(ports[i]);
-		tempVector.push_back(tempServSocket);
-	}
-	return tempVector;
-}
-
-void Server::existingClient(unsigned int i, int eventFD)
-{
-	_polling.handleExistingClient(eventFD, _polling.getNewClientFlags());
-	(void)i;
-	// try
-	// {
-	// 	// // Client client = _polling.getClient(i);
-	// 	// if (client.doneReceiving())
-	// 	{
-	// 		// HttpRequestParsing
-	// 	}
-	// }
-	// catch (Tools::Exception &e)
-	// {
-
-	// }
-}
-
-bool Server::matchServerFD(int eventFD) const
-{
-	for (std::size_t i = 0; i < _servSocket.size(); i++)
-	{
-		std::cout << "match server fd" << std::endl;
-		if (eventFD == _servSocket[i]->getServSockFD())
-		{
-			std::cout << ORANGE << "matchServerFD new client found" << RESET << std::endl;
-			return true;
-		}
-	}
-	return false;
-}
-
-void Server::eventLoop()
-{
-	std::clog << YELLOW << "bonjour" << RESET << std::endl;
-	while (!_sigStop)
-	{
-		std::clog << YELLOW << "ca va ?" << RESET << std::endl;
-		_polling.epollWaitEvent();
-		if (_polling.getEventCount() == -1)
-		{
-			if (errno == EINTR)
-				return ;
-		}
-		std::clog << YELLOW << "bah ecoute pas trop mal" << RESET << std::endl;
-		const epoll_event *eventArray = _polling.getEventArray();
-
-		std::clog << YELLOW << "NONNNNN" << RESET << std::endl;
-		for (int i = 0; i < _polling.getEventCount(); i++)
-		{
-			int eventFD = eventArray[i].data.fd;
-			_polling.setCurrEventFD(eventFD);
-
-			if (matchServerFD(eventFD))
-				_polling.registerNewClient(eventFD);
-			else
-				existingClient(i, eventFD);
-		}
-	}
-}
-
-// Main loop that catches the exceptions and react accordingly
-void Server::mainLoop()
-{
-	while (!_sigStop)
-	{
-		try {
-			eventLoop();
-		}
-		catch (Tools::Exception &e) {
-			if (e.getReturnCode() == 0)
-				std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
-		}
-		catch (std::exception &e) {
-			std::clog << ORANGE << e.what() << RESET << std::endl;
-		}
-		catch (...) {
-			std::clog << RED << "Undefined error" << RESET << std::endl;
-		}
-	}
-}

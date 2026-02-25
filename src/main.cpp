@@ -24,8 +24,8 @@ int main(int ac, char **av) {
 	std::vector<std::string> temp;
 	temp.push_back("8080");
 	try {
-		Server server(temp);
-		server.mainLoop();
+		ServerManager serverManager(temp);
+		serverManager.mainLoop();
 	}
 	catch (Tools::Exception& e){
 		if (e.getReturnCode() == 0)

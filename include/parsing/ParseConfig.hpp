@@ -1,6 +1,7 @@
 #ifndef PARSECONFIG_HPP
 #define PARSECONFIG_HPP
 
+#include "ConfigBase.hpp"
 #include "Tools.hpp"
 
 #include <fstream>
@@ -10,6 +11,7 @@ class ParseConfig
 {
 private:
 	const std::string _fileName;
+	
 
 
 	ParseConfig();

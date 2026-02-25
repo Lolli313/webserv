@@ -5,9 +5,11 @@
 #include "Polling.hpp"
 #include "terminalColors.hpp"
 #include "ConfigBase.hpp"
+#include "LocationConfig.hpp"
 
 #include <csignal>
 #include <cerrno>
+#include <cstdlib>
 #include <set>
 #include <map>
 
@@ -15,8 +17,9 @@ class Server : public ConfigBase
 {
 private:
 	ServerSocket _servSocket;
-	std::string _listeningPort;
+	int _port;
 	std::set<std::string> _serverNames;
+	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
 	
 	Server(const Server &obj);
 	Server &operator=(const Server &obj);
@@ -26,14 +29,9 @@ public:
 	Server(const std::string &ports);
 	~Server();
 
-	std::vector<ServerSocket*> setupServSockets(std::vector<std::string> ports);
-	void pollingSetup();
-	void mainLoop();
-	void eventLoop();
-	void handleSignal(int sig);
-	void existingClient(unsigned int i, int eventFD);
-	bool matchServerFD(int eventFD) const;
-//	void freeServSocket(ServerSocket* tmp);
+	int getPort() const;
+	int getServSockFD() const;
+	const std::set<std::string> &getServerNames() const;
 };
 
 #endif

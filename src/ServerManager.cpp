@@ -1,23 +1,20 @@
 
 #include "ServerManager.hpp"
 
-void freeServSocket(ServerSocket* tmp);
-
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
 
-ServerManager::~ServerManager() {
+ServerManager::~ServerManager()
+{
 	std::cout << "Calling ServerManager's destructor" << std::endl;
-	std::for_each(_servSockets.begin(), _servSockets.end(), &freeServSocket);
 }
 
-ServerManager::ServerManager(std::vector<std::string> ports) :
-_servSockets(setupServSockets(ports)),
-_polling(_servSockets) {
-	
+ServerManager::ServerManager(std::vector<std::string> ports) : _servSockets(setupServSockets(ports)),
+															   _polling(_servSockets)
+{
 }
 
 /*
@@ -43,19 +40,6 @@ ServerManager &ServerManager::operator=(const ServerManager &obj)
 =================================================================
 */
 
-void freeServSocket(ServerSocket* tmp) {
-	delete tmp;
-}
-
-std::vector<ServerSocket*> setupServSockets(std::vector<std::string> ports) {
-	std::vector<ServerSocket*> tempVector;
-	for (std::size_t i = 0; i < ports.size(); i++) {
-		ServerSocket *tempServSocket = new ServerSocket(ports[i]);
-		tempVector.push_back(tempServSocket);
-	}
-	return tempVector;
-}
-
 void ServerManager::existingClient(unsigned int i, int eventFD)
 {
 	_polling.handleExistingClient(eventFD, _polling.getNewClientFlags());
@@ -74,15 +58,12 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 	// }
 }
 
-bool ServerManager::matchServerFD(int eventFD) const {
-	for (std::size_t i = 0; i < _servSockets.size(); i++)
+bool ServerManager::matchServerFD(int eventFD) const
+{
+	if (_servSockFDs.find(eventFD) != _servSockFDs.end())
 	{
-		std::cout << "match server fd" << std::endl;
-		if (eventFD == _servSockets[i]->getServSockFD())
-		{
-			std::cout << ORANGE << "matchServerFD new client found" << RESET << std::endl;
-			return true;
-		}
+		std::cout << ORANGE << "matchServerFD new client found" << RESET << std::endl;
+		return true;
 	}
 	return false;
 }
@@ -97,7 +78,7 @@ void ServerManager::eventLoop()
 		if (_polling.getEventCount() == -1)
 		{
 			if (errno == EINTR)
-				return ;
+				return;
 		}
 		std::clog << YELLOW << "bah ecoute pas trop mal" << RESET << std::endl;
 		const epoll_event *eventArray = _polling.getEventArray();
@@ -120,19 +101,22 @@ void ServerManager::mainLoop()
 {
 	while (!_sigStop)
 	{
-		try {
+		try
+		{
 			eventLoop();
 		}
-		catch (Tools::Exception &e) {
+		catch (Tools::Exception &e)
+		{
 			if (e.getReturnCode() == 0)
 				std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
 		}
-		catch (std::exception &e) {
+		catch (std::exception &e)
+		{
 			std::clog << ORANGE << e.what() << RESET << std::endl;
 		}
-		catch (...) {
+		catch (...)
+		{
 			std::clog << RED << "Undefined error" << RESET << std::endl;
 		}
 	}
 }
-
