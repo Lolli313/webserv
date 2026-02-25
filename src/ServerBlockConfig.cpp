@@ -13,7 +13,8 @@ ServerBlockConfig::ServerBlockConfig(const ServerBlockConfig &obj) { *this = obj
 
 ServerBlockConfig::ServerBlockConfig(std::ifstream& infile, bool startingBraceIncluded) {
 	std::cout << "Hello from inside the ServerBlockConfig" << std::endl;
-
+	(void)infile;
+	(void)startingBraceIncluded;
 }
 
 /*

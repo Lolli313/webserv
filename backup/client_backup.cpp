@@ -33,14 +33,35 @@ int main()
 	std::cout << clientFD << std::endl;
 	std::cout << connect(clientFD, res->ai_addr, res->ai_addrlen) << std::endl;
 	std::string str;
-	while (true)
-	{
-		if (!std::getline(std::cin, str))
-			break;
-		if (str == "stop")
-			break;
-		send(clientFD, str.c_str(), str.size(), 0);
-	}
+	// while (true)
+	// {
+	// 	if (!std::getline(std::cin, str))
+	// 		break;
+	// 	if (str == "stop")
+	// 		break;
+	// 	send(clientFD, str.c_str(), str.size(), 0);
+	// }
+	std::string request =
+        "GET / HTTP/1.1\r\n"         
+        "Host: 127.0.0.1\r\n"      
+        "Connection: close\r\n"     
+        "\r\n";
+
+	if (send(clientFD, request.c_str(), request.size(), 0) == -1) {
+        std::cerr << "Erreur send" << std::endl;
+    } else {
+        std::cout << "Requête envoyée :\n" << request;
+    }
+
+	std::string read(BUFFERSIZE, 0);
+    ssize_t bytesRead = recv(clientFD, &read[0], readBuffer.size() - 1, 0);
+    if (bytesRead > 0) {
+        std::cout << "\nRéponse reçue (" << bytesRead << " octets) :\n" << read << std::endl;
+    } else if (bytesRead == 0) {
+        std::cout << "Connexion fermée par le serveur." << std::endl;
+    } else {
+        std::cerr << "Erreur recv" << std::endl;
+    }
 
 	close(clientFD);
 	// read(clientFD, &readBuffer[0], readBuffer.size());
@@ -49,3 +70,4 @@ int main()
 
 	freeaddrinfo(res);
 }
+
