@@ -9,6 +9,8 @@
 // 1. Parse the request.
 // 2. Analyse and throw errors accordingly if found.
 HttpRequest::HttpRequest(const std::string &request) {
+  (void)request;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 };
 

@@ -12,7 +12,7 @@ Client::Client(int fd) : _clientFD(fd), _doneReceiving(false) {
 }
 
 Client::~Client() {
-//	std::cout << RED << "Closing client fd = " << _clientFD << RESET << std::endl;
+	std::cout << RED << "Closing client fd = " << _clientFD << RESET << std::endl;
 //	close(_clientFD); 
 }
 

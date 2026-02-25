@@ -1,6 +1,7 @@
 
 #include "ServerManager.hpp"
 
+std::vector<Server> setupServers(std::vector<std::string> ports);
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
@@ -10,12 +11,19 @@
 ServerManager::~ServerManager()
 {
 	std::cout << "Calling ServerManager's destructor" << std::endl;
+	for (std::set<int>::iterator it = _servSockFDs.begin(); it != _servSockFDs.end(); it++)
+		close(*it);
 }
 
-ServerManager::ServerManager(std::vector<std::string> ports) : _servSockets(setupServSockets(ports)),
-															   _polling(_servSockets)
-{
-}
+ServerManager::ServerManager(const std::vector<std::string>& ports) :
+	_serverArray(setupServers(ports)),
+	_servSockFDs(setupServSockFDs()),
+	_polling(_servSockFDs)
+{}
+
+// ServerManager::ServerManager(ParseConfig pc) {
+
+// }
 
 /*
 =================================================================
@@ -39,6 +47,22 @@ ServerManager &ServerManager::operator=(const ServerManager &obj)
 ===== METHODS ===================================================
 =================================================================
 */
+
+std::vector<Server> setupServers(std::vector<std::string> ports) {
+	std::vector<Server> tempServers;
+	for (std::size_t i = 0; i < ports.size(); i++) {
+		tempServers.push_back(ports[i]);
+	}
+	return tempServers;
+}
+
+std::set<int> ServerManager::setupServSockFDs() {
+	std::set<int> tempServSockFDs;
+	for (std::vector<Server>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
+		tempServSockFDs.insert(it->getServSockFD());
+	return tempServSockFDs;
+}
+
 
 void ServerManager::existingClient(unsigned int i, int eventFD)
 {
@@ -73,7 +97,6 @@ void ServerManager::eventLoop()
 	std::clog << YELLOW << "bonjour" << RESET << std::endl;
 	while (!_sigStop)
 	{
-		std::clog << YELLOW << "ca va ?" << RESET << std::endl;
 		_polling.epollWaitEvent();
 		if (_polling.getEventCount() == -1)
 		{
@@ -116,7 +139,7 @@ void ServerManager::mainLoop()
 		}
 		catch (...)
 		{
-			std::clog << RED << "Undefined error" << RESET << std::endl;
+			std::clog << ORANGE << "Undefined error" << RESET << std::endl;
 		}
 	}
 }

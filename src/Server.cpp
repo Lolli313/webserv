@@ -1,7 +1,5 @@
 #include "Server.hpp"
 
-void freeServSocket(ServerSocket* tmp);
-
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
@@ -9,6 +7,12 @@ void freeServSocket(ServerSocket* tmp);
 */
 
 Server::Server(const std::string &port) : _servSocket(port), _port(std::atoi(port.c_str())) {}
+
+Server::Server(const Server &obj) :
+	_servSocket(obj.getServSocket()),
+	_port(obj.getPort()),
+	_serverNames(obj.getServerNames()),
+	_locationConfigs(obj.getLocationConfigs()) {}
 
 Server::~Server() {
 	std::cout << "Calling Server's destructor" << std::endl;
@@ -23,6 +27,8 @@ Server::~Server() {
 int Server::getPort() const { return _port; }
 int Server::getServSockFD() const { return _servSocket.getServSockFD(); }
 const std::set<std::string>& Server::getServerNames() const { return _serverNames; }
+const ServerSocket &Server::getServSocket() const { return _servSocket; }
+const std::map<std::string, LocationConfig>& Server::getLocationConfigs() const { return _locationConfigs; }
 
 /*
 =================================================================

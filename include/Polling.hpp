@@ -1,6 +1,6 @@
 
-#ifndef POLLING_CLASS_HPP
-#define POLLING_CLASS_HPP
+#ifndef POLLING_HPP
+#define POLLING_HPP
 
 #include "ServerSocket.hpp"
 #include <netinet/in.h>
@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 #include <map>
+#include <set>
 
 #define MAX_EVENTS 5
 #define TIMEOUT -1
@@ -24,8 +25,6 @@ class Polling
 private:
 	epoll_event _eventArray[MAX_EVENTS];
 	std::map<const unsigned int, Client> _clientMap;
-	std::vector<int> *_servSockFDs;
-	std::vector<ServerSocket*> _servSockets; // Reference to the Server._servSockets
 	int _eventCount;
 	int _epollFD;
 	int _currEventFD;
@@ -35,14 +34,13 @@ private:
 	Polling &operator=(const Polling &obj);
 
 public:
-	Polling(const std::vector<ServerSocket*>& servSockets);
+	Polling(const std::set<int>& servSockFDs);
 	Polling(const Polling &obj);
 	~Polling();
 
 	int getEpollFD() const;
 	void setCurrEventFD(int fd);
 	int getCurrEventFD() const;
-	int getServSockFD(int i) const;
 	int getEventCount() const;
 	int getNewClientFlags() const;
 	Client &getClient(const unsigned int fd);
@@ -62,11 +60,6 @@ public:
 	void handleExistingClient(int eventFD, uint32_t currEvent);
 	void handleClientInput(Client &client);
 
-	void cleanClientMap();
-	void cleanServerSockFDs();
-
-	void epollLoop();
-	void runEventLoop();
 	void successfulNewSocket(int newSocket);
 	void failedNewSocket();
 

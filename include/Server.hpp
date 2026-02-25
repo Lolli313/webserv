@@ -1,5 +1,5 @@
-#ifndef SERVER_CLASS_HPP
-#define SERVER_CLASS_HPP
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
 #include "ServerSocket.hpp"
 #include "Polling.hpp"
@@ -21,17 +21,19 @@ private:
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
 	
-	Server(const Server &obj);
 	Server &operator=(const Server &obj);
 	Server();
 	
 public:	
-	Server(const std::string &ports);
+	Server(const Server &obj);
+	Server(const std::string &port);
 	~Server();
 
 	int getPort() const;
 	int getServSockFD() const;
 	const std::set<std::string> &getServerNames() const;
+	const ServerSocket &getServSocket() const;
+	const std::map<std::string, LocationConfig> &getLocationConfigs() const;
 };
 
 #endif

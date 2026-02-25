@@ -3,30 +3,26 @@
 #include "Polling.hpp"
 #include "Tools.hpp"
 
-void cleanClientMap();
-
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
 
-Polling::Polling(const std::vector<ServerSocket*>& servSockets) :
-	_servSockFDs(setupAddServSockFDs(servSockets)),
-	_servSockets(servSockets),
+Polling::Polling(const std::set<int>& servSockFDs) :
+	// _servSockFDs(setupAddServSockFDs(servSockets)),
+	// _servSockets(servSockets),
 	_newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
-	std::cout << PURPLE << "socket seize is: " << servSockets.size() << RESET << std::endl;
-	for (std::size_t i = 0; i < servSockets.size(); i++) {
-		addFdToEpoll(servSockets[i]->getServSockFD(), _newClientFlags);
+	std::cout << PURPLE << "epoll CONSTRUCTOR, socket seize is: " << servSockFDs.size() << RESET << std::endl;
+	for (std::set<int>::iterator it = servSockFDs.begin(); it != servSockFDs.end(); it++) {
+		addFdToEpoll(*it, _newClientFlags);
 	}
 }
 
 Polling::~Polling() {
-	std::cout << "Calling Polling destructor" << std::endl;
-	cleanClientMap();
-	cleanServerSockFDs();
+	std::cout << RED << "Calling Polling destructor" << RESET << std::endl;
 }
 
 Polling::Polling(const Polling &obj) : _newClientFlags(obj._newClientFlags) { *this = obj; };
@@ -54,8 +50,6 @@ void Polling::setCurrEventFD(int fd) { _currEventFD = fd; }
 
 int Polling::getCurrEventFD() const { return _currEventFD; }
 
-// int Polling::getServSockFD(int i) const { return _servSockFDs[i]; }
-
 int Polling::getEventCount() const { return _eventCount; }
 
 const epoll_event *Polling::getEventArray() const { return _eventArray; }
@@ -76,15 +70,6 @@ Client &Polling::getClient(const unsigned int fd) {
 =================================================================
 */
 
-void Polling::cleanServerSockFDs() {
-	delete _servSockFDs;
-}
-
-void Polling::cleanClientMap()
-{
-	for (std::map<const unsigned int, Client>::iterator it = _clientMap.begin(); it != _clientMap.end(); it++)
-		delete &it->second;
-}
 
 /**
  * Exception on failure
@@ -107,17 +92,18 @@ void epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventF
 		throw Tools::Exception("epollEventAction");
 }
 
-std::vector<int> *Polling::setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets) {
-	std::vector<int> *temp = new std::vector<int>;
-	for (std::size_t i = 0; i < servSockets.size(); i++) {
-		std::cout << servSockets[i]->getServSockFD() << std::endl;
-		temp->push_back(servSockets[i]->getServSockFD());
-	}
-	return temp;
-}
+// std::vector<int> *Polling::setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets) {
+// 	std::vector<int> *temp = new std::vector<int>;
+// 	for (std::size_t i = 0; i < servSockets.size(); i++) {
+// 		std::cout << servSockets[i]->getServSockFD() << std::endl;
+// 		temp->push_back(servSockets[i]->getServSockFD());
+// 	}
+// 	return temp;
+// }
 
 void Polling::addFdToEpoll(int targetFD, int eventFlags)
 {
+	std::cout << GREEN << "Adding fd " << targetFD << " to epoll." << RESET << std::endl;
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
 }
 
@@ -227,6 +213,6 @@ void Polling::handleExistingClient(int clientFD, uint32_t currEvent) {
 
 void Polling::epollWaitEvent()
 {
-	std::cout << _servSockets[0]->getServSockFD() << std::endl;
+	std::cout << "epoll WAITING" << std::endl;
 	_eventCount = epoll_wait(_epollFD, _eventArray, MAX_EVENTS, TIMEOUT);
 }

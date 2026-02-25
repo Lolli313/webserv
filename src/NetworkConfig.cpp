@@ -22,11 +22,13 @@ NetworkConfig::NetworkConfig(const std::string &ipAddr, const std::string &port)
 
 NetworkConfig::NetworkConfig(const std::string &port) : _ipAddr(DEFAULT_LOCAL_IP), _port(port)
 {
-	std::cout << RED << "netwowrkconfig constructor" << RESET << std::endl;
+	std::cout << GREEN << "netwowrkconfig constructor" << RESET << std::endl;
 	prepareAddressInfo(_ipAddr, _port);
 }
 
-NetworkConfig::~NetworkConfig() { freeNetworkConfig(); }
+NetworkConfig::~NetworkConfig() { freeNetworkConfig(); 
+	std::cout << RED << "netwowrkconfig destructor" << RESET << std::endl;
+}
 
 NetworkConfig::NetworkConfig(const NetworkConfig &obj) { *this = obj; };
 

@@ -22,8 +22,9 @@ ServerSocket::ServerSocket(std::string port) : _servSockFD(-1), _netwConf(Networ
 }
 
 ServerSocket::~ServerSocket() { 
-	if (_servSockFD != -1)
-		close(_servSockFD); 
+	std::cout << RED << "ServerSocket destructor" << RESET << std::endl;
+	// if (_servSockFD != -1)
+	// 	close(_servSockFD); 
 	}
 
 ServerSocket::ServerSocket(const ServerSocket &obj) { *this = obj; };
@@ -68,7 +69,7 @@ void ServerSocket::createServerSocket()
 void ServerSocket::setSocketOptions()
 {
 	int option = 1;
-	std::cout << RED << "servsockFD" << _servSockFD << RESET << std::endl;
+	std::cout << PURPLE << "servsockFD" << _servSockFD << RESET << std::endl;
 	if (setsockopt(_servSockFD, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0)
 		throw Tools::Exception("setsockeopt REUSEADDR");
 	if (setsockopt(_servSockFD, SOL_SOCKET, SO_KEEPALIVE, &option, sizeof(option)) < 0)

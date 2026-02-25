@@ -1,5 +1,5 @@
-#ifndef SERVERSOCKET_CLASS_HPP
-#define SERVERSOCKET_CLASS_HPP
+#ifndef SERVERSOCKET_HPP
+#define SERVERSOCKET_HPP
 
 #include "NetworkConfig.hpp"
 #include <sys/socket.h>

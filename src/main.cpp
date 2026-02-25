@@ -2,7 +2,7 @@
 #include "ServerManager.hpp"
 #include "parsing/ParseConfig.hpp"
 
-// extern int _sigStop = 0;
+int _sigStop = 0;
 
 void handle_signals(int sig)
 {
@@ -11,15 +11,15 @@ void handle_signals(int sig)
 }
 
 int main(int ac, char **av) {
-	// (void)ac;
-	// (void)av;
+	(void)ac;
+	(void)av;
 	if (ac != 2) {
 		std::clog << "Please include one config file" << std::endl;
 		return 1;
 	}
 	std::signal(SIGINT, &handle_signals);
 	
-	ParseConfig pc(std::string(av[1]));
+	// ParseConfig pc(std::string(av[1]));
 
 	std::vector<std::string> temp;
 	temp.push_back("8080");
@@ -41,7 +41,7 @@ int main(int ac, char **av) {
 	}
 	catch (...)
 	{
-		std::clog << RED << "Undefined error" << RESET << std::endl;
+		std::clog << ORANGE << "Undefined error" << RESET << std::endl;
 	}
 	return 0;
 }
