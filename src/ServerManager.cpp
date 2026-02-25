@@ -71,7 +71,7 @@ std::set<int> ServerManager::setupServSockFDs() {
 
 void ServerManager::existingClient(unsigned int i, int eventFD)
 {
-	_polling.handleExistingClient(eventFD, _polling.getNewClientFlags());
+	_polling.handleExistingClient(eventFD, _polling.getEventArray()->events);
 	(void)i;
 	// try
 	// {
