@@ -42,6 +42,17 @@ const std::string &Tools::Exception::getMsgLog() const { return _msgLog; }
 =================================================================
 */
 
+// Split an input (string) according to any isspace() character
+std::vector<std::string> Tools::splitString(const std::string &str) {
+	std::vector<std::string> returnVector;
+	std::istringstream ss(str);
+	std::string word;
+
+	while (ss >> word)
+		returnVector.push_back(word);
+	return returnVector;
+}
+
 // Split an input (string) according to a separator (string)
 std::vector<std::string> Tools::splitString(const std::string &input, const std::string &separator)
 {
@@ -58,3 +69,4 @@ std::vector<std::string> Tools::splitString(const std::string &input, const std:
 	returnVector.push_back(input.substr(start));
 	return (returnVector);
 }
+

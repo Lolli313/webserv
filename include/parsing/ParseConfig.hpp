@@ -1,6 +1,7 @@
 #ifndef PARSECONFIG_HPP
 #define PARSECONFIG_HPP
 
+#include "ServerBlockConfig.hpp"
 #include "ConfigBase.hpp"
 #include "Tools.hpp"
 
@@ -11,8 +12,7 @@ class ParseConfig
 {
 private:
 	const std::string _fileName;
-	
-
+	std::vector<ServerBlockConfig> _serverBlockConfigVector;
 
 	ParseConfig();
 	ParseConfig(const ParseConfig &obj);
@@ -21,6 +21,8 @@ private:
 public:
 	ParseConfig(const std::string& filePath);
 	~ParseConfig();
+
+	bool checkServerKeyword(const std::string& line, std::ifstream& infile);
 	
 };
 

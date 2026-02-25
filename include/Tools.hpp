@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include <exception>
+#include <sstream>
+#include <string>
 #include <vector>
 
 class Tools
@@ -40,7 +41,8 @@ public:
 	// ========================================================================================================
 	// PARSING TOOLS ==========================================================================================
 	// ========================================================================================================
-	std::vector<std::string> splitString(const std::string &str, const std::string &separator);
+	static std::vector<std::string> splitString(const std::string &str);
+	static std::vector<std::string> splitString(const std::string &str, const std::string &separator);
 
 	// class HTTPErrorException : public std::exception {
 	// private:
