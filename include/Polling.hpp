@@ -57,7 +57,7 @@ public:
 	void addClientToEpoll(Client &client);
 	bool deleteCLient(Client *client);
 	void registerNewClient(int eventFD);
-	void handleExistingClient(int eventFD, uint32_t currEvent);
+	Client *handleExistingClient(int eventFD, uint32_t currEvent);
 	void handleClientInput(Client &client);
 
 	void successfulNewSocket(int newSocket);

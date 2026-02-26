@@ -15,11 +15,11 @@ ServerManager::~ServerManager()
 		close(*it);
 }
 
-ServerManager::ServerManager(const std::vector<std::string>& ports) :
-	_serverArray(setupServers(ports)),
-	_servSockFDs(setupServSockFDs()),
-	_polling(_servSockFDs)
-{}
+ServerManager::ServerManager(const std::vector<std::string> &ports) : _serverArray(setupServers(ports)),
+																	  _servSockFDs(setupServSockFDs()),
+																	  _polling(_servSockFDs)
+{
+}
 
 // ServerManager::ServerManager(ParseConfig pc) {
 
@@ -48,16 +48,19 @@ ServerManager &ServerManager::operator=(const ServerManager &obj)
 =================================================================
 */
 
-std::vector<Server> setupServers(std::vector<std::string> ports) {
+std::vector<Server> setupServers(std::vector<std::string> ports)
+{
 	std::vector<Server> tempServers;
-	for (std::size_t i = 0; i < ports.size(); i++) {
+	for (std::size_t i = 0; i < ports.size(); i++)
+	{
 		tempServers.push_back(ports[i]);
 		std::cout << CYAN_BRIGHT << "setupServers for fd = " << tempServers[i].getServSockFD() << RESET << std::endl;
 	}
 	return tempServers;
 }
 
-std::set<int> ServerManager::setupServSockFDs() {
+std::set<int> ServerManager::setupServSockFDs()
+{
 	std::set<int> tempServSockFDs;
 	for (std::vector<Server>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
 	{
@@ -68,23 +71,24 @@ std::set<int> ServerManager::setupServSockFDs() {
 	return tempServSockFDs;
 }
 
-
 void ServerManager::existingClient(unsigned int i, int eventFD)
 {
-	_polling.handleExistingClient(eventFD, _polling.getEventArray()->events);
-	(void)i;
-	// try
-	// {
-	// 	// // Client client = _polling.getClient(i);
-	// 	// if (client.doneReceiving())
-	// 	{
-	// 		// HttpRequestParsing
-	// 	}
-	// }
-	// catch (Tools::Exception &e)
-	// {
 
-	// }
+	Client *tmpClient = _polling.handleExistingClient(eventFD, _polling.getEventArray()->events);
+	(void)i;
+
+	if (tmpClient)
+	{
+		// Do something smart:
+		// Call HttpRequest parser
+		// Call the HttpMethod
+		// Send the response
+		// Then, delete the client
+	}
+	else
+	{
+		// Keep going boi
+	}
 }
 
 bool ServerManager::matchServerFD(int eventFD) const
