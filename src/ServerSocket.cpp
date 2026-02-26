@@ -63,7 +63,7 @@ NetworkConfig ServerSocket::getNetwConf() const { return _netwConf; }
 // Exception on failure
 void ServerSocket::createServerSocket()
 {
-	std::cout << _netwConf.getFamily() << " and " << _netwConf.getSockType() << " and " << _netwConf.getProtocol() << std::endl;
+	// std::cout << _netwConf.getFamily() << " and " << _netwConf.getSockType() << " and " << _netwConf.getProtocol() << std::endl;
 	_servSockFD = socket(_netwConf.getFamily(), _netwConf.getSockType(), _netwConf.getProtocol());
 	std::cout << PINK << "servSocketFD inside ServerSocket class is: " << _servSockFD << RESET << std::endl;
 	if (_servSockFD < 0)

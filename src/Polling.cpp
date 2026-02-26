@@ -24,6 +24,12 @@ Polling::Polling(const std::set<int> &servSockFDs) : // _servSockFDs(setupAddSer
 Polling::~Polling()
 {
 	std::cout << RED << "Calling Polling destructor" << RESET << std::endl;
+	for (std::map<const unsigned int, Client>::iterator it = _clientMap.begin(); it != _clientMap.end();)
+	{
+		std::map<const unsigned int, Client>::iterator curr = it++;
+		deleteCLient(&curr->second);
+	}
+	close(_epollFD);
 }
 
 Polling::Polling(const Polling &obj) : _newClientFlags(obj._newClientFlags) { *this = obj; };
@@ -159,7 +165,7 @@ void Polling::failedNewSocket()
 // Exception on failure
 void Polling::registerNewClient(int serverSocketFD)
 {
-	std::cout << "Registering a new client" << std::endl;
+	std::cout << LIGHT_BLUE << "Registering a new client n" << _clientMap.size() << RESET << std::endl;
 	int newSocket;
 	sockaddr_in clientAddr;
 	socklen_t clientLen = sizeof(clientAddr);
@@ -219,16 +225,15 @@ Client*  Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		if (currEvent & EPOLLHUP)
 			std::cout << "EPOLLHUP" << std::endl;
 		if (currEvent & EPOLLRDHUP)
-			std::cout << "Inside the EPOLRDHUP block" << std::endl;
+			std::cout << "EPOLRDHUP" << std::endl;
 		std::cout << LIGHT_BLUE << "CLIENT DISCONNECTED" << RESET << std::endl;
 		if (currEvent & EPOLLERR)
 		{
-			std::cout << RED << "Inside the EPOLLERR block" << RESET << std::endl;
+			std::cout << RED << "EPOLLERR" << RESET << std::endl;
 			int error = 0;
 			socklen_t len = sizeof(error);
 			if (getsockopt(clientFD, SOL_SOCKET, SO_ERROR, &error, &len) == -1)
 				std::cout << RED << "getsockopt error" << RESET << std::endl;
-			std::cout << "EPOLLERR" << std::endl;
 			if (error != 0) {
 				std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
     		}
@@ -240,6 +245,7 @@ Client*  Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	// CLIENT INPUT
 	else if (currEvent & EPOLLIN)
 	{
+		std::cout << "EPOLLIN" << std::endl;
 		handleClientInput(itClient->second);
 	}
 	return NULL;
@@ -247,6 +253,6 @@ Client*  Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 
 void Polling::epollWaitEvent()
 {
-	std::cout << "epoll WAITING" << std::endl;
+	std::cout << "epoll WAITING, " << _clientMap.size() << " clients." << std::endl;
 	_eventCount = epoll_wait(_epollFD, _eventArray, MAX_EVENTS, TIMEOUT);
 }
