@@ -14,14 +14,14 @@ private:
 	std::string _port;
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
-	// std::ifstream& _infile;
+	std::ifstream& _infile;
 	ServerBlockConfig();
+//	ServerBlockConfig(const ServerBlockConfig &obj);
 	
 public:
-	ServerBlockConfig(const ServerBlockConfig &obj);
 	ServerBlockConfig(std::ifstream& infile, bool startingBraceIncluded);
 	ServerBlockConfig &operator=(const ServerBlockConfig &obj);
 	~ServerBlockConfig();
 
-	bool handleStartingBrace();
+	bool handleStartingBrace(bool startingBraceIncluded);
 };

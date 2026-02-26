@@ -9,20 +9,16 @@
 
 ServerBlockConfig::~ServerBlockConfig() {}
 
-ServerBlockConfig::ServerBlockConfig(const ServerBlockConfig &obj) { *this = obj; }
+// ServerBlockConfig::ServerBlockConfig(const ServerBlockConfig &obj) { *this = obj; }
 
-ServerBlockConfig::ServerBlockConfig(std::ifstream& infile, bool startingBraceIncluded) {
+ServerBlockConfig::ServerBlockConfig(std::ifstream& infile, bool startingBraceIncluded) :
+	_infile(infile) 
+	{
 	std::cout << "Hello from inside the ServerBlockConfig" << std::endl;
-	// (void)infile;
-	// (void)startingBraceIncluded;
 	std::string line;
-	if (!startingBraceIncluded) {
-		std::getline(infile, line);
-		std::vector<std::string> tokens(Tools::splitString(line));
-		if (tokens[0] != "{" || tokens.size() != 1)
-			throw Tools::Exception("Parsing error");
+	if (!handleStartingBrace(startingBraceIncluded)) {
+		throw Tools::Exception("Parsing error");
 	}
-
 }
 
 /*
@@ -49,3 +45,14 @@ ServerBlockConfig &ServerBlockConfig::operator=(const ServerBlockConfig &obj)
 ===== METHODS ===================================================
 =================================================================
 */
+
+bool ServerBlockConfig::handleStartingBrace(bool startingBraceIncluded) {
+	if (!startingBraceIncluded) {
+		std::string line;
+		std::getline(_infile, line);
+		std::vector<std::string> tokens(Tools::splitString(line));
+		if (tokens[0] != "{" || tokens.size() != 1)
+			return false;
+	}
+	return true;
+}
