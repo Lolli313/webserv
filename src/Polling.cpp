@@ -181,23 +181,28 @@ void Polling::handleClientInput(Client &client)
 		deleteCLient(&client);
 		throw Tools::Exception("error at receiving client input");
 	}
-	else if (readSize == 0)
+	else if (readSize > 0)
 	{
+		std::cout << "Received size " << readSize << " = " << client.getTmpBufferPtr() << std::endl;
 		client.getBuffer().append(client.getTmpBufferPtr(), readSize);
+	}
+	else
+	{
 		client.setReceivingStatus(true);
+		std::cout << MAGENTA << "EOF" << RESET << std::endl;
 	}
 }
 
 // Exception on failure
 //
 // Receives client input and client diconnection
-void Polling::handleExistingClient(int clientFD, uint32_t currEvent)
+Client*  Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 {
 	std::cout << "Found an existing connection" << std::endl;
 
 	if (_clientMap.find(clientFD) == _clientMap.end()) {
 		std::cout << "Unexpected no match for existing client" << std::endl;
-		return;
+		return NULL;
 	}
 	else {
 		std::cout << ORANGE << "Found clientFD match for FD: " << clientFD << RESET << std::endl;
@@ -228,9 +233,8 @@ void Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 				std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
     		}
 		}
-		if (!deleteCLient(&itClient->second)) {
-			throw Tools::Exception("Error at deleting client");
-		}
+		std::cout << CYAN << "CLIENT MESSAGE : " << itClient->second.getBuffer() << RESET << std::endl;
+		return &itClient->second;
 
 	}
 	// CLIENT INPUT
@@ -238,6 +242,7 @@ void Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	{
 		handleClientInput(itClient->second);
 	}
+	return NULL;
 }
 
 void Polling::epollWaitEvent()

@@ -50,19 +50,22 @@ ParseConfig &ParseConfig::operator=(const ParseConfig &obj)
 =================================================================
 */
 
+/**
+ * valid server keyword formats are:
+ * "server {" and
+ * "server
+ * {"
+ */
 bool ParseConfig::checkServerKeyword(const std::string& line, std::ifstream& infile) {
 	if (line.compare(0, 6, "server") != 0)
 		return false;
-
 	std::vector<std::string> tokens(Tools::splitString(line));
-	
+
 	bool validFormat =
 		(tokens.size() == 1 && tokens[0] == "server") ||
 		(tokens.size() == 2 && tokens[1] == "{");
-
 	if (!validFormat)
 		return false;
-
 	_serverBlockConfigVector.push_back(ServerBlockConfig(infile, tokens.size() == 2));
 	return true;
 }
