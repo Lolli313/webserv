@@ -70,10 +70,12 @@ std::vector<std::string> Tools::splitString(const std::string &input, const std:
 	return (returnVector);
 }
 
+// Returns a reference of the last character of a string
 const char& Tools::getBack(const std::string& str) {
 	return str[str.length() - 1];
 }
 
+// Checks whether a string contains only digits (0-9)
 bool Tools::isNumber(const std::string& str) {
 	for (std::string::const_iterator it = str.begin(); it != str.end(); it++) {
 		if (std::isdigit(*it))
@@ -81,4 +83,19 @@ bool Tools::isNumber(const std::string& str) {
 	}
 	return true;
 }
+
+/**
+ * Checks whether the tokens vector has the following formats:
+ * targetToken
+ * OR
+ * targetToken {
+ */
+bool Tools::isValidBraceFormat(const std::string& targetToken, const std::vector<std::string>& tokens) {
+	bool validFormat =
+		(tokens.size() == 1 && tokens[0] == targetToken) ||
+		(tokens.size() == 2 && tokens[1] == "{");
+
+	return validFormat;
+}
+
 

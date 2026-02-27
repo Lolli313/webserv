@@ -46,5 +46,6 @@ public:
 	static std::vector<std::string> splitString(const std::string &str, const std::string &separator);
 	static const char& getBack(const std::string& str);
 	static bool isNumber(const std::string& str);
+	static bool isValidBraceFormat(const std::string& targetToken, const std::vector<std::string>& tokens);
 
 };

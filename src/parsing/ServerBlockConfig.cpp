@@ -26,7 +26,6 @@ ServerBlockConfig::ServerBlockConfig(std::ifstream& infile, bool startingBraceIn
 		std::cout << line << std::endl;
 		if (line[0] == '#' || line.empty())
 			continue;
-//		std::vector<std::string> tokens(Tools::splitString(line));
 		handleDirectiveName(line);
 	}
 }
@@ -115,7 +114,8 @@ bool ServerBlockConfig::handleClientMaxBodySize(const std::vector<std::string>& 
 }
 
 bool ServerBlockConfig::handleErrorPage(const std::vector<std::string>& tokens) {
-	(void)tokens;
+	
+	
 	return true;
 }
 
