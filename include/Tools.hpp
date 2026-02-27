@@ -44,21 +44,7 @@ public:
 	
 	static std::vector<std::string> splitString(const std::string &str);
 	static std::vector<std::string> splitString(const std::string &str, const std::string &separator);
+	static const char& getBack(const std::string& str);
+	static bool isNumber(const std::string& str);
 
-	// class HTTPErrorException : public std::exception {
-	// private:
-	// 	int _HTTPErrorCode;
-	// 	std::string _errorMessage;
-
-	// public:
-	// 	HTTPErrorException(int HTTPErrorCode, const std::string &errorMessage);
-
-	// 	HTTPErrorException(const HTTPErrorException &obj);
-	// 	HTTPErrorException &operator=(const HTTPErrorException &obj);
-	// 	~HTTPErrorException();
-
-	// 	int getHTTPErrorCode() const;
-
-	// 	virtual const char *what() const throw() { return _errorMessage.c_str(); }
-	// };
 };

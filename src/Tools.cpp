@@ -70,3 +70,15 @@ std::vector<std::string> Tools::splitString(const std::string &input, const std:
 	return (returnVector);
 }
 
+const char& Tools::getBack(const std::string& str) {
+	return str[str.length() - 1];
+}
+
+bool Tools::isNumber(const std::string& str) {
+	for (std::string::const_iterator it = str.begin(); it != str.end(); it++) {
+		if (std::isdigit(*it))
+			return false;
+	}
+	return true;
+}
+
