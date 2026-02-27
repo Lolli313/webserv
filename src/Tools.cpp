@@ -99,8 +99,10 @@ bool Tools::isValidBraceFormat(const std::string& targetToken, const std::vector
 		if (tokens.size() == 1) {
 			std::string line;
 			std::getline(infile, line);
-			if (line == "{")
+			if (line == "{"){
+				std::cout << line << std::endl;
 				return true;
+			}
 		}
 		else if (tokens.size() == 2 && tokens[1] == "{")
 			return true;

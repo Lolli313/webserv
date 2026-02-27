@@ -12,16 +12,13 @@ ServerBlockConfig::~ServerBlockConfig() {}
 // ServerBlockConfig::ServerBlockConfig(const ServerBlockConfig &obj) { *this = obj; }
 
 // Exception on parsing error
-ServerBlockConfig::ServerBlockConfig(std::ifstream& infile, bool startingBraceIncluded) :
+ServerBlockConfig::ServerBlockConfig(std::ifstream& infile) :
 	_duplicates(NONE),
 	_infile(infile)
 	{
 	std::cout << "Hello from inside the ServerBlockConfig" << std::endl;
 	std::string line;
 
-	if (!handleStartingBrace(startingBraceIncluded)) {
-		throw Tools::Exception("Parsing error");
-	}
 	while (std::getline(_infile, line)) {
 		std::cout << line << std::endl;
 		if (line[0] == '#' || line.empty())
@@ -82,9 +79,11 @@ bool ServerBlockConfig::handleListen(const std::vector<std::string>& tokens) {
 	port.erase(port.end() - 1);
 	if (port.size() > 5 && !Tools::isNumber(port))
 		return false;
-	if (std::atoi(port.c_str()) > std::numeric_limits<unsigned short>::max())
+	int portStr = std::atoi(port.c_str());
+	if (portStr > std::numeric_limits<unsigned short>::max())
 		return false;
 
+	_port = portStr;
 	return true;
 }
 
@@ -115,6 +114,23 @@ bool ServerBlockConfig::handleClientMaxBodySize(const std::vector<std::string>& 
 
 bool ServerBlockConfig::handleErrorPage(const std::vector<std::string>& tokens) {
 	(void)tokens;
+	if (!Tools::isValidBraceFormat("error_page", tokens, _infile))
+		return false;
+	std::map<int, std::string> temp;
+	std::string line;
+	while (std::getline(_infile, line)) {
+		if (line.empty() || line[0] == '#')
+			continue;
+		
+		std::vector<std::string> tokens = Tools::splitString(line);
+		if (tokens.size() != 2 || tokens[0].size() != 3 || !Tools::isNumber(tokens[0]))
+			return false;
+
+		int httpCode = std::atoi(tokens[0].c_str());
+		if (!HttpTools::isValidHttpCode(httpCode))
+			return false;
+		
+	}
 	return true;
 }
 

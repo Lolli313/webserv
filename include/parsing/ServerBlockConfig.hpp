@@ -2,6 +2,7 @@
 
 #include "LocationConfig.hpp"
 #include "ConfigBase.hpp"
+#include "HttpTools.hpp"
 #include "Tools.hpp"
 
 #include <iostream>
@@ -35,7 +36,7 @@ private:
 	};
 	
 public:
-	ServerBlockConfig(std::ifstream& infile, bool startingBraceIncluded);
+	ServerBlockConfig(std::ifstream& infile);
 	ServerBlockConfig &operator=(const ServerBlockConfig &obj);
 	~ServerBlockConfig();
 

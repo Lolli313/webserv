@@ -19,9 +19,9 @@ ParseConfig::ParseConfig(const std::string& filePath) : _fileName(filePath) {
 	std::string line;
 	while (std::getline(infile, line)) {
 		std::cout << line << std::endl;
-		if (line[0] == '#' || line.empty())
+		if (line.empty() || line[0] == '#')
 			continue;
-		else if (checkServerKeyword(line, infile))
+		else if (!checkServerKeyword(line, infile))
 			throw Tools::Exception("Parsing error");
 	}
 }
@@ -62,9 +62,9 @@ bool ParseConfig::checkServerKeyword(const std::string& line, std::ifstream& inf
 		return false;
 	std::vector<std::string> tokens(Tools::splitString(line));
 
-	if (!Tools::isValidBraceFormat("server", tokens))
+	if (!Tools::isValidBraceFormat("server", tokens, infile))
 		return false;
-	_serverBlockConfigVector.push_back(ServerBlockConfig(infile, tokens.size() == 2));
+	_serverBlockConfigVector.push_back(ServerBlockConfig(infile));
 	return true;
 }
 
