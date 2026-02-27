@@ -114,8 +114,7 @@ bool ServerBlockConfig::handleClientMaxBodySize(const std::vector<std::string>& 
 }
 
 bool ServerBlockConfig::handleErrorPage(const std::vector<std::string>& tokens) {
-	
-	
+	(void)tokens;
 	return true;
 }
 
@@ -154,12 +153,13 @@ bool ServerBlockConfig::handleStartingBrace(bool startingBraceIncluded) {
 void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 	std::vector<std::string> tokens(Tools::splitString(line));
 	if (tokens.size() < 2)
-		Tools::Exception("Parsing error");
+		throw Tools::Exception("Parsing error");
 	
 	std::map<std::string, ServerBlockConfig::DirectiveHandler>::const_iterator it;
 	it = _handlers.find(tokens[0]);
-	if (it == _handlers.end())
-		Tools::Exception("Unknown directive name");
+	if (it == _handlers.end()) {
+		throw Tools::Exception("Unknown directive name " + tokens[0]);
+	}
 	
 	DirectiveHandler handler = it->second;
 	if (!(this->*handler)(tokens))
