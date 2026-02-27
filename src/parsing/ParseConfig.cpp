@@ -18,7 +18,8 @@ ParseConfig::ParseConfig(const std::string& filePath) : _fileName(filePath) {
 		throw Tools::Exception("Error opening config file");
 	std::string line;
 	while (std::getline(infile, line)) {
-		if (line[0] == '#' || line[0] == '\n')
+		std::cout << line << std::endl;
+		if (line[0] == '#' || line.empty())
 			continue;
 		else if (checkServerKeyword(line, infile))
 			throw Tools::Exception("Parsing error");

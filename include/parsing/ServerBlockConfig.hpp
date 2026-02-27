@@ -5,8 +5,12 @@
 #include "Tools.hpp"
 
 #include <iostream>
+#include <cstdlib>
 #include <fstream>
+#include <limits>
 #include <vector>
+
+#define MAX_PORT_NUMBER 65535
 
 class ServerBlockConfig : public ConfigBase
 {
@@ -39,4 +43,12 @@ public:
 	void handleDirectiveName(const std::string& line);
 	bool handleListen(const std::vector<std::string>& tokens);
 	bool handleServerName(const std::vector<std::string>& tokens);
+	bool handleRoot(const std::vector<std::string>& tokens);
+	bool handleIndex(const std::vector<std::string>& tokens);
+	bool handleAutoindex(const std::vector<std::string>& tokens);
+	bool handleClientMaxBodySize(const std::vector<std::string>& tokens);
+	bool handleErrorPage(const std::vector<std::string>& tokens);
+	bool handleLocation(const std::vector<std::string>& tokens);
+	bool handleAllowMethods(const std::vector<std::string>& tokens);
+	bool handleReturn(const std::vector<std::string>& tokens);
 };

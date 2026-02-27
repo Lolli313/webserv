@@ -19,13 +19,14 @@ int main(int ac, char **av) {
 	}
 	std::signal(SIGINT, &handle_signals);
 	
-//	ParseConfig pc((std::string(av[1])));
+	// ParseConfig pc((std::string(av[1])));
 
 	std::vector<std::string> temp;
 	temp.push_back("8080");
 	try {
-		ServerManager serverManager(temp);
-		serverManager.mainLoop();
+		ParseConfig pc((std::string(av[1])));
+		// ServerManager serverManager(temp);
+		// serverManager.mainLoop();
 	}
 	catch (Tools::Exception& e){
 		if (e.getReturnCode() == 0)
