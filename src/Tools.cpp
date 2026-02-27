@@ -85,17 +85,27 @@ bool Tools::isNumber(const std::string& str) {
 }
 
 /**
- * Checks whether the tokens vector has the following formats:
+ * Checks whether the tokens vector has one the following formats:
+ * 
  * targetToken
+ * {
+ * 
  * OR
+ * 
  * targetToken {
  */
-bool Tools::isValidBraceFormat(const std::string& targetToken, const std::vector<std::string>& tokens) {
-	bool validFormat =
-		(tokens.size() == 1 && tokens[0] == targetToken) ||
-		(tokens.size() == 2 && tokens[1] == "{");
-
-	return validFormat;
+bool Tools::isValidBraceFormat(const std::string& targetToken, const std::vector<std::string>& tokens, std::ifstream& infile) {
+	if (tokens[0] == targetToken) {
+		if (tokens.size() == 1) {
+			std::string line;
+			std::getline(infile, line);
+			if (line == "{")
+				return true;
+		}
+		else if (tokens.size() == 2 && tokens[1] == "{")
+			return true;
+	}
+	return false;
 }
 
 
