@@ -71,14 +71,26 @@ std::vector<std::string> Tools::splitString(const std::string &input, const std:
 }
 
 // Returns a reference of the last character of a string
-const char& Tools::getBack(const std::string& str) {
-	return str[str.length() - 1];
+const char& Tools::getLastCharacter(const std::string& str) {
+	return *str.rbegin();
+}
+
+const std::string::const_iterator Tools::getLastIterator(const std::string& str) {
+	if (str.empty())
+		return str.end();
+	return str.end() - 1;
+}
+
+std::string::iterator Tools::getLastIterator(std::string& str) {
+	if (str.empty())
+		return str.end();
+	return str.end() - 1;
 }
 
 // Checks whether a string contains only digits (0-9)
 bool Tools::isNumber(const std::string& str) {
 	for (std::string::const_iterator it = str.begin(); it != str.end(); it++) {
-		if (std::isdigit(*it))
+		if (!std::isdigit(*it))
 			return false;
 	}
 	return true;
@@ -111,8 +123,8 @@ bool Tools::isValidBraceFormat(const std::string& targetToken, const std::vector
 }
 
 bool Tools::checkAndRemoveSemicolon(std::string& str) {
-	if (Tools::getBack(str) == ';') {
-		str.erase(Tools::getBack(str));
+	if (Tools::getLastCharacter(str) == ';') {
+		str.erase(Tools::getLastIterator(str));
 		return true;
 	}
 	return false;

@@ -45,7 +45,7 @@ const HttpTools::MapType& HttpTools::getMap() {
 
 bool HttpTools::isValidHttpCode(int code) {
 	const HttpTools::MapType& temp = getMap();
-	return temp.find(code) == temp.end();
+	return !(temp.find(code) == temp.end());
 }
 
 void HttpTools::initHttpCodes(HttpTools::MapType& httpCodes) {
