@@ -110,4 +110,11 @@ bool Tools::isValidBraceFormat(const std::string& targetToken, const std::vector
 	return false;
 }
 
+bool Tools::checkAndRemoveSemicolon(std::string& str) {
+	if (Tools::getBack(str) == ';') {
+		str.erase(Tools::getBack(str));
+		return true;
+	}
+	return false;
+}
 
