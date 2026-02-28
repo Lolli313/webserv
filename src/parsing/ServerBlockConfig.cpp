@@ -74,9 +74,8 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 
 bool ServerBlockConfig::handleListen(const std::vector<std::string>& tokens) {
 	std::string port(tokens[1]);
-	if (tokens.size() != 2 || Tools::getBack(port) != ';')
+	if (tokens.size() != 2 || !Tools::checkAndRemoveSemicolon(port))
 		return false;
-	port.erase(port.end() - 1);
 	if (port.size() > 5 && !Tools::isNumber(port))
 		return false;
 	int portStr = std::atoi(port.c_str());
@@ -113,7 +112,6 @@ bool ServerBlockConfig::handleClientMaxBodySize(const std::vector<std::string>& 
 }
 
 bool ServerBlockConfig::handleErrorPage(const std::vector<std::string>& tokens) {
-	(void)tokens;
 	if (!Tools::isValidBraceFormat("error_page", tokens, _infile))
 		return false;
 	std::map<int, std::string> temp;
@@ -121,17 +119,28 @@ bool ServerBlockConfig::handleErrorPage(const std::vector<std::string>& tokens) 
 	while (std::getline(_infile, line)) {
 		if (line.empty() || line[0] == '#')
 			continue;
-		
+
+		std::cout << "line is: " << line << std::endl;
 		std::vector<std::string> tokens = Tools::splitString(line);
+
+		if (tokens[0] == "}") {
+			setErrorPages(temp);
+			return true;
+		}
+
 		if (tokens.size() != 2 || tokens[0].size() != 3 || !Tools::isNumber(tokens[0]))
 			return false;
 
 		int httpCode = std::atoi(tokens[0].c_str());
 		if (!HttpTools::isValidHttpCode(httpCode))
 			return false;
-		
+
+		std::string path(tokens[1]);
+		if (!Tools::checkAndRemoveSemicolon(path))
+			return false;
+		temp.insert(std::make_pair(httpCode, path));
 	}
-	return true;
+	return false;
 }
 
 bool ServerBlockConfig::handleLocation(const std::vector<std::string>& tokens) {
@@ -179,6 +188,6 @@ void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 	
 	DirectiveHandler handler = it->second;
 	if (!(this->*handler)(tokens))
-		Tools::Exception(tokens[0] + " directive not valid");
+		throw Tools::Exception(tokens[0] + " directive not valid");
 }
 
