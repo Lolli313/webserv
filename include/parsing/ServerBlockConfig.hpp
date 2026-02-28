@@ -1,11 +1,13 @@
 #pragma once
 
+#include "DirectiveHandlers.hpp"
 #include "LocationConfig.hpp"
 #include "ConfigBase.hpp"
 #include "HttpTools.hpp"
 #include "Tools.hpp"
 
 #include <iostream>
+#include <algorithm>
 #include <cstdlib>
 #include <fstream>
 #include <limits>
@@ -17,7 +19,7 @@ class ServerBlockConfig : public ConfigBase
 {
 private:
 	std::string _port;
-	__uint8_t _duplicates;
+//	__uint8_t _duplicates;
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
 	std::ifstream& _infile;
@@ -26,14 +28,15 @@ private:
 
 	typedef	bool (ServerBlockConfig::*DirectiveHandler)(const std::vector<std::string>&);
 
-	static const std::map<std::string, DirectiveHandler> _handlers;
-	static const std::map<std::string, DirectiveHandler> _initHandlers();
+	static const std::map<std::string, DirectiveHandler> _serverHandlers;
+	static const std::map<std::string, DirectiveHandler> _locationHandlers;
+	static const std::map<std::string, DirectiveHandler> _initHandlers(bool forServer);
 
-	enum Flags {
-		NONE = 0x000,
-		LISTEN = 0x001,
-		RETURN = 0x002
-	};
+	// enum Flags {
+	// 	NONE = 0x000,
+	// 	LISTEN = 0x001,
+	// 	RETURN = 0x002
+	// };
 	
 public:
 	ServerBlockConfig(std::ifstream& infile);
@@ -42,14 +45,14 @@ public:
 
 	bool handleStartingBrace(bool startingBraceIncluded);
 	void handleDirectiveName(const std::string& line);
-	bool handleListen(const std::vector<std::string>& tokens);
-	bool handleServerName(const std::vector<std::string>& tokens);
-	bool handleRoot(const std::vector<std::string>& tokens);
-	bool handleIndex(const std::vector<std::string>& tokens);
-	bool handleAutoindex(const std::vector<std::string>& tokens);
-	bool handleClientMaxBodySize(const std::vector<std::string>& tokens);
-	bool handleErrorPage(const std::vector<std::string>& tokens);
-	bool handleLocation(const std::vector<std::string>& tokens);
-	bool handleAllowMethods(const std::vector<std::string>& tokens);
-	bool handleReturn(const std::vector<std::string>& tokens);
+	bool parseListen(const std::vector<std::string>& tokens);
+	bool parseServerName(const std::vector<std::string>& tokens);
+	bool parseRoot(const std::vector<std::string>& tokens);
+	bool parseIndex(const std::vector<std::string>& tokens);
+	bool parseAutoindex(const std::vector<std::string>& tokens);
+	bool parseClientMaxBodySize(const std::vector<std::string>& tokens);
+	bool parseErrorPage(const std::vector<std::string>& tokens);
+	bool parseLocation(const std::vector<std::string>& tokens);
+	bool parseAllowMethods(const std::vector<std::string>& tokens);
+	bool parseReturn(const std::vector<std::string>& tokens);
 };
