@@ -24,6 +24,8 @@ ServerBlockConfig::ServerBlockConfig(std::ifstream& infile) :
 		std::cout << line << std::endl;
 		if (line[0] == '#' || line.empty())
 			continue;
+		else if (line[0] == '}')
+			return;
 		handleDirectiveName(line);
 	}
 }
@@ -85,105 +87,72 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 */
 
 bool ServerBlockConfig::parseListen(const std::vector<std::string>& tokens) {
-	// std::string port(tokens[1]);
-	// if (tokens.size() != 2 || !Tools::checkAndRemoveSemicolon(port))
-	// 	return false;
-	// if (port.size() > 5 && !Tools::isNumber(port))
-	// 	return false;
-	// int portStr = std::atoi(port.c_str());
-	// if (portStr > std::numeric_limits<unsigned short>::max())
-	// 	return false;
-
-	// _port = portStr;
-	// return true;
 	DirectiveHandlers dh(_infile);
 	if (dh.handleListen(tokens)) {
 		_port = dh.getListen();
 		return true;
 	}
 	return false;
-
 }
 
 bool ServerBlockConfig::parseServerName(const std::vector<std::string>& tokens) {	
-	(void)tokens;
-	return true;
-}
-
-bool ServerBlockConfig::parseRoot(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return true;
-}
-
-bool ServerBlockConfig::parseIndex(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return true;
-}
-
-bool ServerBlockConfig::parseAutoindex(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return true;
-}
-
-bool ServerBlockConfig::parseClientMaxBodySize(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return true;
-}
-
-bool ServerBlockConfig::parseErrorPage(const std::vector<std::string>& tokens) {
 	DirectiveHandlers dh(_infile);
-	if (dh.handleErrorPage(tokens)) {
-		setErrorPages(dh.getErrorPages());
+	if (dh.handleServerName(tokens)) {
+		_serverNames = dh.getServerName();
 		return true;
 	}
 	return false;
-	
+}
+
+bool ServerBlockConfig::parseRoot(const std::vector<std::string>& tokens) {
+	if (handleRoot(tokens, _infile))
+		return true;
+	return false;
+}
+
+bool ServerBlockConfig::parseIndex(const std::vector<std::string>& tokens) {
+	if (handleIndex(tokens, _infile))
+		return true;
+	return false;
+}
+
+bool ServerBlockConfig::parseAutoindex(const std::vector<std::string>& tokens) {
+	if (handleAutoindex(tokens, _infile))
+		return true;
+	return false;
+}
+
+bool ServerBlockConfig::parseClientMaxBodySize(const std::vector<std::string>& tokens) {
+	if (handleClientMaxBodySize(tokens, _infile))
+		return true;
+	return false;
+}
+
+bool ServerBlockConfig::parseErrorPage(const std::vector<std::string>& tokens) {
+	if (handleErrorPage(tokens, _infile))
+		return true;
+	return false;
 }
 
 bool ServerBlockConfig::parseLocation(const std::vector<std::string>& tokens) {
-	(void)tokens;
 	DirectiveHandlers dh(_infile);
 	if (dh.handleLocation(tokens)) {
-		_locationConfigs = dh.getLocation();
+		_locationConfigs.insert(dh.getLocation());
 		return true;
 	}
-	return true;
-	// if (tokens.size() < 2 || tokens.size() > 3)
-	// 	return false;
-
-	// std::string path(tokens[1]);
-	// std::vector<std::string> tempTokens(tokens);
-	// std::vector<std::string>::iterator it = tempTokens.begin();
-	// std::advance(it, 1);
-	// tempTokens.erase(it);
-	// if (!Tools::isValidBraceFormat("location", tempTokens, _infile))
-	// 	return false;
-
-	// std::string line;
-	// while (std::getline(_infile, line)) {
-	// 	if (line.empty() || line[0] == '#')
-	// 		continue;
-
-	// 	std::cout << "line is: " << line << std::endl;
-	// 	std::vector<std::string> tokens = Tools::splitString(line);
-	// 	if (tokens[0] == "}")
-	// 		return true;
-
-		
-	// 	std::map<std::string, ServerBlockConfig::DirectiveHandler>::const_iterator it;
-	// 	it = _locationHandlers.find()
-	// }
-	// return true;
+	return false;
 }
 
 bool ServerBlockConfig::parseAllowMethods(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return true;
+	if (handleAllowMethods(tokens, _infile))
+		return true;
+	return false;
 }
 
 bool ServerBlockConfig::parseReturn(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return true;
+	if (handleReturn(tokens, _infile))
+		return true;
+	return false;
 }
 
 /*

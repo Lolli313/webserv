@@ -9,10 +9,12 @@
 class DirectiveHandlers : public ConfigBase
 {
 private:
+	std::ifstream& _infile;
 	std::string _port;
 	std::set<std::string> _serverNames;
-	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
-	std::ifstream& _infile;
+	std::string _locationPath;
+	LocationConfig _locationConfig;
+	// std::pair<std::string, LocationConfig> _locationConfig; // map<path, LocationConfig>
 	DirectiveHandlers();
 
 public:
@@ -21,18 +23,11 @@ public:
 
 	bool handleListen(const std::vector<std::string>& tokens);
 	bool handleServerName(const std::vector<std::string>& tokens);
-	bool handleRoot(const std::vector<std::string>& tokens);
-	bool handleIndex(const std::vector<std::string>& tokens);
-	bool handleAutoindex(const std::vector<std::string>& tokens);
-	bool handleClientMaxBodySize(const std::vector<std::string>& tokens);
-	bool handleErrorPage(const std::vector<std::string>& tokens);
 	bool handleLocation(const std::vector<std::string>& tokens);
-	bool handleAllowMethods(const std::vector<std::string>& tokens);
-	bool handleReturn(const std::vector<std::string>& tokens);
 
 	const std::string& getListen() const;
 	const std::set<std::string>& getServerName() const;
-	const std::map<std::string, LocationConfig>& getLocation() const;
+	const std::pair<std::string, LocationConfig> getLocation() const;
 
 	typedef	bool (DirectiveHandlers::*DirectiveHandler)(const std::vector<std::string>&);
 

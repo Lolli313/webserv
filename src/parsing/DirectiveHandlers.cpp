@@ -6,7 +6,7 @@
 =================================================================
 */
 
-DirectiveHandlers::DirectiveHandlers(std::ifstream& infile) : _infile(infile) {}
+DirectiveHandlers::DirectiveHandlers(std::ifstream& infile) : _infile(infile), _locationConfig(infile) {}
 
 DirectiveHandlers::~DirectiveHandlers() {}
 
@@ -26,7 +26,7 @@ const std::string& DirectiveHandlers::getListen() const { return _port; }
 
 const std::set<std::string>& DirectiveHandlers::getServerName() const { return _serverNames; }
 
-const std::map<std::string, LocationConfig>& DirectiveHandlers::getLocation() const { return _locationConfigs; }
+const std::pair<std::string, LocationConfig> DirectiveHandlers::getLocation() const { return std::make_pair(_locationPath, _locationConfig); }
 
 /*
 =================================================================
@@ -40,13 +40,9 @@ const std::map<std::string, DirectiveHandlers::DirectiveHandler> DirectiveHandle
 const std::map<std::string, DirectiveHandlers::DirectiveHandler> DirectiveHandlers::_initHandlers() {
 	std::map<std::string, DirectiveHandlers::DirectiveHandler> temp;
 
-	temp.insert(std::make_pair("root", &DirectiveHandlers::handleRoot));
-	temp.insert(std::make_pair("index", &DirectiveHandlers::handleIndex));
-	temp.insert(std::make_pair("autoindex", &DirectiveHandlers::handleAutoindex));
-	temp.insert(std::make_pair("client_max_body_size", &DirectiveHandlers::handleClientMaxBodySize));
-	temp.insert(std::make_pair("error_page", &DirectiveHandlers::handleErrorPage));
-	temp.insert(std::make_pair("allow_methods", &DirectiveHandlers::handleAllowMethods));
-	temp.insert(std::make_pair("return", &DirectiveHandlers::handleReturn));
+	temp.insert(std::make_pair("root", &DirectiveHandlers::handleListen));
+	temp.insert(std::make_pair("index", &DirectiveHandlers::handleServerName));
+	temp.insert(std::make_pair("autoindex", &DirectiveHandlers::handleLocation));
 
 	return temp;
 }
@@ -75,103 +71,22 @@ bool DirectiveHandlers::handleListen(const std::vector<std::string>& tokens) {
 
 bool DirectiveHandlers::handleServerName(const std::vector<std::string>& tokens) {
 	(void)tokens;
-	return false;
-}
-
-bool DirectiveHandlers::handleRoot(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return false;
-}
-
-bool DirectiveHandlers::handleIndex(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return false;
-}
-
-bool DirectiveHandlers::handleAutoindex(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return false;
-}
-
-bool DirectiveHandlers::handleClientMaxBodySize(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return false;
-}
-
-bool DirectiveHandlers::handleErrorPage(const std::vector<std::string>& tokens) {
-	if (!Tools::isValidBraceFormat("error_page", tokens, _infile))
-		return false;
-	std::map<int, std::string> temp;
-	std::string line;
-	while (std::getline(_infile, line)) {
-		if (line.empty() || line[0] == '#')
-			continue;
-
-		std::cout << "error page line is: " << line << std::endl;
-		std::vector<std::string> tokens = Tools::splitString(line);
-
-		if (tokens[0] == "}") {
-			setErrorPages(temp);
-			return true;
-		}
-
-		if (tokens.size() != 2 || tokens[0].size() != 3 || !Tools::isNumber(tokens[0]))
-			return false;
-
-		int httpCode = std::atoi(tokens[0].c_str());
-		if (!HttpTools::isValidHttpCode(httpCode))
-			return false;
-
-		std::string path(tokens[1]);
-		if (!Tools::checkAndRemoveSemicolon(path))
-			return false;
-		temp.insert(std::make_pair(httpCode, path));
-	}
-	return false;
+	return true;
 }
 
 bool DirectiveHandlers::handleLocation(const std::vector<std::string>& tokens) {
-	(void)tokens;
 	if (tokens.size() < 2 || tokens.size() > 3)
 		return false;
 
-	std::string path(tokens[1]);
+	_locationPath = tokens[1];
 	std::vector<std::string> tempTokens(tokens);
 	std::vector<std::string>::iterator it = tempTokens.begin();
 	std::advance(it, 1);
 	tempTokens.erase(it);
-	if (!Tools::isValidBraceFormat("location", tempTokens, _infile))
-		return false;
-
-	std::string line;
-	while (std::getline(_infile, line)) {
-		if (line.empty() || line[0] == '#')
-			continue;
-
-		std::cout << "location line is: " << line << std::endl;
-		std::vector<std::string> tokens = Tools::splitString(line);
-		if (tokens[0] == "}")
-			return true;
-
-		std::map<std::string, DirectiveHandlers::DirectiveHandler>::const_iterator it;
-		it = _locationHandlers.find(tokens[0]);
-		if (it == _locationHandlers.end())
-			return false;
-
-		DirectiveHandler handler = it->second;
-		if (!(this->*handler)(tokens))
-			return false;
+	LocationConfig lc(_infile);
+	if (lc.parseLocationBlock(tempTokens)) {
+		_locationConfig = lc.getLocation();
+		return true;
 	}
 	return false;
 }
-
-bool DirectiveHandlers::handleAllowMethods(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return true;
-}
-
-bool DirectiveHandlers::handleReturn(const std::vector<std::string>& tokens) {
-	(void)tokens;
-	return false;
-}
-
