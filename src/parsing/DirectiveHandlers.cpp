@@ -72,7 +72,15 @@ bool DirectiveHandlers::handleListen(const std::vector<std::string>& tokens) {
 }
 
 bool DirectiveHandlers::handleServerName(const std::vector<std::string>& tokens) {
-	(void)tokens;
+	if (tokens.size() < 2)
+		return false;
+
+	std::vector<std::string> parseTokens(tokens);
+	if (!Tools::checkAndRemoveSemicolon(parseTokens.back()))
+		return false;
+
+	parseTokens.erase(parseTokens.begin());
+	_serverNames = std::set<std::string>(parseTokens.begin(), parseTokens.end());
 	return true;
 }
 
