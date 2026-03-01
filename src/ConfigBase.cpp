@@ -288,7 +288,22 @@ bool ConfigBase::handleAllowMethods(const std::vector<std::string>& tokens, std:
 }
 
 bool ConfigBase::handleReturn(const std::vector<std::string>& tokens, std::ifstream& infile) {
-	(void)tokens;
 	(void)infile;
+	if (tokens.size() != 3)
+		return false;
+
+	std::vector<std::string> parseTokens(tokens);
+	if (!Tools::checkAndRemoveSemicolon(parseTokens.back()))
+		return false;
+
+	parseTokens.erase(parseTokens.begin());
+	std::string temp(parseTokens[0]);
+	if (temp.size() != 3 || !Tools::isNumber(temp))
+		return false;
+
+	int httpCode = std::atoi(temp.c_str());
+	if (httpCode < 300 || httpCode > 599)
+		return false;
+
 	return true;
 }
