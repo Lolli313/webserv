@@ -81,6 +81,37 @@ bool ConfigBase::handleClientMaxBodySize(const std::vector<std::string>& tokens,
 }
 
 bool ConfigBase::handleErrorPage(const std::vector<std::string>& tokens, std::ifstream& infile) {
+	if (tokens.size() > 2)
+		return handleErrorOneLiner(tokens);
+	else
+		return handleErrorMultiLiner(tokens, infile);
+}
+
+bool ConfigBase::handleErrorOneLiner(const std::vector<std::string>& tokens) {
+	std::vector<std::string> parseTokens(tokens);
+	std::string errorPagePath(parseTokens.back());
+	if (!Tools::checkAndRemoveSemicolon(errorPagePath))
+		return false;
+
+	// erase first ("error_page") and last elements (errorPagePath)
+	parseTokens.erase(parseTokens.end() - 1);
+	parseTokens.erase(parseTokens.begin());
+	
+	std::map<int, std::string> errorPages;
+	for (std::vector<std::string>::const_iterator it = parseTokens.begin(); it != parseTokens.end(); it++) {
+		std::string temp = *it;
+		if (temp.size() != 3 || !Tools::isNumber(temp))
+			return false;
+
+		int httpCode = std::atoi(temp.c_str());
+		if (!HttpTools::isValidHttpCode(httpCode))
+			return false;
+		errorPages.insert(std::make_pair(httpCode, errorPagePath));
+	}
+	return true;
+}
+
+bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string>& tokens, std::ifstream& infile) {
 	if (!Tools::isValidBraceFormat("error_page", tokens, infile))
 		return false;
 	std::map<int, std::string> temp;

@@ -47,5 +47,6 @@ public:
 	bool handleAllowMethods(const std::vector<std::string>& tokens, std::ifstream& infile);
 	bool handleReturn(const std::vector<std::string>& tokens, std::ifstream& infile);
 
-
+	bool handleErrorOneLiner(const std::vector<std::string>& tokens);
+	bool handleErrorMultiLiner(const std::vector<std::string>& tokens, std::ifstream& infile);
 };
