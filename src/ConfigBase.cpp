@@ -270,8 +270,20 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string>& tokens, s
 }
 
 bool ConfigBase::handleAllowMethods(const std::vector<std::string>& tokens, std::ifstream& infile) {
-	(void)tokens;
 	(void)infile;
+	if (tokens.size() < 2)
+		return false;
+
+	std::vector<std::string> parseTokens(tokens);
+	if (!Tools::checkAndRemoveSemicolon(parseTokens.back()))
+		return false;
+
+	parseTokens.erase(parseTokens.begin());
+	std::vector<std::string>::iterator it = parseTokens.begin();
+	for (; it != parseTokens.end(); it++) {
+		if (!HttpTools::isValidMethod(*it))
+			return false;
+	}
 	return true;
 }
 
