@@ -57,8 +57,16 @@ void ConfigBase::setReturnDirective(const std::pair<int, std::string> &src) { _r
 */
 
 bool ConfigBase::handleRoot(const std::vector<std::string>& tokens, std::ifstream& infile) {
-	(void)tokens;
 	(void)infile;
+	if (tokens.size() != 2)
+		return false;
+
+	std::vector<std::string> parseTokens(tokens);
+	if (!Tools::checkAndRemoveSemicolon(parseTokens[1]))
+		return false;
+
+	parseTokens.erase(parseTokens.begin());
+	setRoot(parseTokens[0]);
 	return true;
 }
 
