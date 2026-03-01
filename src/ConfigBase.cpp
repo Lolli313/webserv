@@ -39,7 +39,7 @@ const std::vector<std::string> &ConfigBase::getIndex() const { return _index; }
 bool ConfigBase::getAutoIndex() const { return _autoindex; }
 long ConfigBase::getClientMaxBodySize() const { return _clientMaxBodySize; }
 const std::map<int, std::string> &ConfigBase::getErrorPages() const { return _errorPages; }
-const std::set<httpMethods> &ConfigBase::getAllowMethods() const { return _allowedMethods; }
+const std::set<std::string> &ConfigBase::getAllowMethods() const { return _allowedMethods; }
 const std::pair<int, std::string> &ConfigBase::getReturnDirective() const { return _returnDirective; }
 
 void ConfigBase::setRoot(const std::string& src){ _root = src; }
@@ -47,7 +47,7 @@ void ConfigBase::setIndex(const std::vector<std::string>& src){ _index = src; }
 void ConfigBase::setAutoIndex(bool src){ _autoindex = src; }
 void ConfigBase::setClientMaxBodySize(long src){ _clientMaxBodySize = src; }
 void ConfigBase::setErrorPages(const std::map<int, std::string> &src){ _errorPages = src; }
-void ConfigBase::setAllowMethods(const std::set<httpMethods> &src){ _allowedMethods = src; }
+void ConfigBase::setAllowMethods(const std::set<std::string> &src){ _allowedMethods = src; }
 void ConfigBase::setReturnDirective(const std::pair<int, std::string> &src) { _returnDirective = src; }
 
 /*
@@ -153,8 +153,7 @@ bool ConfigBase::handleMaxSizeConversion(std::string& maxSize) {
 		resultMaxSize = std::atol(maxSize.c_str());
 		if (resultMaxSize > std::numeric_limits<unsigned int>::max())
 			throw Tools::Exception("clientMaxBodySize value too big");
-	}
-	
+	}	
 	setClientMaxBodySize(resultMaxSize);
 	return true;
 }
@@ -279,17 +278,20 @@ bool ConfigBase::handleAllowMethods(const std::vector<std::string>& tokens, std:
 		return false;
 
 	parseTokens.erase(parseTokens.begin());
+	std::set<std::string> allowedMethods;
 	std::vector<std::string>::iterator it = parseTokens.begin();
 	for (; it != parseTokens.end(); it++) {
 		if (!HttpTools::isValidMethod(*it))
 			return false;
+		allowedMethods.insert(*it);
 	}
+	setAllowMethods(allowedMethods);
 	return true;
 }
 
 bool ConfigBase::handleReturn(const std::vector<std::string>& tokens, std::ifstream& infile) {
 	(void)infile;
-	if (tokens.size() != 3)
+	if (tokens.size() < 2 || tokens.size() > 3)
 		return false;
 
 	std::vector<std::string> parseTokens(tokens);
@@ -305,5 +307,9 @@ bool ConfigBase::handleReturn(const std::vector<std::string>& tokens, std::ifstr
 	if (httpCode < 300 || httpCode > 599)
 		return false;
 
+	std::string path("");
+	if (parseTokens.size() > 1)
+		path = parseTokens[1];
+	setReturnDirective(std::make_pair(httpCode, path));
 	return true;
 }

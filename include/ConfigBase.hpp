@@ -42,7 +42,7 @@ private:
 	bool _autoindex;
 	long _clientMaxBodySize;
 	std::map<int, std::string> _errorPages;
-	std::set<httpMethods> _allowedMethods;
+	std::set<std::string> _allowedMethods;
 	std::pair<int, std::string> _returnDirective;
 
 	static const bitmask_t _allowedBits = MASK_K | MASK_M | MASK_G;
@@ -69,7 +69,7 @@ public:
 	bool getAutoIndex() const;
 	long getClientMaxBodySize() const;
 	const std::map<int, std::string>& getErrorPages() const;
-	const std::set<httpMethods>& getAllowMethods() const;
+	const std::set<std::string>& getAllowMethods() const;
 	const std::pair<int, std::string> &getReturnDirective() const;
 
 	void setRoot(const std::string& src);
@@ -77,7 +77,7 @@ public:
 	void setAutoIndex(bool src);
 	void setClientMaxBodySize(long src);
 	void setErrorPages(const std::map<int, std::string> &src);
-	void setAllowMethods(const std::set<httpMethods> &src);
+	void setAllowMethods(const std::set<std::string> &src);
     void setReturnDirective(const std::pair<int, std::string> &src);
 
 	bool handleRoot(const std::vector<std::string>& tokens, std::ifstream& infile);
