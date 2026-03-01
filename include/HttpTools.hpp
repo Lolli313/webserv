@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <set>
 
 #define DEFAULT_PORT 80
 #define DEFAULT_PATH "/" // ROOT
@@ -13,7 +14,7 @@
 
 enum httpMethods
 {
-  OPTION,
+  OPTIONS,
   GET,
   HEAD,
   POST,
@@ -33,11 +34,15 @@ public:
     HttpTools &operator=(const HttpTools &obj);
     ~HttpTools();
 
-    static const MapType& getMap();
+    static const MapType& getHttpCodes();
     static bool isValidHttpCode(int code);
+
+    static const std::set<std::string>& getMethods();
+    static bool isValidMethod(const std::string& method);
 
 private:
     static void initHttpCodes(HttpTools::MapType& httpCodes);
+    static void initMethods(std::set<std::string>& methods);
 };
 
 #endif

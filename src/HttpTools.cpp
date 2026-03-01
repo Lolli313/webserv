@@ -32,11 +32,11 @@ HttpTools &HttpTools::operator=(const HttpTools &obj)
 
 /*
 =================================================================
-===== METHODS ===================================================
+===== STATIC INITIALIZIONS  =====================================
 =================================================================
 */
 
-const HttpTools::MapType& HttpTools::getMap() {
+const HttpTools::MapType& HttpTools::getHttpCodes() {
 	static HttpTools::MapType httpCodes;
 	if (httpCodes.empty())
 		initHttpCodes(httpCodes);
@@ -44,7 +44,7 @@ const HttpTools::MapType& HttpTools::getMap() {
 }
 
 bool HttpTools::isValidHttpCode(int code) {
-	const HttpTools::MapType& temp = getMap();
+	const HttpTools::MapType& temp = getHttpCodes();
 	return !(temp.find(code) == temp.end());
 }
 
@@ -121,4 +121,33 @@ void HttpTools::initHttpCodes(HttpTools::MapType& httpCodes) {
     httpCodes[510] = "Not Extended";
     httpCodes[511] = "Network Authentication Required";
 }
+
+const std::set<std::string>& HttpTools::getMethods() {
+    static std::set<std::string> methods;
+    if (methods.empty())
+        initMethods(methods);
+    return methods;
+}
+
+bool HttpTools::isValidMethod(const std::string& method) {
+    const std::set<std::string> temp = getMethods();
+    return !(temp.find(method) == temp.end());
+}
+
+void HttpTools::initMethods(std::set<std::string>& methods) {
+    methods.insert("OPTIONS");
+    methods.insert("GET");
+    methods.insert("HEAD");
+    methods.insert("POST");
+    methods.insert("PUT");
+    methods.insert("DELETE");
+    methods.insert("TRACE");
+    methods.insert("CONNECT");
+}
+
+/*
+=================================================================
+===== METHODS ===================================================
+=================================================================
+*/
 
