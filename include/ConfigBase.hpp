@@ -12,7 +12,7 @@ class ConfigBase
 {
 private:
 	std::string _root;
-	std::string _index;
+	std::vector<std::string> _index;
 	bool _autoindex;
 	long _clientMaxBodySize;
 	std::map<int, std::string> _errorPages;
@@ -24,7 +24,7 @@ public:
 	virtual ~ConfigBase() = 0;
 
 	const std::string& getRoot() const;
-	const std::string& getIndex() const;
+	const std::vector<std::string>& getIndex() const;
 	bool getAutoIndex() const;
 	long getClientMaxBodySize() const;
 	const std::map<int, std::string>& getErrorPages() const;
@@ -32,7 +32,7 @@ public:
 	const std::pair<int, std::string> &getReturnDirective() const;
 
 	void setRoot(const std::string& src);
-	void setIndex(const std::string& src);
+	void setIndex(const std::vector<std::string>& src);
 	void setAutoIndex(bool src);
 	void setClientMaxBodySize(long src);
 	void setErrorPages(const std::map<int, std::string> &src);

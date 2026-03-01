@@ -35,7 +35,7 @@ ConfigBase& ConfigBase::operator=(const ConfigBase &obj) {
 */
 
 const std::string &ConfigBase::getRoot() const { return _root; }
-const std::string &ConfigBase::getIndex() const { return _index; }
+const std::vector<std::string> &ConfigBase::getIndex() const { return _index; }
 bool ConfigBase::getAutoIndex() const { return _autoindex; }
 long ConfigBase::getClientMaxBodySize() const { return _clientMaxBodySize; }
 const std::map<int, std::string> &ConfigBase::getErrorPages() const { return _errorPages; }
@@ -43,7 +43,7 @@ const std::set<httpMethods> &ConfigBase::getAllowMethods() const { return _allow
 const std::pair<int, std::string> &ConfigBase::getReturnDirective() const { return _returnDirective; }
 
 void ConfigBase::setRoot(const std::string& src){ _root = src; }
-void ConfigBase::setIndex(const std::string& src){ _index = src; }
+void ConfigBase::setIndex(const std::vector<std::string>& src){ _index = src; }
 void ConfigBase::setAutoIndex(bool src){ _autoindex = src; }
 void ConfigBase::setClientMaxBodySize(long src){ _clientMaxBodySize = src; }
 void ConfigBase::setErrorPages(const std::map<int, std::string> &src){ _errorPages = src; }
@@ -109,6 +109,7 @@ bool ConfigBase::handleErrorOneLiner(const std::vector<std::string>& tokens) {
 
 		errorPages.insert(std::make_pair(httpCode, errorPagePath));
 	}
+	setErrorPages(errorPages);
 	return true;
 }
 
@@ -122,7 +123,7 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string>& tokens, s
 		if (line.empty() || line[0] == '#')
 			continue;
 
-		std::cout << "error page line is: " << line << std::endl;
+		std::cout << line << std::endl;
 		std::vector<std::string> tokens = Tools::splitString(line);
 
 		if (tokens[0] == "}") {
