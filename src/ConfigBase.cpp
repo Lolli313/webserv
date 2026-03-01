@@ -71,8 +71,16 @@ bool ConfigBase::handleRoot(const std::vector<std::string>& tokens, std::ifstrea
 }
 
 bool ConfigBase::handleIndex(const std::vector<std::string>& tokens, std::ifstream& infile) {
-	(void)tokens;
 	(void)infile;
+	if (tokens.size() < 2)
+		return false;
+
+	std::vector<std::string> parseTokens(tokens);
+	if (!Tools::checkAndRemoveSemicolon(parseTokens.back()))
+		return false;
+
+	parseTokens.erase(parseTokens.begin());
+	setIndex(parseTokens);
 	return true;
 }
 
