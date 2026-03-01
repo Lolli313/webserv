@@ -85,8 +85,22 @@ bool ConfigBase::handleIndex(const std::vector<std::string>& tokens, std::ifstre
 }
 
 bool ConfigBase::handleAutoindex(const std::vector<std::string>& tokens, std::ifstream& infile) {
-	(void)tokens;
 	(void)infile;
+	if (tokens.size() != 2)
+		return false;
+
+	std::vector<std::string> parseTokens(tokens);
+	if (!Tools::checkAndRemoveSemicolon(parseTokens[1]))
+		return false;
+
+	std::string autoindexArgument(parseTokens[1]);
+	if (autoindexArgument == "on")
+		setAutoIndex(true);
+	else if (autoindexArgument == "off")
+		setAutoIndex(false);
+	else
+		return false;
+
 	return true;
 }
 
