@@ -29,8 +29,7 @@ private:
 	typedef	bool (ServerBlockConfig::*DirectiveHandler)(const std::vector<std::string>&);
 
 	static const std::map<std::string, DirectiveHandler> _serverHandlers;
-	static const std::map<std::string, DirectiveHandler> _locationHandlers;
-	static const std::map<std::string, DirectiveHandler> _initHandlers(bool forServer);
+	static const std::map<std::string, DirectiveHandler> _initHandlers();
 
 	// enum Flags {
 	// 	NONE = 0x000,

@@ -16,8 +16,6 @@ ServerBlockConfig::ServerBlockConfig(std::ifstream& infile) :
 //	_duplicates(NONE),
 	_infile(infile)
 	{
-//	_initDH(_infile);
-	std::cout << "Hello from inside the ServerBlockConfig" << std::endl;
 	std::string line;
 
 	while (std::getline(_infile, line)) {
@@ -56,19 +54,14 @@ ServerBlockConfig &ServerBlockConfig::operator=(const ServerBlockConfig &obj)
 */
 
 const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConfig::_serverHandlers
-	= ServerBlockConfig::_initHandlers(true);
+	= ServerBlockConfig::_initHandlers();
 
-const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConfig::_locationHandlers
-	= ServerBlockConfig::_initHandlers(false);
-
-const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConfig::_initHandlers(bool forServer) {
+const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConfig::_initHandlers() {
 	std::map<std::string, ServerBlockConfig::DirectiveHandler> temp;
 
-	if (forServer) {
-		temp.insert(std::make_pair("listen", &ServerBlockConfig::parseListen));
-		temp.insert(std::make_pair("server_name", &ServerBlockConfig::parseServerName));
-		temp.insert(std::make_pair("location", &ServerBlockConfig::parseLocation));
-	}
+	temp.insert(std::make_pair("listen", &ServerBlockConfig::parseListen));
+	temp.insert(std::make_pair("server_name", &ServerBlockConfig::parseServerName));
+	temp.insert(std::make_pair("location", &ServerBlockConfig::parseLocation));
 	temp.insert(std::make_pair("root", &ServerBlockConfig::parseRoot));
 	temp.insert(std::make_pair("index", &ServerBlockConfig::parseIndex));
 	temp.insert(std::make_pair("autoindex", &ServerBlockConfig::parseAutoindex));
