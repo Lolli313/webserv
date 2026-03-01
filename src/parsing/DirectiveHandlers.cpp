@@ -40,9 +40,9 @@ const std::map<std::string, DirectiveHandlers::DirectiveHandler> DirectiveHandle
 const std::map<std::string, DirectiveHandlers::DirectiveHandler> DirectiveHandlers::_initHandlers() {
 	std::map<std::string, DirectiveHandlers::DirectiveHandler> temp;
 
-	temp.insert(std::make_pair("root", &DirectiveHandlers::handleListen));
-	temp.insert(std::make_pair("index", &DirectiveHandlers::handleServerName));
-	temp.insert(std::make_pair("autoindex", &DirectiveHandlers::handleLocation));
+	temp.insert(std::make_pair("listen", &DirectiveHandlers::handleListen));
+	temp.insert(std::make_pair("server_name", &DirectiveHandlers::handleServerName));
+	temp.insert(std::make_pair("location", &DirectiveHandlers::handleLocation));
 
 	return temp;
 }
@@ -62,7 +62,9 @@ bool DirectiveHandlers::handleListen(const std::vector<std::string>& tokens) {
 		return false;
 
 	int portStr = std::atoi(port.c_str());
-	if (portStr > std::numeric_limits<unsigned short>::max())
+
+	// unsigned short max is 65535
+	if (portStr <= 0 || portStr > std::numeric_limits<unsigned short>::max())
 		return false;
 
 	_port = portStr;

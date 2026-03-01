@@ -1,12 +1,11 @@
 #pragma once
 
 #include "LocationConfig.hpp"
-#include "ConfigBase.hpp"
 
 #include <cstdlib>
 #include <limits>
 
-class DirectiveHandlers : public ConfigBase
+class DirectiveHandlers
 {
 private:
 	std::ifstream& _infile;
@@ -14,7 +13,6 @@ private:
 	std::set<std::string> _serverNames;
 	std::string _locationPath;
 	LocationConfig _locationConfig;
-	// std::pair<std::string, LocationConfig> _locationConfig; // map<path, LocationConfig>
 	DirectiveHandlers();
 
 public:
