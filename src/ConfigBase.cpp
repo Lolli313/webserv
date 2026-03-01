@@ -104,8 +104,9 @@ bool ConfigBase::handleErrorOneLiner(const std::vector<std::string>& tokens) {
 			return false;
 
 		int httpCode = std::atoi(temp.c_str());
-		if (!HttpTools::isValidHttpCode(httpCode))
+		if (httpCode < 300 || httpCode > 599)
 			return false;
+
 		errorPages.insert(std::make_pair(httpCode, errorPagePath));
 	}
 	return true;
@@ -114,6 +115,7 @@ bool ConfigBase::handleErrorOneLiner(const std::vector<std::string>& tokens) {
 bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string>& tokens, std::ifstream& infile) {
 	if (!Tools::isValidBraceFormat("error_page", tokens, infile))
 		return false;
+
 	std::map<int, std::string> temp;
 	std::string line;
 	while (std::getline(infile, line)) {
@@ -132,12 +134,13 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string>& tokens, s
 			return false;
 
 		int httpCode = std::atoi(tokens[0].c_str());
-		if (!HttpTools::isValidHttpCode(httpCode))
+		if (httpCode < 300 || httpCode > 599)
 			return false;
 
 		std::string path(tokens[1]);
 		if (!Tools::checkAndRemoveSemicolon(path))
 			return false;
+
 		temp.insert(std::make_pair(httpCode, path));
 	}
 	return false;
