@@ -80,11 +80,10 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 	if (tmpClient)
 	{
-		HttpRequest request(tmpClient);
-		HttpMethod
-		// Call HttpRequest parser
-		// Call the HttpMethod
-		// Send the response
+		// HttpRequest request(tmpClient);
+		// HttpMethod method(request);
+		// HttpResponse response(method);
+		// return response;
 	}
 	else
 	{

@@ -14,14 +14,14 @@
 
 enum httpMethods
 {
-  OPTIONS,
-  GET,
-  HEAD,
-  POST,
-  PUT,
-  DELETE,
-  TRACE,
-  CONNECT
+    OPTIONS,
+    GET,
+    HEAD,
+    POST,
+    PUT,
+    DELETE,
+    TRACE,
+    CONNECT
 };
 
 class HttpTools
@@ -34,20 +34,21 @@ public:
     HttpTools &operator=(const HttpTools &obj);
     ~HttpTools();
 
-    static const MapType& getHttpCodes();
-    static const std::string& getHttpReturnMessage(int code);
+    static const std::pair<int, const std::string &> getReturnPair(int code);
+    static const MapType &getHttpCodes();
+    static const std::string &getHttpReturnMessage(int code);
     static bool isValidHttpCode(int code);
 
-    static const std::set<std::string>& getMethods();
-    static bool isValidMethod(const std::string& method);
+    static const std::set<std::string> &getMethods();
+    static bool isValidMethod(const std::string &method);
 
-    static const std::set<std::string>& getHttpRequestHeaders();
-    static bool isValidHttpRequestHeader(const std::string& header);
+    static const std::set<std::string> &getHttpRequestHeaders();
+    static bool isValidHttpRequestHeader(const std::string &header);
 
 private:
-    static void initHttpCodes(HttpTools::MapType& httpCodes);
-    static void initMethods(std::set<std::string>& methods);
-    static void initHttpRequestHeaders(std::set<std::string>& httpHeaders);
+    static void initHttpCodes(HttpTools::MapType &httpCodes);
+    static void initMethods(std::set<std::string> &methods);
+    static void initHttpRequestHeaders(std::set<std::string> &httpHeaders);
 };
 
 #endif
