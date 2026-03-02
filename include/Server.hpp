@@ -20,11 +20,13 @@ private:
 	int _port;
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
-	
+
+	std::ifstream _magicIfstream; // workaround to Arttu's neuro stubborn mind.
+
 	Server &operator=(const Server &obj);
 	Server();
-	
-public:	
+
+public:
 	Server(const Server &obj);
 	Server(const std::string &port);
 	~Server();
@@ -34,6 +36,7 @@ public:
 	const std::set<std::string> &getServerNames() const;
 	const ServerSocket &getServSocket() const;
 	const std::map<std::string, LocationConfig> &getLocationConfigs() const;
+	const LocationConfig &getPathConfig(const std::string &path) const;
 };
 
 #endif

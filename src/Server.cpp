@@ -6,21 +6,23 @@
 =================================================================
 */
 
-Server::Server(const std::string &port) : _servSocket(port), _port(std::atoi(port.c_str())) {
+Server::Server(const std::string &port) : _servSocket(port), _port(std::atoi(port.c_str())), ConfigBase(*this)
+{
 	std::cout << GREEN << "Server constructor for _servSocketFD = " << _servSocket.getServSockFD() << std::endl;
-	std::cout  << "Server constructor for _port = " << _port << RESET << std::endl;
+	std::cout << "Server constructor for _port = " << _port << RESET << std::endl;
 }
 
-Server::Server(const Server &obj) :
-	_servSocket(obj.getServSocket()),
-	_port(obj.getPort()),
-	_serverNames(obj.getServerNames()),
-	_locationConfigs(obj.getLocationConfigs()) 
-	{
-		std::cout << BLUE << "Server copy constructor" << RESET << std::endl;
-	}
+Server::Server(const Server &obj) : _servSocket(obj.getServSocket()),
+									_port(obj.getPort()),
+									_serverNames(obj.getServerNames()),
+									_locationConfigs(obj.getLocationConfigs()),
+									ConfigBase(*this)
+{
+	std::cout << BLUE << "Server copy constructor" << RESET << std::endl;
+}
 
-Server::~Server() {
+Server::~Server()
+{
 	std::cout << RED << "Calling Server's destructor" << RESET << std::endl;
 }
 
@@ -32,9 +34,27 @@ Server::~Server() {
 
 int Server::getPort() const { return _port; }
 int Server::getServSockFD() const { return _servSocket.getServSockFD(); }
-const std::set<std::string>& Server::getServerNames() const { return _serverNames; }
+const std::set<std::string> &Server::getServerNames() const { return _serverNames; }
 const ServerSocket &Server::getServSocket() const { return _servSocket; }
-const std::map<std::string, LocationConfig>& Server::getLocationConfigs() const { return _locationConfigs; }
+const std::map<std::string, LocationConfig> &Server::getLocationConfigs() const { return _locationConfigs; }
+
+/** @brief Access directly to the path's config, abstracting all the different locationConfigs and the Server's.
+ * @return A LocationConfig reference, so all the methods and data are directly accessible. */
+const LocationConfig &Server::getPathConfig(const std::string &path) const
+{
+	std::map<std::string, LocationConfig>::const_iterator it = _locationConfigs.find(path);
+	if (it != _locationConfigs.end())
+		return LocationConfig(it->second);
+	// HERE =========================================================================================================================
+	//
+	//
+	//
+	return LocationConfig(static_cast<const ConfigBase &>(*this), _magicIfstream);
+	//
+	//
+	//
+	// ==============================================================================================================================
+}
 
 /*
 =================================================================
