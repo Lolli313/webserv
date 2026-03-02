@@ -35,14 +35,19 @@ public:
     ~HttpTools();
 
     static const MapType& getHttpCodes();
+    static const std::string& getHttpReturnMessage(int code);
     static bool isValidHttpCode(int code);
 
     static const std::set<std::string>& getMethods();
     static bool isValidMethod(const std::string& method);
 
+    static const std::set<std::string>& getHttpRequestHeaders();
+    static bool isValidHttpRequestHeader(const std::string& header);
+
 private:
     static void initHttpCodes(HttpTools::MapType& httpCodes);
     static void initMethods(std::set<std::string>& methods);
+    static void initHttpRequestHeaders(std::set<std::string>& httpHeaders);
 };
 
 #endif

@@ -48,7 +48,17 @@ bool HttpTools::isValidHttpCode(int code) {
 	return !(temp.find(code) == temp.end());
 }
 
+const std::string& HttpTools::getHttpReturnMessage(int code) {
+    const HttpTools::MapType& temp = getHttpCodes();
+    HttpTools::MapType::const_iterator it = temp.find(code);
+    (it == temp.end()) ? temp.find(0)->second : it->second;
+}
+
+
 void HttpTools::initHttpCodes(HttpTools::MapType& httpCodes) {
+    // If code not found
+    httpCodes[0] = "";
+
     // 1xx Informational
     httpCodes[100] = "Continue";
     httpCodes[101] = "Switching Protocols";
@@ -143,6 +153,40 @@ void HttpTools::initMethods(std::set<std::string>& methods) {
     methods.insert("DELETE");
     methods.insert("TRACE");
     methods.insert("CONNECT");
+}
+
+const std::set<std::string>& HttpTools::getHttpRequestHeaders() {
+    static std::set<std::string> httpRequestHeaders;
+    if (httpRequestHeaders.empty())
+        initHttpRequestHeaders(httpRequestHeaders);
+    return httpRequestHeaders;
+}
+
+bool HttpTools::isValidHttpRequestHeader(const std::string& header) {
+    const std::set<std::string> temp = getHttpRequestHeaders();
+    return !(temp.find(header) == temp.end());
+}
+
+void HttpTools::initHttpRequestHeaders(std::set<std::string>& httpRequestHeaders) {
+    httpRequestHeaders.insert("Accept");
+    httpRequestHeaders.insert("Accept-Charset");
+    httpRequestHeaders.insert("Accept-Encoding");
+    httpRequestHeaders.insert("Accept-Language");
+    httpRequestHeaders.insert("Authorization");
+    httpRequestHeaders.insert("Expect");
+    httpRequestHeaders.insert("From");
+    httpRequestHeaders.insert("Host");
+    httpRequestHeaders.insert("If-Match");
+    httpRequestHeaders.insert("If-Modified");
+    httpRequestHeaders.insert("If-None-Match");
+    httpRequestHeaders.insert("If-None-Range");
+    httpRequestHeaders.insert("If-Unmodified-Since");
+    httpRequestHeaders.insert("Max-Forwards");
+    httpRequestHeaders.insert("Proxy-Authorization");
+    httpRequestHeaders.insert("Range");
+    httpRequestHeaders.insert("Referer");
+    httpRequestHeaders.insert("TE");
+    httpRequestHeaders.insert("User-Agent");
 }
 
 /*
