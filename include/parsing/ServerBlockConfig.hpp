@@ -54,4 +54,6 @@ public:
 	bool parseLocation(const std::vector<std::string>& tokens);
 	bool parseAllowMethods(const std::vector<std::string>& tokens);
 	bool parseReturn(const std::vector<std::string>& tokens);
+
+	void printData() const;
 };

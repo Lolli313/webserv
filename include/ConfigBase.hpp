@@ -94,4 +94,6 @@ public:
 
 	unsigned int expandMaskedString(std::string& src, bitmask_t foundBit);
 	bitmask_t charToBit(char c);
+
+	void printData() const;
 };

@@ -244,7 +244,7 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string>& tokens, s
 		if (line.empty() || line[0] == '#')
 			continue;
 
-		std::cout << line << std::endl;
+		// std::cout << line << std::endl;
 		std::vector<std::string> tokens = Tools::splitString(line);
 
 		if (tokens[0] == "}") {
@@ -312,4 +312,38 @@ bool ConfigBase::handleReturn(const std::vector<std::string>& tokens, std::ifstr
 		path = parseTokens[1];
 	setReturnDirective(std::make_pair(httpCode, path));
 	return true;
+}
+
+void ConfigBase::printData() const {
+	std::cout << "Root: " << getRoot() << std::endl;
+
+	std::cout << "Indexes: ";
+	std::vector<std::string>::const_iterator indexit = getIndex().begin();
+	for (;indexit != getIndex().end(); indexit++) {
+		std::cout << *indexit << ", ";
+	}
+	std::cout << std::endl;
+	
+	std::cout << "autoindex: " << getAutoIndex() << std::endl;
+
+	std::cout << "clientMaxBodySize: " << getClientMaxBodySize() << std::endl;
+
+	std::cout << "error pages: ";
+	std::map<int, std::string>::const_iterator errorit = getErrorPages().begin();
+	for (;errorit != getErrorPages().end(); errorit++) {
+		std::cout << errorit->first << ", " << errorit->second << std::endl;
+	}
+	std::cout << std::endl;
+
+	std::cout << "allow methods: ";
+	std::set<std::string>::const_iterator allowMethodit = getAllowMethods().begin();
+	for (;allowMethodit != getAllowMethods().end(); allowMethodit++) {
+		std::cout << *allowMethodit << ", ";
+	}
+	std::cout << std::endl;
+
+	std::cout << "return directive: ";
+	std::cout << getReturnDirective().first << ", ";
+	std::cout << ((getReturnDirective().second.empty()) ? "\"\"" : getReturnDirective().second);
+	std::cout << std::endl;
 }

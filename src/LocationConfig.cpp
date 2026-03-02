@@ -83,7 +83,7 @@ bool LocationConfig::parseLocationBlock(const std::vector<std::string>& tokens) 
 		if (line.empty() || line[0] == '#')
 			continue;
 
-		std::cout << line << std::endl;
+		// std::cout << line << std::endl;
 		std::vector<std::string> tokens = Tools::splitString(line);
 		if (tokens[0] == "}")
 			return true;
@@ -98,4 +98,9 @@ bool LocationConfig::parseLocationBlock(const std::vector<std::string>& tokens) 
 			return false;
 	}
 	return false;
+}
+
+void LocationConfig::printData() const {
+	
+	ConfigBase::printData();
 }

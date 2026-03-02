@@ -29,4 +29,6 @@ public:
 
 	static const std::map<std::string, DirectiveHandler> _locationHandlers;
 	static const std::map<std::string, DirectiveHandler> _initHandlers();
+
+	void printData() const;
 };

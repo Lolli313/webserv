@@ -100,3 +100,8 @@ bool DirectiveHandlers::handleLocation(const std::vector<std::string>& tokens) {
 	}
 	return false;
 }
+
+void DirectiveHandlers::printData() const {
+	std::cout << "Location path: " << _locationPath << std::endl;
+	_locationConfig.printData();
+}

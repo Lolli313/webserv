@@ -19,13 +19,14 @@ ServerBlockConfig::ServerBlockConfig(std::ifstream& infile) :
 	std::string line;
 
 	while (std::getline(_infile, line)) {
-		std::cout << line << std::endl;
+		// std::cout << line << std::endl;
 		if (line[0] == '#' || line.empty())
 			continue;
 		else if (line[0] == '}')
 			return;
 		handleDirectiveName(line);
 	}
+	printData();
 }
 
 /*
@@ -178,5 +179,19 @@ void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 	DirectiveHandler handler = it->second;
 	if (!(this->*handler)(tokens))
 		throw Tools::Exception(tokens[0] + " directive not valid");
+}
+
+void ServerBlockConfig::printData() const {
+	std::cout << "port: " << _port << std::endl;
+
+	std::cout << "server names: ";
+	std::set<std::string>::const_iterator it = _serverNames.begin();
+	for (; it != _serverNames.end(); it++) {
+		std::cout << *it << ", ";
+	}
+	std::cout << std::endl;
+	
+	ConfigBase::printData();
+	
 }
 
