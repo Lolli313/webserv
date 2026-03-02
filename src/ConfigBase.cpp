@@ -347,3 +347,25 @@ void ConfigBase::printData() const {
 	std::cout << ((getReturnDirective().second.empty()) ? "\"\"" : getReturnDirective().second);
 	std::cout << std::endl;
 }
+
+void ConfigBase::initWithDefaultData() {
+	initRoot();													// root
+	_index.push_back("index.html");								// index
+	setAutoIndex(false);										// autoindex
+	std::string temp(DEFAULT_CLIENT_MAX_BODY_SIZE);
+	setClientMaxBodySize(expandMaskedString(temp, MASK_M));		// clientMaxBodySize
+	_allowedMethods.insert("GET");
+	_allowedMethods.insert("POST");
+	_allowedMethods.insert("DELETE");							// allowMethods
+}
+
+void ConfigBase::initRoot() {
+	const char* path = std::getenv("PWD");
+	if (!path)
+		setRoot(LAST_RESORT_PATH);
+	else {
+		std::string root(path);
+		root += "/files";
+		setRoot(root);
+	}
+}

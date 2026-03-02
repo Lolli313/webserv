@@ -11,6 +11,11 @@
 #include <map>
 #include <set>
 
+// If getenv() doesn't find PWD for whatever reason (highly unlikely)
+#define LAST_RESORT_PATH "/home/aakerblo/to_home/common_core/webserv/files"
+#define FILE_FOLDER_NAME "/files"
+#define DEFAULT_CLIENT_MAX_BODY_SIZE "5M"
+
 // #define MAX_K 4194303
 // #define MAX_M 4095
 // #define MAX_G 3
@@ -96,4 +101,6 @@ public:
 	bitmask_t charToBit(char c);
 
 	void printData() const;
+	void initWithDefaultData();
+	void initRoot();
 };

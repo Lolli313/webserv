@@ -26,6 +26,7 @@ LocationConfig &LocationConfig::operator=(const LocationConfig &obj)
 	return (*this);
 }
 
+
 /*
 =================================================================
 ===== GETTERS / SETTERS  ========================================

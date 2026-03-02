@@ -51,7 +51,7 @@ bool HttpTools::isValidHttpCode(int code) {
 const std::string& HttpTools::getHttpReturnMessage(int code) {
     const HttpTools::MapType& temp = getHttpCodes();
     HttpTools::MapType::const_iterator it = temp.find(code);
-    (it == temp.end()) ? temp.find(0)->second : it->second;
+    return ((it == temp.end()) ? temp.find(0)->second : it->second);
 }
 
 

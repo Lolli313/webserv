@@ -15,7 +15,7 @@ class ServerManager
 {
 private:
 	std::vector<Server> _serverArray; // To store the servers, that will be retrieved throw the following map
-	std::map<std::pair<int /*port*/, std::string /*serverName*/>, Server*> _serversMap; // map<pair<port, serverName>, Server *>
+	std::map<std::pair<int, std::string>, Server*> _serversMap; // map<pair<port, serverName>, Server *>
 	std::set<int> _servSockFDs; // fd as para, to know if the fd is a server one.
 	Polling _polling;
 	ServerManager();

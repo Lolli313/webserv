@@ -48,6 +48,14 @@ ServerBlockConfig &ServerBlockConfig::operator=(const ServerBlockConfig &obj)
 =================================================================
 */
 
+const std::string& ServerBlockConfig::getPort() const { return _port; }
+const std::set<std::string>& ServerBlockConfig::getServerNames() const { return _serverNames; }
+const std::map<std::string, LocationConfig>& ServerBlockConfig::getLocationConfigs() const { return _locationConfigs; }
+
+void ServerBlockConfig::setPort(const std::string& src) { _port = src; }
+void ServerBlockConfig::setServerNames(const std::set<std::string>& src) { _serverNames = src; }
+void ServerBlockConfig::setLocationConfigs(const std::map<std::string, LocationConfig>& src) { _locationConfigs = src; }
+
 /*
 =================================================================
 ===== STATIC INITIALIZIONS  =====================================
@@ -190,8 +198,14 @@ void ServerBlockConfig::printData() const {
 		std::cout << *it << ", ";
 	}
 	std::cout << std::endl;
-	
+
 	ConfigBase::printData();
 	
 }
+
+void ServerBlockConfig::initWithDefaultData() {
+	setPort("8080");							// port
+	ConfigBase::initWithDefaultData();			// ConfigBase attributes
+}
+
 
