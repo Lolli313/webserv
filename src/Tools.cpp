@@ -112,7 +112,7 @@ bool Tools::isValidBraceFormat(const std::string& targetToken, const std::vector
 			std::string line;
 			std::getline(infile, line);
 			if (line == "{"){
-				std::cout << line << std::endl;
+				// std::cout << line << std::endl;
 				return true;
 			}
 		}
@@ -129,4 +129,11 @@ bool Tools::checkAndRemoveSemicolon(std::string& str) {
 	}
 	return false;
 }
+
+std::string Tools::intToString(int nbr) {
+	std::ostringstream oss;
+	oss << nbr;
+	return oss.str();
+}
+
 
