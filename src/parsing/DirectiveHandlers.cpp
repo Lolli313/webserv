@@ -84,7 +84,7 @@ bool DirectiveHandlers::handleServerName(const std::vector<std::string>& tokens)
 	return true;
 }
 
-bool DirectiveHandlers::handleLocation(const std::vector<std::string>& tokens, const ConfigBase& confBas) {
+bool DirectiveHandlers::handleLocation(const std::vector<std::string>& tokens) {
 	if (tokens.size() < 2 || tokens.size() > 3)
 		return false;
 
@@ -93,7 +93,7 @@ bool DirectiveHandlers::handleLocation(const std::vector<std::string>& tokens, c
 	std::vector<std::string>::iterator it = tempTokens.begin();
 	std::advance(it, 1);
 	tempTokens.erase(it);
-	LocationConfig lc(_infile, confBas);
+	LocationConfig lc(_infile);
 	if (lc.parseLocationBlock(tempTokens)) {
 		_locationConfig = lc.getLocation();
 		return true;

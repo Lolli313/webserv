@@ -137,7 +137,7 @@ bool ServerBlockConfig::parseErrorPage(const std::vector<std::string>& tokens) {
 
 bool ServerBlockConfig::parseLocation(const std::vector<std::string>& tokens) {
 	DirectiveHandlers dh(_infile);
-	if (dh.handleLocation(tokens, static_cast<const ConfigBase &>(*this))) {
+	if (dh.handleLocation(tokens)) {
 		_locationConfigs.insert(dh.getLocation());
 		return true;
 	}
