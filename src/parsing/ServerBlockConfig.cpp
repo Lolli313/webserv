@@ -18,7 +18,7 @@ ServerBlockConfig::ServerBlockConfig(std::ifstream *infile) :
 	{
 	std::string line;
 
-	while (std::getline(_infile, line)) {
+	while (std::getline(*_infile, line)) {
 		// std::cout << line << std::endl;
 		if (line[0] == '#' || line.empty())
 			continue;
@@ -47,14 +47,6 @@ ServerBlockConfig &ServerBlockConfig::operator=(const ServerBlockConfig &obj)
 ===== GETTERS / SETTERS  ========================================
 =================================================================
 */
-
-const std::string& ServerBlockConfig::getPort() const { return _port; }
-const std::set<std::string>& ServerBlockConfig::getServerNames() const { return _serverNames; }
-const std::map<std::string, LocationConfig>& ServerBlockConfig::getLocationConfigs() const { return _locationConfigs; }
-
-void ServerBlockConfig::setPort(const std::string& src) { _port = src; }
-void ServerBlockConfig::setServerNames(const std::set<std::string>& src) { _serverNames = src; }
-void ServerBlockConfig::setLocationConfigs(const std::map<std::string, LocationConfig>& src) { _locationConfigs = src; }
 
 const std::string& ServerBlockConfig::getPort() const { return _port; }
 const std::set<std::string>& ServerBlockConfig::getServerNames() const { return _serverNames; }
@@ -145,7 +137,7 @@ bool ServerBlockConfig::parseErrorPage(const std::vector<std::string>& tokens) {
 }
 
 bool ServerBlockConfig::parseLocation(const std::vector<std::string>& tokens) {
-	DirectiveHandlers dh(_infile);
+	DirectiveHandlers dh(_infile, static_cast<const ConfigBase&>(*this));
 	if (dh.handleLocation(tokens)) {
 		_locationConfigs.insert(dh.getLocation());
 		return true;
@@ -208,31 +200,16 @@ void ServerBlockConfig::printData() const {
 	std::cout << std::endl;
 
 	ConfigBase::printData();
-	
-}
-
-void ServerBlockConfig::initWithDefaultData() {
-	setPort("8080");							// port
-	ConfigBase::initWithDefaultData();			// ConfigBase attributes
-}
-
-
-void ServerBlockConfig::printData() const {
-	std::cout << "port: " << _port << std::endl;
-
-	std::cout << "server names: ";
-	std::set<std::string>::const_iterator it = _serverNames.begin();
-	for (; it != _serverNames.end(); it++) {
-		std::cout << *it << ", ";
-	}
 	std::cout << std::endl;
 
-	ConfigBase::printData();
-
 	std::map<std::string, LocationConfig>::const_iterator mit = _locationConfigs.begin();
+	std::cout << "LocationCondig data" << std::endl;
 	for (; mit != _locationConfigs.end(); mit++) {
+		std::cout << "location path: " << mit->first << std::endl;
 		mit->second.printData();
+		std::cout << std::endl;
 	}
+	std::cout << std::endl;
 	
 }
 

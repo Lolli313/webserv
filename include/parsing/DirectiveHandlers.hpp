@@ -17,6 +17,7 @@ private:
 
 public:
 	DirectiveHandlers(std::ifstream *infile);
+	DirectiveHandlers(std::ifstream *infile, const ConfigBase &src);
 	~DirectiveHandlers();
 
 	bool handleListen(const std::vector<std::string>& tokens);

@@ -8,6 +8,10 @@
 
 DirectiveHandlers::DirectiveHandlers(std::ifstream *infile) : _infile(infile), _locationConfig(infile) {}
 
+DirectiveHandlers::DirectiveHandlers(std::ifstream *infile, const ConfigBase &src) :
+	_infile(infile),
+	_locationConfig(infile, src) {}
+
 DirectiveHandlers::~DirectiveHandlers() {}
 
 /*
@@ -104,4 +108,5 @@ bool DirectiveHandlers::handleLocation(const std::vector<std::string>& tokens) {
 void DirectiveHandlers::printData() const {
 	std::cout << "Location path: " << _locationPath << std::endl;
 	_locationConfig.printData();
+	std::cout << std::endl;
 }

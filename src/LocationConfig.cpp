@@ -135,6 +135,5 @@ bool LocationConfig::parseLocationBlock(const std::vector<std::string> &tokens)
 }
 
 void LocationConfig::printData() const {
-	std::cout << "LocationCondig data" << std::endl;
 	ConfigBase::printData();
 }
