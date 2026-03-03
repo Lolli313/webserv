@@ -8,11 +8,11 @@ class HttpResponse
 private:
 	// HTTP VERSION
 	std::string _httpVersion;
-	// int _httpVersionMinor;
-	// int _httpVersionMajor;
+	int _httpVersionMinor;
+	int _httpVersionMajor;
 
 	// RETURN CODE & MESSAGE
-	// int _returnCode;
+	int _returnCode;
 	std::string _returnMessage;
 
 	// HEADERS

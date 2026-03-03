@@ -17,9 +17,9 @@ extern int _sigStop;
 class ServerManager
 {
 private:
-	std::vector<Server> _serverArray;													 // To store the servers, that will be retrieved throw the following map
-	std::map<std::pair<int /*port*/, std::string /*serverName*/>, Server *> _serversMap; // map<pair<port, serverName>, Server *>
-	std::set<int> _servSockFDs;															 // fd as para, to know if the fd is a server one.
+	std::vector<Server> _serverArray;													   // To store the servers, that will be retrieved throw the following map
+	std::map<std::pair<int /*port*/, std::string /*serverName*/> &, Server &> _serversMap; // map<pair<port, serverName &>, Server &> : We create a new key, value for each serverName of a server. If it has 3 names, them the map will have 3 entries for each of its combination <port, serverName>
+	std::set<int> _servSockFDs;															   // fd as para, to know if the fd is a server one.
 	Polling _polling;
 	ServerManager();
 	ServerManager(const ServerManager &obj);
