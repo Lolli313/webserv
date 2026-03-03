@@ -100,6 +100,7 @@ public:
 
 	bool handleErrorOneLiner(const std::vector<std::string> &tokens);
 	bool handleErrorMultiLiner(const std::vector<std::string> &tokens, std::ifstream *infile);
+	void addOrReplaceErrorPage(std::map<int, std::string> &errorPages, int httpCode, const std::string& path);
 	bool handleMaxSizeConversion(std::string &maxSize);
 
 	unsigned int expandMaskedString(std::string &src, bitmask_t foundBit);

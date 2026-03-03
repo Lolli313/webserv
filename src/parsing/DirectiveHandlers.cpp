@@ -97,9 +97,9 @@ bool DirectiveHandlers::handleLocation(const std::vector<std::string>& tokens) {
 	std::vector<std::string>::iterator it = tempTokens.begin();
 	std::advance(it, 1);
 	tempTokens.erase(it);
-	LocationConfig lc(_infile);
-	if (lc.parseLocationBlock(tempTokens)) {
-		_locationConfig = lc.getLocation();
+//	LocationConfig lc(_infile);
+	if (_locationConfig.parseLocationBlock(tempTokens)) {
+		// _locationConfig = _locationConfig.getLocation();
 		return true;
 	}
 	return false;

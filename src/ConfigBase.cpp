@@ -242,7 +242,7 @@ bool ConfigBase::handleErrorOneLiner(const std::vector<std::string> &tokens)
 	parseTokens.erase(parseTokens.end() - 1);
 	parseTokens.erase(parseTokens.begin());
 
-	std::map<int, std::string> errorPages;
+	std::map<int, std::string> errorPages = getErrorPages();
 	for (std::vector<std::string>::const_iterator it = parseTokens.begin(); it != parseTokens.end(); it++)
 	{
 		std::string temp = *it;
@@ -253,7 +253,7 @@ bool ConfigBase::handleErrorOneLiner(const std::vector<std::string> &tokens)
 		if (httpCode < 300 || httpCode > 599)
 			return false;
 
-		errorPages.insert(std::make_pair(httpCode, errorPagePath));
+		addOrReplaceErrorPage(errorPages, httpCode, errorPagePath);
 	}
 	setErrorPages(errorPages);
 	return true;
@@ -264,7 +264,7 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string> &tokens, s
 	if (!Tools::isValidBraceFormat("error_page", tokens, infile))
 		return false;
 
-	std::map<int, std::string> temp;
+	std::map<int, std::string> errorPages = getErrorPages();
 	std::string line;
 	while (std::getline(*infile, line))
 	{
@@ -276,7 +276,7 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string> &tokens, s
 
 		if (tokens[0] == "}")
 		{
-			setErrorPages(temp);
+			setErrorPages(errorPages);
 			return true;
 		}
 
@@ -287,13 +287,21 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string> &tokens, s
 		if (httpCode < 300 || httpCode > 599)
 			return false;
 
-		std::string path(tokens[1]);
-		if (!Tools::checkAndRemoveSemicolon(path))
+		std::string errorPagePath(tokens[1]);
+		if (!Tools::checkAndRemoveSemicolon(errorPagePath))
 			return false;
 
-		temp.insert(std::make_pair(httpCode, path));
+		addOrReplaceErrorPage(errorPages, httpCode, errorPagePath);
 	}
 	return false;
+}
+
+void ConfigBase::addOrReplaceErrorPage(std::map<int, std::string> &errorPages, int httpCode, const std::string& errorPagePath) {
+	std::map<int, std::string>::iterator it = errorPages.find(httpCode);
+	if (it != errorPages.end()) {
+		errorPages.erase(it);
+	}
+	errorPages.insert(std::make_pair(httpCode, errorPagePath));
 }
 
 bool ConfigBase::handleAllowMethods(const std::vector<std::string> &tokens, std::ifstream *infile)
