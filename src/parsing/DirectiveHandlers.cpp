@@ -6,7 +6,7 @@
 =================================================================
 */
 
-DirectiveHandlers::DirectiveHandlers(std::ifstream& infile) : _infile(infile), _locationConfig(infile) {}
+DirectiveHandlers::DirectiveHandlers(std::ifstream *infile) : _infile(infile), _locationConfig(infile) {}
 
 DirectiveHandlers::~DirectiveHandlers() {}
 

@@ -13,6 +13,8 @@
 #include <set>
 #include <map>
 
+class LocationConfig;
+
 class Server : public ConfigBase
 {
 private:
@@ -20,8 +22,6 @@ private:
 	int _port;
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
-
-	std::ifstream _magicIfstream; // workaround to Arttu's neuro stubborn mind.
 
 	Server &operator=(const Server &obj);
 	Server();

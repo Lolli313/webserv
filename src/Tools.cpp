@@ -112,14 +112,14 @@ bool Tools::isNumber(const std::string &str)
  *
  * targetToken {
  */
-bool Tools::isValidBraceFormat(const std::string &targetToken, const std::vector<std::string> &tokens, std::ifstream &infile)
+bool Tools::isValidBraceFormat(const std::string &targetToken, const std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	if (tokens[0] == targetToken)
 	{
 		if (tokens.size() == 1)
 		{
 			std::string line;
-			std::getline(infile, line);
+			std::getline(*infile, line);
 			if (line == "{")
 			{
 				// std::cout << line << std::endl;

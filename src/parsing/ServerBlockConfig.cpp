@@ -12,13 +12,13 @@ ServerBlockConfig::~ServerBlockConfig() {}
 // ServerBlockConfig::ServerBlockConfig(const ServerBlockConfig &obj) { *this = obj; }
 
 // Exception on parsing error
-ServerBlockConfig::ServerBlockConfig(std::ifstream& infile) :
+ServerBlockConfig::ServerBlockConfig(std::ifstream *infile) :
 //	_duplicates(NONE),
 	_infile(infile)
 	{
 	std::string line;
 
-	while (std::getline(_infile, line)) {
+	while (std::getline(*_infile, line)) {
 		std::cout << line << std::endl;
 		if (line[0] == '#' || line.empty())
 			continue;
@@ -157,7 +157,7 @@ bool ServerBlockConfig::parseReturn(const std::vector<std::string>& tokens) {
 bool ServerBlockConfig::handleStartingBrace(bool startingBraceIncluded) {
 	if (!startingBraceIncluded) {
 		std::string line;
-		std::getline(_infile, line);
+		std::getline(*_infile, line);
 		std::vector<std::string> tokens(Tools::splitString(line));
 		if (tokens[0] != "{" || tokens.size() != 1)
 			return false;

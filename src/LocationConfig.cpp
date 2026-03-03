@@ -10,11 +10,11 @@ LocationConfig::~LocationConfig() {}
 
 // LocationConfig::LocationConfig(const LocationConfig &obj) { *this = obj; }
 
-LocationConfig::LocationConfig(std::ifstream &infile) : _infile(infile), ConfigBase(*this)
+LocationConfig::LocationConfig(std::ifstream *infile) : _infile(infile), ConfigBase(*this)
 {
 }
 
-LocationConfig::LocationConfig(const ConfigBase &obj, std::ifstream &infile) : _infile(infile), ConfigBase(obj)
+LocationConfig::LocationConfig(const ConfigBase &obj, std::ifstream *infile) : _infile(infile), ConfigBase(obj)
 {
 }
 
@@ -91,7 +91,7 @@ bool LocationConfig::parseLocationBlock(const std::vector<std::string> &tokens)
 		return false;
 
 	std::string line;
-	while (std::getline(_infile, line))
+	while (std::getline(*_infile, line))
 	{
 		if (line.empty() || line[0] == '#')
 			continue;

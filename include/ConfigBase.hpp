@@ -85,16 +85,16 @@ public:
 	void setAllowMethods(const std::set<std::string> &src);
 	void setReturnDirective(const std::pair<int, std::string> &src);
 
-	bool handleRoot(const std::vector<std::string> &tokens, std::ifstream &infile);
-	bool handleIndex(const std::vector<std::string> &tokens, std::ifstream &infile);
-	bool handleAutoindex(const std::vector<std::string> &tokens, std::ifstream &infile);
-	bool handleClientMaxBodySize(const std::vector<std::string> &tokens, std::ifstream &infile);
-	bool handleErrorPage(const std::vector<std::string> &tokens, std::ifstream &infile);
-	bool handleAllowMethods(const std::vector<std::string> &tokens, std::ifstream &infile);
-	bool handleReturn(const std::vector<std::string> &tokens, std::ifstream &infile);
+	bool handleRoot(const std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleIndex(const std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleAutoindex(const std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleClientMaxBodySize(const std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleErrorPage(const std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleAllowMethods(const std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleReturn(const std::vector<std::string> &tokens, std::ifstream *infile);
 
 	bool handleErrorOneLiner(const std::vector<std::string> &tokens);
-	bool handleErrorMultiLiner(const std::vector<std::string> &tokens, std::ifstream &infile);
+	bool handleErrorMultiLiner(const std::vector<std::string> &tokens, std::ifstream *infile);
 	bool handleMaxSizeConversion(std::string &maxSize);
 
 	unsigned int expandMaskedString(std::string &src, bitmask_t foundBit);

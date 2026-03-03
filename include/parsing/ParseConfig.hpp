@@ -22,7 +22,7 @@ public:
 	ParseConfig(const std::string& filePath);
 	~ParseConfig();
 
-	bool checkServerKeyword(const std::string& line, std::ifstream& infile);
+	bool checkServerKeyword(const std::string& line, std::ifstream *infile);
 	
 };
 

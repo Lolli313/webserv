@@ -72,7 +72,7 @@ const UnitConversion ConfigBase::_conversionTable[] = {
 =================================================================
 */
 
-bool ConfigBase::handleRoot(const std::vector<std::string> &tokens, std::ifstream &infile)
+bool ConfigBase::handleRoot(const std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() != 2)
@@ -87,7 +87,7 @@ bool ConfigBase::handleRoot(const std::vector<std::string> &tokens, std::ifstrea
 	return true;
 }
 
-bool ConfigBase::handleIndex(const std::vector<std::string> &tokens, std::ifstream &infile)
+bool ConfigBase::handleIndex(const std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() < 2)
@@ -102,7 +102,7 @@ bool ConfigBase::handleIndex(const std::vector<std::string> &tokens, std::ifstre
 	return true;
 }
 
-bool ConfigBase::handleAutoindex(const std::vector<std::string> &tokens, std::ifstream &infile)
+bool ConfigBase::handleAutoindex(const std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() != 2)
@@ -123,7 +123,7 @@ bool ConfigBase::handleAutoindex(const std::vector<std::string> &tokens, std::if
 	return true;
 }
 
-bool ConfigBase::handleClientMaxBodySize(const std::vector<std::string> &tokens, std::ifstream &infile)
+bool ConfigBase::handleClientMaxBodySize(const std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() != 2)
@@ -219,7 +219,7 @@ bitmask_t ConfigBase::charToBit(char c)
 	}
 }
 
-bool ConfigBase::handleErrorPage(const std::vector<std::string> &tokens, std::ifstream &infile)
+bool ConfigBase::handleErrorPage(const std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	if (tokens.size() > 2)
 		return handleErrorOneLiner(tokens);
@@ -255,14 +255,14 @@ bool ConfigBase::handleErrorOneLiner(const std::vector<std::string> &tokens)
 	return true;
 }
 
-bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string> &tokens, std::ifstream &infile)
+bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	if (!Tools::isValidBraceFormat("error_page", tokens, infile))
 		return false;
 
 	std::map<int, std::string> temp;
 	std::string line;
-	while (std::getline(infile, line))
+	while (std::getline(*infile, line))
 	{
 		if (line.empty() || line[0] == '#')
 			continue;
@@ -292,7 +292,7 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string> &tokens, s
 	return false;
 }
 
-bool ConfigBase::handleAllowMethods(const std::vector<std::string> &tokens, std::ifstream &infile)
+bool ConfigBase::handleAllowMethods(const std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() < 2)
@@ -315,7 +315,7 @@ bool ConfigBase::handleAllowMethods(const std::vector<std::string> &tokens, std:
 	return true;
 }
 
-bool ConfigBase::handleReturn(const std::vector<std::string> &tokens, std::ifstream &infile)
+bool ConfigBase::handleReturn(const std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() < 2 || tokens.size() > 3)
