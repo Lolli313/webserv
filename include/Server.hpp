@@ -13,7 +13,7 @@
 #include <set>
 #include <map>
 
-class LocationConfig;
+// class LocationConfig;
 
 class Server : public ConfigBase
 {
@@ -22,10 +22,11 @@ private:
 	int _port;
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
-
+	
 	Server &operator=(const Server &obj);
 	Server();
-
+	
+	LocationConfig _serversLocationConfigBaseWorkaroundBecauseOfArttu;
 public:
 	Server(const Server &obj);
 	Server(const std::string &port);
@@ -36,7 +37,7 @@ public:
 	const std::set<std::string> &getServerNames() const;
 	const ServerSocket &getServSocket() const;
 	const std::map<std::string, LocationConfig> &getLocationConfigs() const;
-	const LocationConfig &getPathConfig(const std::string &path) const;
+	const LocationConfig &getPathConfig(const std::string &path);
 };
 
 #endif

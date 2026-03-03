@@ -47,6 +47,14 @@ ServerBlockConfig &ServerBlockConfig::operator=(const ServerBlockConfig &obj)
 =================================================================
 */
 
+const std::string& ServerBlockConfig::getPort() const { return _port; }
+const std::set<std::string>& ServerBlockConfig::getServerNames() const { return _serverNames; }
+const std::map<std::string, LocationConfig>& ServerBlockConfig::getLocationConfigs() const { return _locationConfigs; }
+
+void ServerBlockConfig::setPort(const std::string& src) { _port = src; }
+void ServerBlockConfig::setServerNames(const std::set<std::string>& src) { _serverNames = src; }
+void ServerBlockConfig::setLocationConfigs(const std::map<std::string, LocationConfig>& src) { _locationConfigs = src; }
+
 /*
 =================================================================
 ===== STATIC INITIALIZIONS  =====================================
@@ -129,7 +137,7 @@ bool ServerBlockConfig::parseErrorPage(const std::vector<std::string>& tokens) {
 
 bool ServerBlockConfig::parseLocation(const std::vector<std::string>& tokens) {
 	DirectiveHandlers dh(_infile);
-	if (dh.handleLocation(tokens)) {
+	if (dh.handleLocation(tokens, static_cast<const ConfigBase &>(*this))) {
 		_locationConfigs.insert(dh.getLocation());
 		return true;
 	}
@@ -180,3 +188,26 @@ void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 		throw Tools::Exception(tokens[0] + " directive not valid");
 }
 
+void ServerBlockConfig::printData() const {
+	std::cout << "port: " << _port << std::endl;
+
+	std::cout << "server names: ";
+	std::set<std::string>::const_iterator it = _serverNames.begin();
+	for (; it != _serverNames.end(); it++) {
+		std::cout << *it << ", ";
+	}
+	std::cout << std::endl;
+
+	ConfigBase::printData();
+
+	std::map<std::string, LocationConfig>::const_iterator mit = _locationConfigs.begin();
+	for (; mit != _locationConfigs.end(); mit++) {
+		mit->second.printData();
+	}
+	
+}
+
+void ServerBlockConfig::initWithDefaultData() {
+	setPort("8080");							// port
+	ConfigBase::initWithDefaultData();			// ConfigBase attributes
+}

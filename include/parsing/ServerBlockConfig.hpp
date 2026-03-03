@@ -42,6 +42,14 @@ public:
 	ServerBlockConfig &operator=(const ServerBlockConfig &obj);
 	~ServerBlockConfig();
 
+	const std::string& getPort() const;
+	const std::set<std::string>& getServerNames() const;
+	const std::map<std::string, LocationConfig>& getLocationConfigs() const;
+
+	void setPort(const std::string& src);
+	void setServerNames(const std::set<std::string>& src);
+	void setLocationConfigs(const std::map<std::string, LocationConfig>& src);
+
 	bool handleStartingBrace(bool startingBraceIncluded);
 	void handleDirectiveName(const std::string& line);
 	bool parseListen(const std::vector<std::string>& tokens);
@@ -54,4 +62,7 @@ public:
 	bool parseLocation(const std::vector<std::string>& tokens);
 	bool parseAllowMethods(const std::vector<std::string>& tokens);
 	bool parseReturn(const std::vector<std::string>& tokens);
+
+	void initWithDefaultData();
+	void printData() const;
 };

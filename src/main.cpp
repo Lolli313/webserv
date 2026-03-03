@@ -25,6 +25,7 @@ int main(int ac, char **av) {
 	temp.push_back("8080");
 	try {
 		ParseConfig pc((std::string(av[1])));
+		pc.printData();
 		// ServerManager serverManager(temp);
 		// serverManager.mainLoop();
 	}

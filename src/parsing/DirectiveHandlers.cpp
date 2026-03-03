@@ -67,7 +67,7 @@ bool DirectiveHandlers::handleListen(const std::vector<std::string>& tokens) {
 	if (portStr <= 0 || portStr > std::numeric_limits<unsigned short>::max())
 		return false;
 
-	_port = portStr;
+	_port = Tools::intToString(portStr);
 	return true;
 }
 
@@ -84,7 +84,7 @@ bool DirectiveHandlers::handleServerName(const std::vector<std::string>& tokens)
 	return true;
 }
 
-bool DirectiveHandlers::handleLocation(const std::vector<std::string>& tokens) {
+bool DirectiveHandlers::handleLocation(const std::vector<std::string>& tokens, const ConfigBase& confBas) {
 	if (tokens.size() < 2 || tokens.size() > 3)
 		return false;
 
@@ -93,10 +93,15 @@ bool DirectiveHandlers::handleLocation(const std::vector<std::string>& tokens) {
 	std::vector<std::string>::iterator it = tempTokens.begin();
 	std::advance(it, 1);
 	tempTokens.erase(it);
-	LocationConfig lc(_infile);
+	LocationConfig lc(_infile, confBas);
 	if (lc.parseLocationBlock(tempTokens)) {
 		_locationConfig = lc.getLocation();
 		return true;
 	}
 	return false;
+}
+
+void DirectiveHandlers::printData() const {
+	std::cout << "Location path: " << _locationPath << std::endl;
+	_locationConfig.printData();
 }

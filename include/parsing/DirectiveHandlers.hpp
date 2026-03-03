@@ -21,7 +21,7 @@ public:
 
 	bool handleListen(const std::vector<std::string>& tokens);
 	bool handleServerName(const std::vector<std::string>& tokens);
-	bool handleLocation(const std::vector<std::string>& tokens);
+	bool handleLocation(const std::vector<std::string>& tokens, const ConfigBase &ConfBas);
 
 	const std::string& getListen() const;
 	const std::set<std::string>& getServerName() const;
@@ -31,4 +31,6 @@ public:
 
 	static const std::map<std::string, DirectiveHandler> _locationHandlers;
 	static const std::map<std::string, DirectiveHandler> _initHandlers();
+
+	void printData() const;
 };

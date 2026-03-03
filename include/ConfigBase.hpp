@@ -11,6 +11,11 @@
 #include <map>
 #include <set>
 
+// If getenv() doesn't find PWD for whatever reason (highly unlikely)
+#define LAST_RESORT_PATH "/home/aakerblo/to_home/common_core/webserv/files"
+#define FILE_FOLDER_NAME "/files"
+#define DEFAULT_CLIENT_MAX_BODY_SIZE "5M"
+
 // #define MAX_K 4194303
 // #define MAX_M 4095
 // #define MAX_G 3
@@ -62,9 +67,9 @@ private:
 	static const unsigned int MAX_STR_M = 4;
 	static const unsigned int MAX_STR_G = 1;
 
-	// ConfigBase();
-
+	
 public:
+	ConfigBase();
 	ConfigBase &operator=(const ConfigBase &obj);
 	ConfigBase(const ConfigBase &obj);
 	virtual ~ConfigBase() = 0;
@@ -99,4 +104,8 @@ public:
 
 	unsigned int expandMaskedString(std::string &src, bitmask_t foundBit);
 	bitmask_t charToBit(char c);
+
+	void printData() const;
+	void initWithDefaultData();
+	void initRoot();
 };

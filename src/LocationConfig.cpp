@@ -6,15 +6,21 @@
 =================================================================
 */
 
+LocationConfig::LocationConfig() {}
+
 LocationConfig::~LocationConfig() {}
 
-// LocationConfig::LocationConfig(const LocationConfig &obj) { *this = obj; }
+LocationConfig::LocationConfig(const LocationConfig &obj) : ConfigBase(obj) { *this = obj; }
 
-LocationConfig::LocationConfig(std::ifstream *infile) : _infile(infile), ConfigBase(*this)
+LocationConfig::LocationConfig(std::ifstream *infile) : ConfigBase(*this), _infile(infile)
 {
 }
 
-LocationConfig::LocationConfig(const ConfigBase &obj, std::ifstream *infile) : _infile(infile), ConfigBase(obj)
+LocationConfig::LocationConfig(std::ifstream *infile, const ConfigBase &config) : ConfigBase(config), _infile(infile)
+{
+}
+
+LocationConfig::LocationConfig(const ConfigBase &obj) : ConfigBase(obj)
 {
 }
 
@@ -24,18 +30,33 @@ LocationConfig::LocationConfig(const ConfigBase &obj, std::ifstream *infile) : _
 =================================================================
 */
 
-LocationConfig &LocationConfig::operator=(const LocationConfig &obj)
+// LocationConfig &LocationConfig::operator=(const LocationConfig &obj)
+// {
+// 	if (this != &obj)
+// 		ConfigBase::operator=(obj);
+// 	return (*this);
+// }
+
+LocationConfig &LocationConfig::operator=(const ConfigBase &obj)
 {
 	if (this != &obj)
 		ConfigBase::operator=(obj);
 	return (*this);
 }
 
-LocationConfig &LocationConfig::operator=(const Server &obj)
-{
-	ConfigBase::operator=(static_cast<const ConfigBase &>(obj));
-	return (*this);
-}
+// LocationConfig &LocationConfig::operator=(const Server &obj)
+// {
+// 	ConfigBase::operator=(static_cast<const ConfigBase &>(obj));
+// 	return (*this);
+// }
+
+
+// LocationConfig &LocationConfig::operator=(const ServerBlockConfig &obj)
+// {
+// 	ConfigBase::operator=(static_cast<const ConfigBase &>(obj));
+// 	return (*this);
+// }
+
 
 /*
 =================================================================
@@ -111,4 +132,9 @@ bool LocationConfig::parseLocationBlock(const std::vector<std::string> &tokens)
 			return false;
 	}
 	return false;
+}
+
+void LocationConfig::printData() const {
+	std::cout << "LocationCondig data" << std::endl;
+	ConfigBase::printData();
 }

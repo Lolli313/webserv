@@ -68,4 +68,10 @@ bool ParseConfig::checkServerKeyword(const std::string& line, std::ifstream *inf
 	return true;
 }
 
-
+void ParseConfig::printData() const {
+	std::vector<ServerBlockConfig>::const_iterator it = _serverBlockConfigVector.begin();
+	for (; it != _serverBlockConfigVector.end(); it++) {
+		it->printData();
+		std::cout << std::endl;
+	}
+}
