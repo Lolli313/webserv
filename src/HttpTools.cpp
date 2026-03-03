@@ -18,10 +18,10 @@ HttpTools::HttpTools(const HttpTools &obj) { *this = obj; };
 */
 HttpTools &HttpTools::operator=(const HttpTools &obj)
 {
-	if (this != &obj)
-	{
-	}
-	return (*this);
+    if (this != &obj)
+    {
+    }
+    return (*this);
 };
 
 /*
@@ -36,26 +36,41 @@ HttpTools &HttpTools::operator=(const HttpTools &obj)
 =================================================================
 */
 
-const HttpTools::MapType& HttpTools::getHttpCodes() {
-	static HttpTools::MapType httpCodes;
-	if (httpCodes.empty())
-		initHttpCodes(httpCodes);
-	return httpCodes;
+const HttpTools::MapType &HttpTools::getHttpCodes()
+{
+    static HttpTools::MapType httpCodes;
+    if (httpCodes.empty())
+        initHttpCodes(httpCodes);
+    return httpCodes;
 }
 
-bool HttpTools::isValidHttpCode(int code) {
-	const HttpTools::MapType& temp = getHttpCodes();
-	return !(temp.find(code) == temp.end());
+bool HttpTools::isValidHttpCode(int code)
+{
+    const HttpTools::MapType &temp = getHttpCodes();
+    return !(temp.find(code) == temp.end());
 }
 
-const std::string& HttpTools::getHttpReturnMessage(int code) {
-    const HttpTools::MapType& temp = getHttpCodes();
+const std::string &HttpTools::getHttpReturnMessage(int code)
+{
+    const HttpTools::MapType &temp = getHttpCodes();
     HttpTools::MapType::const_iterator it = temp.find(code);
     return ((it == temp.end()) ? temp.find(0)->second : it->second);
 }
 
+/** @return A pair<int, const std::string &> with the Http Return Code and the Http Reason-Phrase
+ **/
+const std::pair<int, const std::string &> HttpTools::getReturnPair(int code)
+{
+    const HttpTools::MapType &temp = getHttpCodes();
+    HttpTools::MapType::const_iterator it = temp.find(code);
+    if (it == temp.end())
+        it = temp.find(0);
 
-void HttpTools::initHttpCodes(HttpTools::MapType& httpCodes) {
+    return std::pair<int, const std::string &>(it->first, it->second);
+}
+
+void HttpTools::initHttpCodes(HttpTools::MapType &httpCodes)
+{
     // If code not found
     httpCodes[0] = "";
 
@@ -132,19 +147,22 @@ void HttpTools::initHttpCodes(HttpTools::MapType& httpCodes) {
     httpCodes[511] = "Network Authentication Required";
 }
 
-const std::set<std::string>& HttpTools::getMethods() {
+const std::set<std::string> &HttpTools::getMethods()
+{
     static std::set<std::string> methods;
     if (methods.empty())
         initMethods(methods);
     return methods;
 }
 
-bool HttpTools::isValidMethod(const std::string& method) {
+bool HttpTools::isValidMethod(const std::string &method)
+{
     const std::set<std::string> temp = getMethods();
     return !(temp.find(method) == temp.end());
 }
 
-void HttpTools::initMethods(std::set<std::string>& methods) {
+void HttpTools::initMethods(std::set<std::string> &methods)
+{
     methods.insert("OPTIONS");
     methods.insert("GET");
     methods.insert("HEAD");
@@ -155,19 +173,22 @@ void HttpTools::initMethods(std::set<std::string>& methods) {
     methods.insert("CONNECT");
 }
 
-const std::set<std::string>& HttpTools::getHttpRequestHeaders() {
+const std::set<std::string> &HttpTools::getHttpRequestHeaders()
+{
     static std::set<std::string> httpRequestHeaders;
     if (httpRequestHeaders.empty())
         initHttpRequestHeaders(httpRequestHeaders);
     return httpRequestHeaders;
 }
 
-bool HttpTools::isValidHttpRequestHeader(const std::string& header) {
+bool HttpTools::isValidHttpRequestHeader(const std::string &header)
+{
     const std::set<std::string> temp = getHttpRequestHeaders();
     return !(temp.find(header) == temp.end());
 }
 
-void HttpTools::initHttpRequestHeaders(std::set<std::string>& httpRequestHeaders) {
+void HttpTools::initHttpRequestHeaders(std::set<std::string> &httpRequestHeaders)
+{
     httpRequestHeaders.insert("Accept");
     httpRequestHeaders.insert("Accept-Charset");
     httpRequestHeaders.insert("Accept-Encoding");
@@ -194,4 +215,3 @@ void HttpTools::initHttpRequestHeaders(std::set<std::string>& httpRequestHeaders
 ===== METHODS ===================================================
 =================================================================
 */
-

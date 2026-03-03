@@ -8,7 +8,7 @@
 class DirectiveHandlers
 {
 private:
-	std::ifstream& _infile;
+	std::ifstream *_infile;
 	std::string _port;
 	std::set<std::string> _serverNames;
 	std::string _locationPath;
@@ -16,7 +16,7 @@ private:
 	DirectiveHandlers();
 
 public:
-	DirectiveHandlers(std::ifstream& infile);
+	DirectiveHandlers(std::ifstream *infile);
 	~DirectiveHandlers();
 
 	bool handleListen(const std::vector<std::string>& tokens);
@@ -33,5 +33,4 @@ public:
 	static const std::map<std::string, DirectiveHandler> _initHandlers();
 
 	void printData() const;
-
 };

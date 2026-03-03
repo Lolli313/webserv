@@ -202,15 +202,17 @@ void Polling::handleClientInput(Client &client)
 // Exception on failure
 //
 // Receives client input and client diconnection
-Client*  Polling::handleExistingClient(int clientFD, uint32_t currEvent)
+Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 {
 	std::cout << "Found an existing connection" << std::endl;
 
-	if (_clientMap.find(clientFD) == _clientMap.end()) {
+	if (_clientMap.find(clientFD) == _clientMap.end())
+	{
 		std::cout << "Unexpected no match for existing client" << std::endl;
 		return NULL;
 	}
-	else {
+	else
+	{
 		std::cout << ORANGE << "Found clientFD match for FD: " << clientFD << RESET << std::endl;
 	}
 
@@ -219,7 +221,7 @@ Client*  Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	if (itClient == _clientMap.end())
 		throw Tools::Exception("Client not found");
 
-	// CLIENT DISCONNECTED
+	// CLIENT DISCONNECTED == MAYBE DELETE
 	if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
 	{
 		if (currEvent & EPOLLHUP)
@@ -234,13 +236,16 @@ Client*  Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 			socklen_t len = sizeof(error);
 			if (getsockopt(clientFD, SOL_SOCKET, SO_ERROR, &error, &len) == -1)
 				std::cout << RED << "getsockopt error" << RESET << std::endl;
-			if (error != 0) {
+			if (error != 0)
+			{
 				std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
-    		}
+			}
 		}
 		std::cout << CYAN << "CLIENT MESSAGE : " << itClient->second.getBuffer() << RESET << std::endl;
-		return &itClient->second;
+		// if (!_polling.deleteCLient(tmpClient))
+		// 	throw Tools::Exception("Error at deleting client");
 
+		return &itClient->second;
 	}
 	// CLIENT INPUT
 	else if (currEvent & EPOLLIN)

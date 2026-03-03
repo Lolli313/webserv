@@ -1,22 +1,22 @@
-#include "HttpMethod.hpp"
+#include "MethodGET.hpp"
 
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-HttpMethod::HttpMethod() {}
+MethodGET::MethodGET() {}
 
-HttpMethod::~HttpMethod() {}
+MethodGET::~MethodGET() {}
 
-HttpMethod::HttpMethod(const HttpMethod &obj) { *this = obj; }
+MethodGET::MethodGET(const MethodGET &obj) { *this = obj; }
 
 /*
 =================================================================
 ===== OPERATORS =================================================
 =================================================================
 */
-HttpMethod &HttpMethod::operator=(const HttpMethod &obj)
+MethodGET &MethodGET::operator=(const MethodGET &obj)
 {
 	if (this != &obj)
 	{

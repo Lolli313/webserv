@@ -22,7 +22,7 @@ private:
 //	__uint8_t _duplicates;
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
-	std::ifstream& _infile;
+	std::ifstream *_infile;
 	ServerBlockConfig();
 //	ServerBlockConfig(const ServerBlockConfig &obj);
 
@@ -38,7 +38,7 @@ private:
 	// };
 	
 public:
-	ServerBlockConfig(std::ifstream& infile);
+	ServerBlockConfig(std::ifstream *infile);
 	ServerBlockConfig &operator=(const ServerBlockConfig &obj);
 	~ServerBlockConfig();
 

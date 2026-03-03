@@ -43,7 +43,8 @@ const std::string &Tools::Exception::getMsgLog() const { return _msgLog; }
 */
 
 // Split an input (string) according to any isspace() character
-std::vector<std::string> Tools::splitString(const std::string &str) {
+std::vector<std::string> Tools::splitString(const std::string &str)
+{
 	std::vector<std::string> returnVector;
 	std::istringstream ss(str);
 	std::string word;
@@ -71,25 +72,30 @@ std::vector<std::string> Tools::splitString(const std::string &input, const std:
 }
 
 // Returns a reference of the last character of a string
-const char& Tools::getLastCharacter(const std::string& str) {
+const char &Tools::getLastCharacter(const std::string &str)
+{
 	return *str.rbegin();
 }
 
-const std::string::const_iterator Tools::getLastIterator(const std::string& str) {
+const std::string::const_iterator Tools::getLastIterator(const std::string &str)
+{
 	if (str.empty())
 		return str.end();
 	return str.end() - 1;
 }
 
-std::string::iterator Tools::getLastIterator(std::string& str) {
+std::string::iterator Tools::getLastIterator(std::string &str)
+{
 	if (str.empty())
 		return str.end();
 	return str.end() - 1;
 }
 
 // Checks whether a string contains only digits (0-9)
-bool Tools::isNumber(const std::string& str) {
-	for (std::string::const_iterator it = str.begin(); it != str.end(); it++) {
+bool Tools::isNumber(const std::string &str)
+{
+	for (std::string::const_iterator it = str.begin(); it != str.end(); it++)
+	{
 		if (!std::isdigit(*it))
 			return false;
 	}
@@ -98,20 +104,24 @@ bool Tools::isNumber(const std::string& str) {
 
 /**
  * Checks whether the tokens vector has one the following formats:
- * 
+ *
  * targetToken
  * {
- * 
+ *
  * OR
- * 
+ *
  * targetToken {
  */
-bool Tools::isValidBraceFormat(const std::string& targetToken, const std::vector<std::string>& tokens, std::ifstream& infile) {
-	if (tokens[0] == targetToken) {
-		if (tokens.size() == 1) {
+bool Tools::isValidBraceFormat(const std::string &targetToken, const std::vector<std::string> &tokens, std::ifstream *infile)
+{
+	if (tokens[0] == targetToken)
+	{
+		if (tokens.size() == 1)
+		{
 			std::string line;
-			std::getline(infile, line);
-			if (line == "{"){
+			std::getline(*infile, line);
+			if (line == "{")
+			{
 				// std::cout << line << std::endl;
 				return true;
 			}
@@ -122,18 +132,19 @@ bool Tools::isValidBraceFormat(const std::string& targetToken, const std::vector
 	return false;
 }
 
-bool Tools::checkAndRemoveSemicolon(std::string& str) {
-	if (Tools::getLastCharacter(str) == ';') {
+bool Tools::checkAndRemoveSemicolon(std::string &str)
+{
+	if (Tools::getLastCharacter(str) == ';')
+	{
 		str.erase(Tools::getLastIterator(str));
 		return true;
 	}
 	return false;
 }
 
-std::string Tools::intToString(int nbr) {
+std::string Tools::intToString(int nbr)
+{
 	std::ostringstream oss;
 	oss << nbr;
 	return oss.str();
 }
-
-

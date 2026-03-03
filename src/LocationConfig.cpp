@@ -6,11 +6,22 @@
 =================================================================
 */
 
+LocationConfig::LocationConfig() {}
+
 LocationConfig::~LocationConfig() {}
 
-// LocationConfig::LocationConfig(const LocationConfig &obj) { *this = obj; }
+LocationConfig::LocationConfig(const LocationConfig &obj) : ConfigBase(obj) { *this = obj; }
 
-LocationConfig::LocationConfig(std::ifstream& infile) : _infile(infile) {
+LocationConfig::LocationConfig(std::ifstream *infile) : ConfigBase(*this), _infile(infile)
+{
+}
+
+LocationConfig::LocationConfig(std::ifstream *infile, const ConfigBase &config) : ConfigBase(config), _infile(infile)
+{
+}
+
+LocationConfig::LocationConfig(const ConfigBase &obj) : ConfigBase(obj)
+{
 }
 
 /*
@@ -19,12 +30,32 @@ LocationConfig::LocationConfig(std::ifstream& infile) : _infile(infile) {
 =================================================================
 */
 
-LocationConfig &LocationConfig::operator=(const LocationConfig &obj)
+// LocationConfig &LocationConfig::operator=(const LocationConfig &obj)
+// {
+// 	if (this != &obj)
+// 		ConfigBase::operator=(obj);
+// 	return (*this);
+// }
+
+LocationConfig &LocationConfig::operator=(const ConfigBase &obj)
 {
 	if (this != &obj)
 		ConfigBase::operator=(obj);
 	return (*this);
 }
+
+// LocationConfig &LocationConfig::operator=(const Server &obj)
+// {
+// 	ConfigBase::operator=(static_cast<const ConfigBase &>(obj));
+// 	return (*this);
+// }
+
+
+// LocationConfig &LocationConfig::operator=(const ServerBlockConfig &obj)
+// {
+// 	ConfigBase::operator=(static_cast<const ConfigBase &>(obj));
+// 	return (*this);
+// }
 
 
 /*
@@ -33,10 +64,10 @@ LocationConfig &LocationConfig::operator=(const LocationConfig &obj)
 =================================================================
 */
 
-const LocationConfig& LocationConfig::getLocation() const {
+const LocationConfig &LocationConfig::getLocation() const
+{
 	return *this;
 }
-
 
 /*
 =================================================================
@@ -44,10 +75,10 @@ const LocationConfig& LocationConfig::getLocation() const {
 =================================================================
 */
 
-const std::map<std::string, LocationConfig::DirectiveHandler> LocationConfig::_locationHandlers
-	= LocationConfig::_initHandlers();
+const std::map<std::string, LocationConfig::DirectiveHandler> LocationConfig::_locationHandlers = LocationConfig::_initHandlers();
 
-const std::map<std::string, LocationConfig::DirectiveHandler> LocationConfig::_initHandlers() {
+const std::map<std::string, LocationConfig::DirectiveHandler> LocationConfig::_initHandlers()
+{
 	std::map<std::string, LocationConfig::DirectiveHandler> temp;
 
 	temp.insert(std::make_pair("root", &ConfigBase::handleRoot));
@@ -67,7 +98,8 @@ const std::map<std::string, LocationConfig::DirectiveHandler> LocationConfig::_i
 =================================================================
 */
 
-bool LocationConfig::parseLocationBlock(const std::vector<std::string>& tokens) {
+bool LocationConfig::parseLocationBlock(const std::vector<std::string> &tokens)
+{
 	// if (tokens.size() < 2 || tokens.size() > 3)
 	// 	return false;
 
@@ -80,7 +112,8 @@ bool LocationConfig::parseLocationBlock(const std::vector<std::string>& tokens) 
 		return false;
 
 	std::string line;
-	while (std::getline(_infile, line)) {
+	while (std::getline(*_infile, line))
+	{
 		if (line.empty() || line[0] == '#')
 			continue;
 
@@ -102,6 +135,6 @@ bool LocationConfig::parseLocationBlock(const std::vector<std::string>& tokens) 
 }
 
 void LocationConfig::printData() const {
-	
+	std::cout << "LocationCondig data" << std::endl;
 	ConfigBase::printData();
 }

@@ -6,7 +6,7 @@
 =================================================================
 */
 
-DirectiveHandlers::DirectiveHandlers(std::ifstream& infile) : _infile(infile), _locationConfig(infile) {}
+DirectiveHandlers::DirectiveHandlers(std::ifstream *infile) : _infile(infile), _locationConfig(infile) {}
 
 DirectiveHandlers::~DirectiveHandlers() {}
 
@@ -67,7 +67,7 @@ bool DirectiveHandlers::handleListen(const std::vector<std::string>& tokens) {
 	if (portStr <= 0 || portStr > std::numeric_limits<unsigned short>::max())
 		return false;
 
-	_port = portStr;
+	_port = Tools::intToString(portStr);
 	return true;
 }
 

@@ -80,13 +80,10 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 	if (tmpClient)
 	{
-		// Do something smart:
-		// Call HttpRequest parser
-		// Call the HttpMethod
-		// Send the response
-		// Then, delete the client
-		if (!_polling.deleteCLient(tmpClient))
-			throw Tools::Exception("Error at deleting client");
+		// HttpRequest request(tmpClient);
+		// HttpMethod method(request);
+		// HttpResponse response(method);
+		// return response;
 	}
 	else
 	{
@@ -150,4 +147,3 @@ void ServerManager::mainLoop()
 		}
 	}
 }
-

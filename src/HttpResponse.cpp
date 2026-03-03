@@ -1,22 +1,22 @@
-#include "HttpMethod.hpp"
+#include "HttpResponse.hpp"
 
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-HttpMethod::HttpMethod() {}
+HttpResponse::HttpResponse() {}
 
-HttpMethod::~HttpMethod() {}
+HttpResponse::~HttpResponse() {}
 
-HttpMethod::HttpMethod(const HttpMethod &obj) { *this = obj; }
+HttpResponse::HttpResponse(const HttpResponse &obj) { *this = obj; }
 
 /*
 =================================================================
 ===== OPERATORS =================================================
 =================================================================
 */
-HttpMethod &HttpMethod::operator=(const HttpMethod &obj)
+HttpResponse &HttpResponse::operator=(const HttpResponse &obj)
 {
 	if (this != &obj)
 	{
