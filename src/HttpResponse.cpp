@@ -1,5 +1,7 @@
 #include "HttpResponse.hpp"
 
+// void HttpResponse::buildFinalResponse();
+
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
@@ -52,11 +54,47 @@ const std::map<std::string, std::string> &HttpResponse::getResponseHeaders() con
 const std::map<std::string, std::string> &HttpResponse::getRepresentationHeaders() const { return _representationHeaders; }
 const std::string &HttpResponse::getBody() const { return _body; }
 
-// This call builds and return the final response.
-const std::string &HttpResponse::getFinalResponse() const;
+/**
+ * @brief This call builds and return the final response.
+ * @throw Throws an exception with code 0 and a message log if an error occur (ex: missing HttpVersion, returnCode or returnMessage)
+ */
+const std::string &HttpResponse::getFinalResponse()
+{
+	if (_finalResponse.empty())
+		buildFinalResponse();
+	return _finalResponse;
+}
 
 /*
 =================================================================
 ===== METHODS ===================================================
 =================================================================
 */
+
+std::string appendMapToFinalResponse(const std::map<std::string, std::string> &currMap)
+{
+}
+
+/**
+ * @brief This call builds the final response.
+ * @throw Throws an exception with code 0 and a message log if an error occur (ex: missing HttpVersion, returnCode or returnMessage)
+ */
+void HttpResponse::buildFinalResponse()
+{
+	if (!_httpVersion.empty())
+		_finalResponse.append(_httpVersion + SPACE);
+	else
+		throw Tools::Exception("HttpResponse: missing _httpVersion");
+
+	if (_returnCode >= 100)
+		_finalResponse.append(_returnCode + SPACE);
+	else
+		throw Tools::Exception("HttpResponse: wrong _returnCode");
+
+	if (!_returnMessage.empty())
+		_finalResponse.append(_returnMessage + CRLF);
+	else
+		throw Tools::Exception("HttpResponse: missing _returnMessage");
+
+	if (!_reponseHeaders.empty())
+}

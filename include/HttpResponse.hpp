@@ -2,6 +2,8 @@
 
 #include <string>
 #include <map>
+#include "HttpTools.hpp"
+#include "Tools.hpp"
 
 #define HTTP_VERSION "HTTP/1.1"
 
@@ -52,7 +54,9 @@ public:
 	const std::map<std::string, std::string> &getResponseHeaders() const;
 	const std::map<std::string, std::string> &getRepresentationHeaders() const;
 	const std::string &getBody() const;
-	const std::string &getFinalResponse() const; // This call builds and return the final response.
+	const std::string &getFinalResponse(); // This call builds and return the final response.
+
+	void buildFinalResponse();
 };
 
 /**
