@@ -1,6 +1,7 @@
 
 #include "ServerManager.hpp"
 #include "parsing/ParseConfig.hpp"
+#include "HttpResponse.hpp"
 
 int _sigStop = 0;
 
@@ -10,26 +11,31 @@ void handle_signals(int sig)
 		_sigStop = 1;
 }
 
-int main(int ac, char **av) {
+int main(int ac, char **av)
+{
 	(void)ac;
 	(void)av;
-	if (ac != 2) {
+	if (ac != 2)
+	{
 		std::clog << "Please include one config file" << std::endl;
 		return 1;
 	}
 	std::signal(SIGINT, &handle_signals);
-	
+
 	// ParseConfig pc((std::string(av[1])));
 
 	std::vector<std::string> temp;
 	temp.push_back("8080");
-	try {
+	try
+	{
 		// ParseConfig pc((std::string(av[1])));
 		// pc.printData();
 		// ServerManager serverManager(temp);
 		// serverManager.mainLoop();
+		std::cout <<
 	}
-	catch (Tools::Exception& e){
+	catch (Tools::Exception &e)
+	{
 		if (e.getReturnCode() == 0)
 			std::clog << "Custom exception: " << PINK << e.getMsgLog() << RESET << std::endl;
 		else if (e.getReturnCode() == 1)

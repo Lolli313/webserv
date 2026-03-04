@@ -58,17 +58,5 @@ public:
 	void buildFinalResponse();
 };
 
-/**
- * @brief Get an HTTP Response formatted without having to create an object.
- * @param code The HTTP return code
- * @param message The HTTP Reason-Phrase (return message).
- * @return A const std::string formatted and ready to be sent to the client. With the default HTTP_VERSION, the return code and the return message.
- */
 const std::string quickHttpReponse(int code, const std::string &message);
-
-/**
- * @brief Get an HTTP Response formatted without having to create an object. Directly with a pair<code, message>
- * @param reponse pair<return code, message> : A ReturnPair (can be found in HttpTools{.hpp/.cpp}) of int (return code) and const std::string & (Reason Phrase / return message).
- * @return A const std::string formatted and ready to be sent to the client. With the default HTTP_VERSION, the return code and the return message.
- */
 const std::string quickHttpReponse(std::pair<int, const std::string &> &response);
