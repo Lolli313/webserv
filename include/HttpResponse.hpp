@@ -24,7 +24,6 @@ private:
 
 	// HEADERS
 	std::map<std::string, std::string> _reponseHeaders;
-	std::map<std::string, std::string> _representationHeaders; // if the message has a body
 
 	// BODY
 	std::string _body;
@@ -44,8 +43,7 @@ public:
 	void setHttpVersion(const std::string &httpVersion);
 	void setReturnCode(int code);
 	void setReturnMessage(const std::string &returnMessage);
-	void setResponseHeaders(std::map<std::string, std::string> responseHeaders);
-	void setRepresentationHeaders(std::map<std::string, std::string> representationHeaders);
+	void setResponseHeaders(const std::map<std::string, std::string> &responseHeaders);
 	void setBody(const std::string &body);
 
 	const std::string &getHttpVersion() const;
@@ -56,6 +54,7 @@ public:
 	const std::string &getBody() const;
 	const std::string &getFinalResponse(); // This call builds and return the final response.
 
+	void addHeadersToResponse();
 	void buildFinalResponse();
 };
 

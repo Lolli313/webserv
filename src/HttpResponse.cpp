@@ -27,7 +27,6 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &obj)
 		this->_returnCode = obj._returnCode;
 		this->_returnMessage = obj._returnMessage;
 		this->_reponseHeaders = obj._reponseHeaders;
-		this->_representationHeaders = obj._representationHeaders;
 		this->_body = obj._body;
 		this->_finalResponse = obj._finalResponse;
 	}
@@ -43,15 +42,13 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &obj)
 void HttpResponse::setHttpVersion(const std::string &httpVersion) { _httpVersion = httpVersion; }
 void HttpResponse::setReturnCode(int code) { _returnCode = code; }
 void HttpResponse::setReturnMessage(const std::string &returnMessage) { _returnMessage = returnMessage; }
-void HttpResponse::setResponseHeaders(std::map<std::string, std::string> responseHeaders) { _reponseHeaders = responseHeaders; }
-void HttpResponse::setRepresentationHeaders(std::map<std::string, std::string> representationHeaders) { _representationHeaders = representationHeaders; }
+void HttpResponse::setResponseHeaders(const std::map<std::string, std::string> &responseHeaders) { _reponseHeaders = responseHeaders; }
 void HttpResponse::setBody(const std::string &body) { _body = body; }
 
 const std::string &HttpResponse::getHttpVersion() const { return _httpVersion; }
 int HttpResponse::getReturnCode() const { return _returnCode; }
 const std::string &HttpResponse::HttpResponse::getReturnMessage() const { return _returnMessage; }
 const std::map<std::string, std::string> &HttpResponse::getResponseHeaders() const { return _reponseHeaders; }
-const std::map<std::string, std::string> &HttpResponse::getRepresentationHeaders() const { return _representationHeaders; }
 const std::string &HttpResponse::getBody() const { return _body; }
 
 /**
@@ -71,8 +68,16 @@ const std::string &HttpResponse::getFinalResponse()
 =================================================================
 */
 
-std::string appendMapToFinalResponse(const std::map<std::string, std::string> &currMap)
+/**
+ * @brief Add the formated headers to the _finalResponse, and add the CRLF to mark the end of headers
+ */
+void HttpResponse::addHeadersToResponse()
 {
+	for (std::map<std::string, std::string>::iterator it = _reponseHeaders.begin(); it != _reponseHeaders.end(); it++)
+	{
+		_finalResponse.append(it->first + ":" + SPACE + it->second + CRLF);
+	}
+	_finalResponse.append(CRLF);
 }
 
 /**
@@ -97,4 +102,8 @@ void HttpResponse::buildFinalResponse()
 		throw Tools::Exception("HttpResponse: missing _returnMessage");
 
 	if (!_reponseHeaders.empty())
+		addHeadersToResponse();
+
+	if (!_body.empty())
+		_finalResponse.append(_body);
 }
