@@ -1,5 +1,4 @@
-#ifndef HTTPREQUEST_CLASS_HPP
-#define HTTPREQUEST_CLASS_HPP
+#pragma once
 
 #include <set>
 #include <map>
@@ -11,73 +10,41 @@
 
 #define URI_MAX_LENGTH // To be defined if any.
 
-// All valid HTTP1.1 request headers.
-class HttpRequestHeaders
-{
-public:
-  static const std::set<std::string> &get()
-  {
-    static std::set<std::string> headers;
-    if (headers.empty())
-    {
-      headers.insert("Accept");
-      headers.insert("Accept-Charset");
-      headers.insert("Accept-Encoding");
-      headers.insert("Accept-Language");
-      headers.insert("Authorization");
-      headers.insert("Expect");
-      headers.insert("From");
-      headers.insert("Host");
-      headers.insert("If-Match");
-      headers.insert("If-Modified");
-      headers.insert("If-None-Match");
-      headers.insert("If-None-Range");
-      headers.insert("If-Unmodified-Since");
-      headers.insert("Max-Forwards");
-      headers.insert("Proxy-Authorization");
-      headers.insert("Range");
-      headers.insert("Referer");
-      headers.insert("TE");
-      headers.insert("User-Agent");
-    }
-    return headers;
-  }
+class HttpRequest {
+
+  private:
+
+    std::string _methodStr;
+    std::string _path;
+    std::string _purePath;
+    std::map<std::string, std::string> _queryParams;
+    std::string _httpVersion;
+    std::map<std::string, std::string> _header;
+    std::string _body;
+
+    bool isValidHttpVersion(const std::string &version) const;
+    bool isPathSafe(const std::string &path) const;
+    void parseQueryParams();
+
+  public:
+
+    // CONSTRUCTORS
+
+    HttpRequest() {}
+    ~HttpRequest() {}
+
+    // GETTERS
+
+    const std::string &getMethodStr() const { return _methodStr;}
+    const std::string &getPath() const {return _path;}
+    const std::string &getPurePath() const {return _purePath;}
+    const std::map<std::string, std::string> &getQueryParams() const {return _queryParams;}
+    const std::string &getHttpVersion() const {return _httpVersion;}
+    const std::map<std::string, std::string> &getHeader() const {return _header;}
+    const std::string &getBody() const {return _body;}
+
+    // FUNCTIONS
+
+    void print() const;
+    void parse(const std::string &rawRequest);
 };
-
-class HttpRequest
-{
-private:
-  // METHOD (GET / POST / PUT / DELETE...)
-  httpMethods _method;
-
-  // HTTP VERSION
-  std::string _httpVersion;
-  int _httpVersionMinor;
-  int _httpVersionMajor;
-
-  // UNIFORM RESSOURCE IDENTIFIERS (URI)
-  int _port;
-  std::string _host;
-  std::string _absPath;
-  std::string _query;
-  std::string _ressource;
-  std::string _requestURI; // Request line
-
-  // HEADERS
-  std::map<std::string, std::string> _headersMap;
-
-  // BODY
-  std::string _body;
-
-  HttpRequest();
-
-public:
-  HttpRequest(const std::string &request);
-  HttpRequest(const HttpRequest &obj);
-  HttpRequest &operator=(const HttpRequest &obj);
-  ~HttpRequest();
-
-  bool hasBody();
-};
-
-#endif

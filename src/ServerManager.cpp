@@ -1,6 +1,6 @@
 
 #include "ServerManager.hpp"
-#include "HttpMethod.hpp"
+#include "HttpRequest.hpp"
 
 std::vector<Server> setupServers(std::vector<std::string> ports);
 /*
@@ -16,11 +16,7 @@ ServerManager::~ServerManager()
 		close(*it);
 }
 
-ServerManager::ServerManager(const std::vector<std::string> &ports) : _serverArray(setupServers(ports)),
-																	  _servSockFDs(setupServSockFDs()),
-																	  _polling(_servSockFDs)
-{
-}
+ServerManager::ServerManager(const std::vector<std::string> &ports) : _serverArray(setupServers(ports)), _servSockFDs(setupServSockFDs()), _polling(_servSockFDs) {}
 
 // ServerManager::ServerManager(ParseConfig pc) {
 
@@ -85,6 +81,8 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 		// Call the HttpMethod
 		// Send the response
 		// Then, delete the client
+		// HttpRequest test;
+		// test.parse(tmpClient->getTmpBufferPtr());
 		if (!_polling.deleteCLient(tmpClient))
 			throw Tools::Exception("Error at deleting client");
 	}
