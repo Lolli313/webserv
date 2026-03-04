@@ -5,21 +5,16 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-// ServerBlockConfig::ServerBlockConfig() {}
 
 ServerBlockConfig::~ServerBlockConfig() {}
 
-// ServerBlockConfig::ServerBlockConfig(const ServerBlockConfig &obj) { *this = obj; }
-
 // Exception on parsing error
 ServerBlockConfig::ServerBlockConfig(std::ifstream *infile) :
-//	_duplicates(NONE),
 	_infile(infile)
 	{
 	std::string line;
 
 	while (std::getline(*_infile, line)) {
-		// std::cout << line << std::endl;
 		if (line[0] == '#' || line.empty())
 			continue;
 		else if (line[0] == '}')
@@ -118,31 +113,31 @@ bool ServerBlockConfig::parseServerName(std::vector<std::string>& tokens) {
 	return true;
 }
 
-bool ServerBlockConfig::parseRoot(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseRoot(std::vector<std::string>& tokens) {
 	if (handleRoot(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseIndex(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseIndex(std::vector<std::string>& tokens) {
 	if (handleIndex(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseAutoindex(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseAutoindex(std::vector<std::string>& tokens) {
 	if (handleAutoindex(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseClientMaxBodySize(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseClientMaxBodySize(std::vector<std::string>& tokens) {
 	if (handleClientMaxBodySize(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseErrorPage(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseErrorPage(std::vector<std::string>& tokens) {
 	if (handleErrorPage(tokens, _infile))
 		return true;
 	return false;
@@ -160,20 +155,19 @@ bool ServerBlockConfig::parseLocation(std::vector<std::string>& tokens) {
 	tokens.erase(it);
 	LocationConfig lc(_infile, static_cast<const ConfigBase &>(*this));
 	if (lc.parseLocationBlock(tokens)) {
-		// _locationConfig = _locationConfig.getLocation();
 		_locationConfigs.insert(std::make_pair(locationPath, lc));
 		return true;
 	}
 	return false;
 }
 
-bool ServerBlockConfig::parseAllowMethods(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseAllowMethods(std::vector<std::string>& tokens) {
 	if (handleAllowMethods(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseReturn(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseReturn(std::vector<std::string>& tokens) {
 	if (handleReturn(tokens, _infile))
 		return true;
 	return false;

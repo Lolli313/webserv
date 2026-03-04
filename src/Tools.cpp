@@ -8,7 +8,6 @@
 Tools::Exception::Exception() {};
 Tools::Exception::Exception(int returnCode, const std::string &msgLog) : _returnCode(returnCode), _msgLog(msgLog) {}
 Tools::Exception::Exception(const std::string &msgLog) : _returnCode(0), _msgLog(msgLog) {}
-// Tools::Exception::Exception(const Exception &obj) { *this = obj; };
 Tools::Exception::~Exception() throw() {}
 
 /*
@@ -95,10 +94,8 @@ std::string::iterator Tools::getLastIterator(std::string &str)
 bool Tools::isNumber(const std::string &str)
 {
 	for (std::string::const_iterator it = str.begin(); it != str.end(); it++)
-	{
 		if (!std::isdigit(*it))
 			return false;
-	}
 	return true;
 }
 
@@ -121,10 +118,7 @@ bool Tools::isValidBraceFormat(const std::string &targetToken, const std::vector
 			std::string line;
 			std::getline(*infile, line);
 			if (line == "{")
-			{
-				// std::cout << line << std::endl;
 				return true;
-			}
 		}
 		else if (tokens.size() == 2 && tokens[1] == "{")
 			return true;

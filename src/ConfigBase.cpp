@@ -76,47 +76,44 @@ const UnitConversion ConfigBase::_conversionTable[] = {
 =================================================================
 */
 
-bool ConfigBase::handleRoot(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleRoot(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() != 2)
 		return false;
 
-	std::vector<std::string> parseTokens(tokens);
-	if (!Tools::checkAndRemoveSemicolon(parseTokens[1]))
+	if (!Tools::checkAndRemoveSemicolon(tokens[1]))
 		return false;
 
-	parseTokens.erase(parseTokens.begin());
-	setRoot(parseTokens[0]);
+	tokens.erase(tokens.begin());
+	setRoot(tokens[0]);
 	return true;
 }
 
-bool ConfigBase::handleIndex(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleIndex(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() < 2)
 		return false;
 
-	std::vector<std::string> parseTokens(tokens);
-	if (!Tools::checkAndRemoveSemicolon(parseTokens.back()))
+	if (!Tools::checkAndRemoveSemicolon(tokens.back()))
 		return false;
 
-	parseTokens.erase(parseTokens.begin());
-	setIndex(parseTokens);
+	tokens.erase(tokens.begin());
+	setIndex(tokens);
 	return true;
 }
 
-bool ConfigBase::handleAutoindex(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleAutoindex(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() != 2)
 		return false;
 
-	std::vector<std::string> parseTokens(tokens);
-	if (!Tools::checkAndRemoveSemicolon(parseTokens[1]))
+	if (!Tools::checkAndRemoveSemicolon(tokens[1]))
 		return false;
 
-	std::string autoindexArgument(parseTokens[1]);
+	std::string autoindexArgument(tokens[1]);
 	if (autoindexArgument == "on")
 		setAutoIndex(true);
 	else if (autoindexArgument == "off")
@@ -127,17 +124,16 @@ bool ConfigBase::handleAutoindex(const std::vector<std::string> &tokens, std::if
 	return true;
 }
 
-bool ConfigBase::handleClientMaxBodySize(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleClientMaxBodySize(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() != 2)
 		return false;
 
-	std::vector<std::string> parseTokens(tokens);
-	if (!Tools::checkAndRemoveSemicolon(parseTokens[1]))
+	if (!Tools::checkAndRemoveSemicolon(tokens[1]))
 		return false;
 
-	std::string maxSize(parseTokens[1]);
+	std::string maxSize(tokens[1]);
 	return handleMaxSizeConversion(maxSize);
 }
 
@@ -223,7 +219,7 @@ bitmask_t ConfigBase::charToBit(char c)
 	}
 }
 
-bool ConfigBase::handleErrorPage(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleErrorPage(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	if (tokens.size() > 2)
 		return handleErrorOneLiner(tokens);
@@ -231,19 +227,17 @@ bool ConfigBase::handleErrorPage(const std::vector<std::string> &tokens, std::if
 		return handleErrorMultiLiner(tokens, infile);
 }
 
-bool ConfigBase::handleErrorOneLiner(const std::vector<std::string> &tokens)
+bool ConfigBase::handleErrorOneLiner(std::vector<std::string> &tokens)
 {
-	std::vector<std::string> parseTokens(tokens);
-	std::string errorPagePath(parseTokens.back());
+	std::string errorPagePath(tokens.back());
 	if (!Tools::checkAndRemoveSemicolon(errorPagePath))
 		return false;
 
 	// erase first ("error_page") and last elements (errorPagePath)
-	parseTokens.erase(parseTokens.end() - 1);
-	parseTokens.erase(parseTokens.begin());
+	tokens.erase(tokens.end() - 1);
+	tokens.erase(tokens.begin());
 
-	std::map<int, std::string> errorPages = getErrorPages();
-	for (std::vector<std::string>::const_iterator it = parseTokens.begin(); it != parseTokens.end(); it++)
+	for (std::vector<std::string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
 	{
 		std::string temp = *it;
 		if (temp.size() != 3 || !Tools::isNumber(temp))
@@ -253,32 +247,26 @@ bool ConfigBase::handleErrorOneLiner(const std::vector<std::string> &tokens)
 		if (httpCode < 300 || httpCode > 599)
 			return false;
 
-		addOrReplaceErrorPage(errorPages, httpCode, errorPagePath);
+		addOrReplaceErrorPage(httpCode, errorPagePath);
 	}
-	setErrorPages(errorPages);
 	return true;
 }
 
-bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleErrorMultiLiner(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	if (!Tools::isValidBraceFormat("error_page", tokens, infile))
 		return false;
 
-	std::map<int, std::string> errorPages = getErrorPages();
 	std::string line;
 	while (std::getline(*infile, line))
 	{
 		if (line.empty() || line[0] == '#')
 			continue;
 
-		// std::cout << line << std::endl;
-		std::vector<std::string> tokens = Tools::splitString(line);
+		tokens = Tools::splitString(line);
 
 		if (tokens[0] == "}")
-		{
-			setErrorPages(errorPages);
 			return true;
-		}
 
 		if (tokens.size() != 2 || tokens[0].size() != 3 || !Tools::isNumber(tokens[0]))
 			return false;
@@ -291,20 +279,20 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string> &tokens, s
 		if (!Tools::checkAndRemoveSemicolon(errorPagePath))
 			return false;
 
-		addOrReplaceErrorPage(errorPages, httpCode, errorPagePath);
+		addOrReplaceErrorPage(httpCode, errorPagePath);
 	}
 	return false;
 }
 
-void ConfigBase::addOrReplaceErrorPage(std::map<int, std::string> &errorPages, int httpCode, const std::string& errorPagePath) {
-	std::map<int, std::string>::iterator it = errorPages.find(httpCode);
-	if (it != errorPages.end()) {
-		errorPages.erase(it);
+void ConfigBase::addOrReplaceErrorPage(int httpCode, const std::string& errorPagePath) {
+	std::map<int, std::string>::iterator it = _errorPages.find(httpCode);
+	if (it != _errorPages.end()) {
+		_errorPages.erase(it);
 	}
-	errorPages.insert(std::make_pair(httpCode, errorPagePath));
+	_errorPages.insert(std::make_pair(httpCode, errorPagePath));
 }
 
-bool ConfigBase::handleAllowMethods(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleAllowMethods(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() < 2)
@@ -327,7 +315,7 @@ bool ConfigBase::handleAllowMethods(const std::vector<std::string> &tokens, std:
 	return true;
 }
 
-bool ConfigBase::handleReturn(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() < 2 || tokens.size() > 3)

@@ -16,14 +16,6 @@
 #define FILE_FOLDER_NAME "/files"
 #define DEFAULT_CLIENT_MAX_BODY_SIZE "5M"
 
-// #define MAX_K 4194303
-// #define MAX_M 4095
-// #define MAX_G 3
-
-// #define FACTOR_K 1024
-// #define FACTOR_M 1048576
-// #define FACTOR_G 1073741824
-
 typedef uint8_t bitmask_t;
 
 struct UnitConversion
@@ -90,17 +82,17 @@ public:
 	void setAllowMethods(const std::set<std::string> &src);
 	void setReturnDirective(const std::pair<int, std::string> &src);
 
-	bool handleRoot(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleIndex(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleAutoindex(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleClientMaxBodySize(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleErrorPage(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleAllowMethods(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleReturn(const std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleRoot(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleIndex(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleAutoindex(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleClientMaxBodySize(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleErrorPage(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleAllowMethods(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleReturn(std::vector<std::string> &tokens, std::ifstream *infile);
 
-	bool handleErrorOneLiner(const std::vector<std::string> &tokens);
-	bool handleErrorMultiLiner(const std::vector<std::string> &tokens, std::ifstream *infile);
-	void addOrReplaceErrorPage(std::map<int, std::string> &errorPages, int httpCode, const std::string& path);
+	bool handleErrorOneLiner(std::vector<std::string> &tokens);
+	bool handleErrorMultiLiner(std::vector<std::string> &tokens, std::ifstream *infile);
+	void addOrReplaceErrorPage(int httpCode, const std::string& path);
 	bool handleMaxSizeConversion(std::string &maxSize);
 
 	unsigned int expandMaskedString(std::string &src, bitmask_t foundBit);
