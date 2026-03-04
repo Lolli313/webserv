@@ -5,7 +5,8 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-HttpResponse::HttpResponse() {}
+HttpResponse::HttpResponse(int code, const std::string &message) : _httpVersion(HTTP_VERSION), _returnCode(code), _returnMessage(message) {}
+HttpResponse::HttpResponse(const std::string &httpVersion, int code, const std::string &message) : _httpVersion(httpVersion), _returnCode(code), _returnMessage(message) {}
 
 HttpResponse::~HttpResponse() {}
 
@@ -20,6 +21,13 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &obj)
 {
 	if (this != &obj)
 	{
+		this->_httpVersion = obj._httpVersion;
+		this->_returnCode = obj._returnCode;
+		this->_returnMessage = obj._returnMessage;
+		this->_reponseHeaders = obj._reponseHeaders;
+		this->_representationHeaders = obj._representationHeaders;
+		this->_body = obj._body;
+		this->_finalResponse = obj._finalResponse;
 	}
 	return (*this);
 }
@@ -29,6 +37,23 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &obj)
 ===== GETTERS / SETTERS  ========================================
 =================================================================
 */
+
+void HttpResponse::setHttpVersion(const std::string &httpVersion) { _httpVersion = httpVersion; }
+void HttpResponse::setReturnCode(int code) { _returnCode = code; }
+void HttpResponse::setReturnMessage(const std::string &returnMessage) { _returnMessage = returnMessage; }
+void HttpResponse::setResponseHeaders(std::map<std::string, std::string> responseHeaders) { _reponseHeaders = responseHeaders; }
+void HttpResponse::setRepresentationHeaders(std::map<std::string, std::string> representationHeaders) { _representationHeaders = representationHeaders; }
+void HttpResponse::setBody(const std::string &body) { _body = body; }
+
+const std::string &HttpResponse::getHttpVersion() const { return _httpVersion; }
+int HttpResponse::getReturnCode() const { return _returnCode; }
+const std::string &HttpResponse::HttpResponse::getReturnMessage() const { return _returnMessage; }
+const std::map<std::string, std::string> &HttpResponse::getResponseHeaders() const { return _reponseHeaders; }
+const std::map<std::string, std::string> &HttpResponse::getRepresentationHeaders() const { return _representationHeaders; }
+const std::string &HttpResponse::getBody() const { return _body; }
+
+// This call builds and return the final response.
+const std::string &HttpResponse::getFinalResponse() const;
 
 /*
 =================================================================
