@@ -88,22 +88,34 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 =================================================================
 */
 
-bool ServerBlockConfig::parseListen(const std::vector<std::string>& tokens) {
-	DirectiveHandlers dh(_infile);
-	if (dh.handleListen(tokens)) {
-		_port = dh.getListen();
-		return true;
-	}
-	return false;
+bool ServerBlockConfig::parseListen(std::vector<std::string>& tokens) {
+	std::string port(tokens[1]);
+	if (tokens.size() != 2 || !Tools::checkAndRemoveSemicolon(port))
+		return false;
+
+	if (port.size() > 5 && !Tools::isNumber(port))
+		return false;
+
+	int portStr = std::atoi(port.c_str());
+
+	// unsigned short max is 65535
+	if (portStr <= 0 || portStr > std::numeric_limits<unsigned short>::max())
+		return false;
+
+	_port = Tools::intToString(portStr);
+	return true;
 }
 
-bool ServerBlockConfig::parseServerName(const std::vector<std::string>& tokens) {	
-	DirectiveHandlers dh(_infile);
-	if (dh.handleServerName(tokens)) {
-		_serverNames = dh.getServerName();
-		return true;
-	}
-	return false;
+bool ServerBlockConfig::parseServerName(std::vector<std::string>& tokens) {	
+	if (tokens.size() < 2)
+		return false;
+
+	if (!Tools::checkAndRemoveSemicolon(tokens.back()))
+		return false;
+
+	tokens.erase(tokens.begin());
+	_serverNames = std::set<std::string>(tokens.begin(), tokens.end());
+	return true;
 }
 
 bool ServerBlockConfig::parseRoot(const std::vector<std::string>& tokens) {
@@ -136,10 +148,20 @@ bool ServerBlockConfig::parseErrorPage(const std::vector<std::string>& tokens) {
 	return false;
 }
 
-bool ServerBlockConfig::parseLocation(const std::vector<std::string>& tokens) {
-	DirectiveHandlers dh(_infile, static_cast<const ConfigBase&>(*this));
-	if (dh.handleLocation(tokens)) {
-		_locationConfigs.insert(dh.getLocation());
+bool ServerBlockConfig::parseLocation(std::vector<std::string>& tokens) {
+	if (tokens.size() < 2 || tokens.size() > 3)
+		return false;
+
+	std::string locationPath = tokens[1];
+	if (_locationConfigs.find(locationPath) != _locationConfigs.end())
+		throw Tools::Exception("Duplicate location path found");
+	std::vector<std::string>::iterator it = tokens.begin();
+	std::advance(it, 1);
+	tokens.erase(it);
+	LocationConfig lc(_infile, static_cast<const ConfigBase &>(*this));
+	if (lc.parseLocationBlock(tokens)) {
+		// _locationConfig = _locationConfig.getLocation();
+		_locationConfigs.insert(std::make_pair(locationPath, lc));
 		return true;
 	}
 	return false;
