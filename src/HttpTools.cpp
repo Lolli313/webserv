@@ -48,16 +48,14 @@ bool HttpTools::isValidHttpCode(int code) {
 	return !(temp.find(code) == temp.end());
 }
 
-<<<<<<< Updated upstream
-=======
-const std::string& HttpTools::getHttpReturnMessage(int code) {
-    const HttpTools::MapType& temp = getHttpCodes();
+const std::string &HttpTools::getHttpReturnMessage(int code)
+{
+    const HttpTools::MapType &temp = getHttpCodes();
     HttpTools::MapType::const_iterator it = temp.find(code);
-    it == temp.end() ? temp.find(0)->second : it->second;
+    return ((it == temp.end()) ? temp.find(0)->second : it->second);
 }
 
 
->>>>>>> Stashed changes
 void HttpTools::initHttpCodes(HttpTools::MapType& httpCodes) {
     // 1xx Informational
     httpCodes[100] = "Continue";

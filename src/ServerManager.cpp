@@ -81,8 +81,8 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 		// Call the HttpMethod
 		// Send the response
 		// Then, delete the client
-		// HttpRequest test;
-		// test.parse(tmpClient->getTmpBufferPtr());
+		HttpRequest test;
+		test.parse(tmpClient->getTmpBufferPtr());
 		if (!_polling.deleteCLient(tmpClient))
 			throw Tools::Exception("Error at deleting client");
 	}
