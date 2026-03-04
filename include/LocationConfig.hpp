@@ -28,6 +28,14 @@ public:
 
 	const LocationConfig &getLocation() const;
 
+/**
+ * @brief Pointer to a parsing function that matches the directive's name.
+ *
+ * Example:
+ * ```cpp
+ * &ConfigBase::handleRoot
+ * ```
+ */
 	typedef bool (ConfigBase::*DirectiveHandler)(std::vector<std::string> &, std::ifstream *);
 
 	static const std::map<std::string, DirectiveHandler> _locationHandlers;

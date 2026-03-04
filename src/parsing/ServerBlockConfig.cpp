@@ -8,7 +8,9 @@
 
 ServerBlockConfig::~ServerBlockConfig() {}
 
-// Exception on parsing error
+/**
+ * @throws handleDirectiveName() throws Tools::Exception on parsing error
+ */
 ServerBlockConfig::ServerBlockConfig(std::ifstream *infile) :
 	_infile(infile)
 	{
@@ -179,6 +181,18 @@ bool ServerBlockConfig::parseReturn(std::vector<std::string>& tokens) {
 =================================================================
 */
 
+/**
+ * @brief valid server keyword formats:
+ * 
+ * ```
+ * server { 
+ * and
+ * server
+ * {
+ * ```
+ * 
+ * @param startingBraceIncluded if false, check if starting brace is on the next line
+ */
 bool ServerBlockConfig::handleStartingBrace(bool startingBraceIncluded) {
 	if (!startingBraceIncluded) {
 		std::string line;
@@ -190,6 +204,10 @@ bool ServerBlockConfig::handleStartingBrace(bool startingBraceIncluded) {
 	return true;
 }
 
+/**
+ * @brief Redirect to the appropriate parsing function
+ * @throws Tools::Exception if directive name or format is not valid
+ */
 void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 	std::vector<std::string> tokens(Tools::splitString(line));
 	if (tokens.size() < 2)

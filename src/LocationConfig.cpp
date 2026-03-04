@@ -71,6 +71,10 @@ const std::map<std::string, LocationConfig::DirectiveHandler> LocationConfig::_i
 =================================================================
 */
 
+/**
+ * @brief Redirect to the appropriate ConfigBase handler function
+ * @returns false if location block has an invalid directive
+ */
 bool LocationConfig::parseLocationBlock(std::vector<std::string> &tokens)
 {
 	if (!Tools::isValidBraceFormat("location", tokens, _infile))

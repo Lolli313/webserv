@@ -23,6 +23,14 @@ private:
 	std::ifstream *_infile;
 	ServerBlockConfig();
 
+	/**
+	 * @brief Pointer to a parsing function that matches the directive's name.
+	 *
+	 * Example:
+	 * ```cpp
+	 * &ServerBlockConfig::parseListen
+	 * ```
+	 */
 	typedef	bool (ServerBlockConfig::*DirectiveHandler)(std::vector<std::string>&);
 
 	static const std::map<std::string, DirectiveHandler> _serverHandlers;

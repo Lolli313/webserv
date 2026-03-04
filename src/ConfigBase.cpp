@@ -6,6 +6,8 @@
 =================================================================
 */
 
+
+// Initializes the object with default values
 ConfigBase::ConfigBase() {
 	initWithDefaultData();
 }
@@ -63,8 +65,13 @@ void ConfigBase::setReturnDirective(const std::pair<int, std::string> &src) { _r
 =================================================================
 */
 
+// See ValidChars for explanation
 const bitmask_t ConfigBase::_allowedBits;
 
+/**
+ * @brief Initialize each ValidChar with their corresponding string to int
+ * helper parameters
+ */
 const UnitConversion ConfigBase::_conversionTable[] = {
 	{MASK_K, MAX_K, FACTOR_K, MAX_STR_K},
 	{MASK_M, MAX_M, FACTOR_M, MAX_STR_M},
@@ -140,7 +147,7 @@ bool ConfigBase::handleClientMaxBodySize(std::vector<std::string> &tokens, std::
 bool ConfigBase::handleMaxSizeConversion(std::string &maxSize)
 {
 	long resultMaxSize;
-	if (!Tools::isNumber(maxSize))
+	if (!Tools::isNumber(maxSize)) // numeric string has a character
 	{
 		const std::string digits("0123456789");
 		std::size_t pos = maxSize.find_first_not_of(digits);
@@ -155,7 +162,7 @@ bool ConfigBase::handleMaxSizeConversion(std::string &maxSize)
 
 		resultMaxSize = expandMaskedString(maxSize, foundBit);
 	}
-	else
+	else // string is purely a number, no kilo, mega or giga conversion needed
 	{
 		if (maxSize.size() > 10)
 			throw Tools::Exception("clientMaxBodySize value too big");
@@ -200,22 +207,25 @@ unsigned int ConfigBase::expandMaskedString(std::string &src, bitmask_t foundBit
 	return 0;
 }
 
+/**
+ * @brief Converts a suffix character to its corresponding bitmask.
+ * Maps 'k', 'm', or 'g' (case-insensitive) to their respective @ref ValidChars 
+ * flag for use in bitwise validation.
+ * @param c The character to convert (e.g., 'K', 'm', 'G').
+ * @return bitmask_t The matching @ref ValidChars flag, or `NONE` if the character is invalid.
+ * @note This function performs an internal `std::tolower` conversion to ensure
+ * case-insensitivity.
+ */
 bitmask_t ConfigBase::charToBit(char c)
 {
-
-	// Allow uppercase as well lowercase characters
 	c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 
 	switch (c)
 	{
-	case 'k':
-		return MASK_K;
-	case 'm':
-		return MASK_M;
-	case 'g':
-		return MASK_G;
-	default:
-		return 0;
+	case 'k': return MASK_K;
+	case 'm': return MASK_M;
+	case 'g': return MASK_G;
+	default: return NONE;
 	}
 }
 
@@ -227,6 +237,12 @@ bool ConfigBase::handleErrorPage(std::vector<std::string> &tokens, std::ifstream
 		return handleErrorMultiLiner(tokens, infile);
 }
 
+/**
+ * @brief If the error_page directive is formatted on one line, match each HTTP code
+ * with the same path
+ * 
+ * (for e.g```error_page 400 404 /errors/api_error.json;```)
+ */
 bool ConfigBase::handleErrorOneLiner(std::vector<std::string> &tokens)
 {
 	std::string errorPagePath(tokens.back());
@@ -252,6 +268,18 @@ bool ConfigBase::handleErrorOneLiner(std::vector<std::string> &tokens)
 	return true;
 }
 
+/**
+ * @brief If the error_page directive is formatted as a block, match each HTTP code
+ * with their own path
+ * 
+ * for e.g
+ * ```
+ * error_page {
+		403 /errors/403.html;
+		404 /errors/404.html;
+		}
+	```
+ */
 bool ConfigBase::handleErrorMultiLiner(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	if (!Tools::isValidBraceFormat("error_page", tokens, infile))
@@ -284,12 +312,17 @@ bool ConfigBase::handleErrorMultiLiner(std::vector<std::string> &tokens, std::if
 	return false;
 }
 
+/**
+ * @brief Updates or adds a custom error page for a specific HTTP status code.
+ *
+ * If a path already exists for the given @p httpCode, it is overwritten with 
+ * the new @p errorPagePath.
+ *
+ * @param httpCode The HTTP status code (e.g., 404, 500).
+ * @param errorPagePath The file system path to the custom HTML error page.
+ */
 void ConfigBase::addOrReplaceErrorPage(int httpCode, const std::string& errorPagePath) {
-	std::map<int, std::string>::iterator it = _errorPages.find(httpCode);
-	if (it != _errorPages.end()) {
-		_errorPages.erase(it);
-	}
-	_errorPages.insert(std::make_pair(httpCode, errorPagePath));
+	_errorPages[httpCode] = errorPagePath;
 }
 
 bool ConfigBase::handleAllowMethods(std::vector<std::string> &tokens, std::ifstream *infile)
@@ -374,15 +407,28 @@ void ConfigBase::printData() const {
 	std::cout << std::endl;
 }
 
+/**
+ * @brief initializes the ConfigBase object with harcoded default values
+ * 
+ * ```
+ * **Root** | PWD/files
+ * **Index** | index.html
+ * **Auto Index** | false
+ * **Client Max Body Size** | 5M
+ * **Error Pages** | *empty*
+ * **Allowed Methods** | GET, POST, DELETE
+ * **Return Directive** | *empty*
+ * ```
+ */
 void ConfigBase::initWithDefaultData() {
-	initRoot();													// root
-	_index.push_back("index.html");								// index
-	setAutoIndex(false);										// autoindex
+	initRoot();
+	_index.push_back("index.html");
+	setAutoIndex(false);
 	std::string temp(DEFAULT_CLIENT_MAX_BODY_SIZE);
-	setClientMaxBodySize(expandMaskedString(temp, MASK_M));		// clientMaxBodySize
+	setClientMaxBodySize(expandMaskedString(temp, MASK_M));
 	_allowedMethods.insert("GET");
 	_allowedMethods.insert("POST");
-	_allowedMethods.insert("DELETE");							// allowMethods
+	_allowedMethods.insert("DELETE");
 }
 
 void ConfigBase::initRoot() {
