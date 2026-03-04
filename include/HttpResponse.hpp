@@ -23,7 +23,7 @@ private:
 	std::string _returnMessage;
 
 	// HEADERS
-	std::map<std::string, std::string> _reponseHeaders;
+	std::vector<std::pair<std::string, std::string> > _reponseHeaders;
 
 	// BODY
 	std::string _body;
@@ -43,14 +43,13 @@ public:
 	void setHttpVersion(const std::string &httpVersion);
 	void setReturnCode(int code);
 	void setReturnMessage(const std::string &returnMessage);
-	void setResponseHeaders(const std::map<std::string, std::string> &responseHeaders);
+	void setResponseHeaders(const std::vector<std::pair<std::string, std::string> > &responseHeaders);
 	void setBody(const std::string &body);
 
 	const std::string &getHttpVersion() const;
 	int getReturnCode() const;
 	const std::string &getReturnMessage() const;
-	const std::map<std::string, std::string> &getResponseHeaders() const;
-	const std::map<std::string, std::string> &getRepresentationHeaders() const;
+	const std::vector<std::pair<std::string, std::string> > &getResponseHeaders() const;
 	const std::string &getBody() const;
 	const std::string &getFinalResponse(); // This call builds and return the final response.
 

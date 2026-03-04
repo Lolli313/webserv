@@ -42,13 +42,13 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &obj)
 void HttpResponse::setHttpVersion(const std::string &httpVersion) { _httpVersion = httpVersion; }
 void HttpResponse::setReturnCode(int code) { _returnCode = code; }
 void HttpResponse::setReturnMessage(const std::string &returnMessage) { _returnMessage = returnMessage; }
-void HttpResponse::setResponseHeaders(const std::map<std::string, std::string> &responseHeaders) { _reponseHeaders = responseHeaders; }
+void HttpResponse::setResponseHeaders(const std::vector<std::pair<std::string, std::string> > &responseHeaders) { _reponseHeaders = responseHeaders; }
 void HttpResponse::setBody(const std::string &body) { _body = body; }
 
 const std::string &HttpResponse::getHttpVersion() const { return _httpVersion; }
 int HttpResponse::getReturnCode() const { return _returnCode; }
 const std::string &HttpResponse::HttpResponse::getReturnMessage() const { return _returnMessage; }
-const std::map<std::string, std::string> &HttpResponse::getResponseHeaders() const { return _reponseHeaders; }
+const std::vector<std::pair<std::string, std::string> > &HttpResponse::getResponseHeaders() const { return _reponseHeaders; }
 const std::string &HttpResponse::getBody() const { return _body; }
 
 /**
@@ -73,7 +73,7 @@ const std::string &HttpResponse::getFinalResponse()
  */
 void HttpResponse::addHeadersToResponse()
 {
-	for (std::map<std::string, std::string>::iterator it = _reponseHeaders.begin(); it != _reponseHeaders.end(); it++)
+	for (std::vector<std::pair<std::string, std::string> >::iterator it = _reponseHeaders.begin(); it != _reponseHeaders.end(); it++)
 	{
 		_finalResponse.append(it->first + ":" + SPACE + it->second + CRLF);
 	}
@@ -92,7 +92,7 @@ void HttpResponse::buildFinalResponse()
 		throw Tools::Exception("HttpResponse: missing _httpVersion");
 
 	if (_returnCode >= 100)
-		_finalResponse.append(_returnCode + SPACE);
+		_finalResponse.append(Tools::intToString(_returnCode) + SPACE);
 	else
 		throw Tools::Exception("HttpResponse: wrong _returnCode");
 
@@ -105,7 +105,7 @@ void HttpResponse::buildFinalResponse()
 		addHeadersToResponse();
 
 	if (!_body.empty())
-		_finalResponse.append(_body);
+		_finalResponse.append(_body + CRLF);
 }
 
 /**
