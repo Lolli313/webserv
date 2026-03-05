@@ -23,11 +23,12 @@ int main(int ac, char **av) {
 
 	std::vector<std::string> temp;
 	temp.push_back("8080");
+	temp.push_back("4443");
 	try {
-		ParseConfig pc((std::string(av[1])));
-		pc.printData();
-		// ServerManager serverManager(temp);
-		// serverManager.mainLoop();
+//		ParseConfig pc((std::string(av[1])));
+//		pc.printData();
+		ServerManager serverManager(temp);
+		serverManager.mainLoop();
 	}
 	catch (Tools::Exception& e){
 		if (e.getReturnCode() == 0)

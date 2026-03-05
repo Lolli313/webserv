@@ -9,9 +9,10 @@
 =================================================================
 */
 
-Polling::Polling(const std::set<int> &servSockFDs) : // _servSockFDs(setupAddServSockFDs(servSockets)),
-													 // _servSockets(servSockets),
-													 _newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
+Polling::Polling(const std::set<int> &servSockFDs) :
+	// _servSockFDs(setupAddServSockFDs(servSockets)),
+	// _servSockets(servSockets),
+	_newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
 	std::cout << PURPLE << "epoll CONSTRUCTOR, socket seize is: " << servSockFDs.size() << RESET << std::endl;
@@ -242,8 +243,8 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 			}
 		}
 		std::cout << CYAN << "CLIENT MESSAGE : " << itClient->second.getBuffer() << RESET << std::endl;
-		// if (!_polling.deleteCLient(tmpClient))
-		// 	throw Tools::Exception("Error at deleting client");
+		if (!deleteCLient(&itClient->second))
+			throw Tools::Exception("Error at deleting client");
 
 		return &itClient->second;
 	}
