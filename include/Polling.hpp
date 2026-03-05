@@ -3,10 +3,12 @@
 #define POLLING_HPP
 
 #include "ServerSocket.hpp"
+#include "HttpResponse.hpp"
+#include "Client.hpp"
+
 #include <netinet/in.h>
 #include <algorithm>
 #include <sys/epoll.h>
-#include "Client.hpp"
 #include <iostream>
 #include <cstring>
 #include <cstdlib>

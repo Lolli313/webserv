@@ -107,6 +107,7 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 		// HttpRequest request(tmpClient);
 		// HttpMethod method(request);
 		// HttpResponse response(method);
+
 		// return response;
 	}
 	else

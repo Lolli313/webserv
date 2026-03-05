@@ -1,5 +1,6 @@
 
 #include "../include/terminalColors.hpp"
+#include "../include/HttpTools.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
@@ -33,17 +34,38 @@ int main()
 	std::cout << clientFD << std::endl;
 	std::cout << connect(clientFD, res->ai_addr, res->ai_addrlen) << std::endl;
 	std::string str;
+	int readSize = 0;
 	while (std::getline(std::cin, str))
 	{
+		// Remove trailing \r if present (from CRLF line endings)
+		if (!str.empty() && str.back() == '\r')
+			str.pop_back();
+
 		if (str == "stop")
 			break;
+
 		send(clientFD, str.c_str(), str.size(), 0);
+
+		std::string response;
+		while ((readSize = read(clientFD, &readBuffer[0], readBuffer.size())) > 0)
+		{
+			response.append(readBuffer.data(), readSize);
+
+			if (readSize < (ssize_t)readBuffer.size())
+				break; // likely end of current message
+		}
+
+		// Strip all CRLF sequences from the complete response
+		std::size_t pos;
+		while ((pos = response.find(CRLF)) != std::string::npos)
+		{
+			response.erase(pos, 2);
+		}
+
+		std::cout << response << std::endl;
 	}
 
 	close(clientFD);
-	// read(clientFD, &readBuffer[0], readBuffer.size());
-
-	// std::cout << readBuffer << std::endl;
 
 	freeaddrinfo(res);
 }
