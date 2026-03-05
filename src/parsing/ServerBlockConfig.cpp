@@ -5,27 +5,25 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-// ServerBlockConfig::ServerBlockConfig() {}
 
 ServerBlockConfig::~ServerBlockConfig() {}
 
-// ServerBlockConfig::ServerBlockConfig(const ServerBlockConfig &obj) { *this = obj; }
-
-// Exception on parsing error
+/**
+ * @throws handleDirectiveName() throws Tools::Exception on parsing error
+ */
 ServerBlockConfig::ServerBlockConfig(std::ifstream *infile) :
-//	_duplicates(NONE),
 	_infile(infile)
 	{
 	std::string line;
 
 	while (std::getline(*_infile, line)) {
-		std::cout << line << std::endl;
 		if (line[0] == '#' || line.empty())
 			continue;
 		else if (line[0] == '}')
 			return;
 		handleDirectiveName(line);
 	}
+	printData();
 }
 
 /*
@@ -87,70 +85,91 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 =================================================================
 */
 
-bool ServerBlockConfig::parseListen(const std::vector<std::string>& tokens) {
-	DirectiveHandlers dh(_infile);
-	if (dh.handleListen(tokens)) {
-		_port = dh.getListen();
-		return true;
-	}
-	return false;
+bool ServerBlockConfig::parseListen(std::vector<std::string>& tokens) {
+	std::string port(tokens[1]);
+	if (tokens.size() != 2 || !Tools::checkAndRemoveSemicolon(port))
+		return false;
+
+	if (port.size() > 5 && !Tools::isNumber(port))
+		return false;
+
+	int portStr = std::atoi(port.c_str());
+
+	// unsigned short max is 65535
+	if (portStr <= 0 || portStr > std::numeric_limits<unsigned short>::max())
+		return false;
+
+	_port = Tools::intToString(portStr);
+	return true;
 }
 
-bool ServerBlockConfig::parseServerName(const std::vector<std::string>& tokens) {	
-	DirectiveHandlers dh(_infile);
-	if (dh.handleServerName(tokens)) {
-		_serverNames = dh.getServerName();
-		return true;
-	}
-	return false;
+bool ServerBlockConfig::parseServerName(std::vector<std::string>& tokens) {	
+	if (tokens.size() < 2)
+		return false;
+
+	if (!Tools::checkAndRemoveSemicolon(tokens.back()))
+		return false;
+
+	tokens.erase(tokens.begin());
+	_serverNames = std::set<std::string>(tokens.begin(), tokens.end());
+	return true;
 }
 
-bool ServerBlockConfig::parseRoot(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseRoot(std::vector<std::string>& tokens) {
 	if (handleRoot(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseIndex(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseIndex(std::vector<std::string>& tokens) {
 	if (handleIndex(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseAutoindex(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseAutoindex(std::vector<std::string>& tokens) {
 	if (handleAutoindex(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseClientMaxBodySize(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseClientMaxBodySize(std::vector<std::string>& tokens) {
 	if (handleClientMaxBodySize(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseErrorPage(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseErrorPage(std::vector<std::string>& tokens) {
 	if (handleErrorPage(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseLocation(const std::vector<std::string>& tokens) {
-	DirectiveHandlers dh(_infile);
-	if (dh.handleLocation(tokens)) {
-		_locationConfigs.insert(dh.getLocation());
+bool ServerBlockConfig::parseLocation(std::vector<std::string>& tokens) {
+	if (tokens.size() < 2 || tokens.size() > 3)
+		return false;
+
+	std::string locationPath = tokens[1];
+	if (_locationConfigs.find(locationPath) != _locationConfigs.end())
+		throw Tools::Exception("Duplicate location path found");
+	std::vector<std::string>::iterator it = tokens.begin();
+	std::advance(it, 1);
+	tokens.erase(it);
+	LocationConfig lc(_infile, static_cast<const ConfigBase &>(*this));
+	if (lc.parseLocationBlock(tokens)) {
+		_locationConfigs.insert(std::make_pair(locationPath, lc));
 		return true;
 	}
 	return false;
 }
 
-bool ServerBlockConfig::parseAllowMethods(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseAllowMethods(std::vector<std::string>& tokens) {
 	if (handleAllowMethods(tokens, _infile))
 		return true;
 	return false;
 }
 
-bool ServerBlockConfig::parseReturn(const std::vector<std::string>& tokens) {
+bool ServerBlockConfig::parseReturn(std::vector<std::string>& tokens) {
 	if (handleReturn(tokens, _infile))
 		return true;
 	return false;
@@ -162,6 +181,18 @@ bool ServerBlockConfig::parseReturn(const std::vector<std::string>& tokens) {
 =================================================================
 */
 
+/**
+ * @brief valid server keyword formats:
+ * 
+ * ```
+ * server { 
+ * and
+ * server
+ * {
+ * ```
+ * 
+ * @param startingBraceIncluded if false, check if starting brace is on the next line
+ */
 bool ServerBlockConfig::handleStartingBrace(bool startingBraceIncluded) {
 	if (!startingBraceIncluded) {
 		std::string line;
@@ -173,6 +204,10 @@ bool ServerBlockConfig::handleStartingBrace(bool startingBraceIncluded) {
 	return true;
 }
 
+/**
+ * @brief Redirect to the appropriate parsing function
+ * @throws Tools::Exception if directive name or format is not valid
+ */
 void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 	std::vector<std::string> tokens(Tools::splitString(line));
 	if (tokens.size() < 2)
@@ -199,11 +234,16 @@ void ServerBlockConfig::printData() const {
 	std::cout << std::endl;
 
 	ConfigBase::printData();
+	std::cout << std::endl;
 
 	std::map<std::string, LocationConfig>::const_iterator mit = _locationConfigs.begin();
+	std::cout << "LocationCondig data" << std::endl;
 	for (; mit != _locationConfigs.end(); mit++) {
+		std::cout << "location path: " << mit->first << std::endl;
 		mit->second.printData();
+		std::cout << std::endl;
 	}
+	std::cout << std::endl;
 	
 }
 

@@ -12,17 +12,11 @@ LocationConfig::~LocationConfig() {}
 
 LocationConfig::LocationConfig(const LocationConfig &obj) : ConfigBase(obj) { *this = obj; }
 
-LocationConfig::LocationConfig(std::ifstream *infile) : ConfigBase(*this), _infile(infile)
-{
-}
+LocationConfig::LocationConfig(std::ifstream *infile) : ConfigBase(*this), _infile(infile) {}
 
-LocationConfig::LocationConfig(std::ifstream *infile, const ConfigBase &config) : ConfigBase(config), _infile(infile)
-{
-}
+LocationConfig::LocationConfig(std::ifstream *infile, const ConfigBase &config) : ConfigBase(config), _infile(infile) {}
 
-LocationConfig::LocationConfig(const ConfigBase &obj) : ConfigBase(obj)
-{
-}
+LocationConfig::LocationConfig(const ConfigBase &obj) : ConfigBase(obj) {}
 
 /*
 =================================================================
@@ -30,33 +24,12 @@ LocationConfig::LocationConfig(const ConfigBase &obj) : ConfigBase(obj)
 =================================================================
 */
 
-// LocationConfig &LocationConfig::operator=(const LocationConfig &obj)
-// {
-// 	if (this != &obj)
-// 		ConfigBase::operator=(obj);
-// 	return (*this);
-// }
-
 LocationConfig &LocationConfig::operator=(const ConfigBase &obj)
 {
 	if (this != &obj)
 		ConfigBase::operator=(obj);
 	return (*this);
 }
-
-// LocationConfig &LocationConfig::operator=(const Server &obj)
-// {
-// 	ConfigBase::operator=(static_cast<const ConfigBase &>(obj));
-// 	return (*this);
-// }
-
-
-// LocationConfig &LocationConfig::operator=(const ServerBlockConfig &obj)
-// {
-// 	ConfigBase::operator=(static_cast<const ConfigBase &>(obj));
-// 	return (*this);
-// }
-
 
 /*
 =================================================================
@@ -98,16 +71,12 @@ const std::map<std::string, LocationConfig::DirectiveHandler> LocationConfig::_i
 =================================================================
 */
 
-bool LocationConfig::parseLocationBlock(const std::vector<std::string> &tokens)
+/**
+ * @brief Redirect to the appropriate ConfigBase handler function
+ * @returns false if location block has an invalid directive
+ */
+bool LocationConfig::parseLocationBlock(std::vector<std::string> &tokens)
 {
-	// if (tokens.size() < 2 || tokens.size() > 3)
-	// 	return false;
-
-	// std::string path(tokens[1]);
-	// std::vector<std::string> tempTokens(tokens);
-	// std::vector<std::string>::iterator it = tempTokens.begin();
-	// std::advance(it, 1);
-	// tempTokens.erase(it);
 	if (!Tools::isValidBraceFormat("location", tokens, _infile))
 		return false;
 
@@ -117,8 +86,7 @@ bool LocationConfig::parseLocationBlock(const std::vector<std::string> &tokens)
 		if (line.empty() || line[0] == '#')
 			continue;
 
-		std::cout << line << std::endl;
-		std::vector<std::string> tokens = Tools::splitString(line);
+		tokens = Tools::splitString(line);
 		if (tokens[0] == "}")
 			return true;
 
@@ -135,6 +103,5 @@ bool LocationConfig::parseLocationBlock(const std::vector<std::string> &tokens)
 }
 
 void LocationConfig::printData() const {
-	std::cout << "LocationCondig data" << std::endl;
 	ConfigBase::printData();
 }

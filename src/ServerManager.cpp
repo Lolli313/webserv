@@ -95,7 +95,7 @@ bool ServerManager::matchServerFD(int eventFD) const
 {
 	if (_servSockFDs.find(eventFD) != _servSockFDs.end())
 	{
-		std::cout << ORANGE << "matchServerFD new client found" << RESET << std::endl;
+		std::cout << ORANGE << "matchServerFD new client found from FD " << eventFD <<  RESET << std::endl;
 		return true;
 	}
 	return false;

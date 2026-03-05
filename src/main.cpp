@@ -26,29 +26,12 @@ int main(int ac, char **av)
 
 	std::vector<std::string> temp;
 	temp.push_back("8080");
-	try
-	{
-		// ParseConfig pc((std::string(av[1])));
-		// pc.printData();
-		// ServerManager serverManager(temp);
-		// serverManager.mainLoop();
-		std::pair<std::string, std::string> input;
-		std::vector<std::pair<std::string, std::string> > respMap;
-		input = std::make_pair("arttu", "meh");
-		respMap.push_back(input);
-		input = std::make_pair("thomas", "yeah");
-		respMap.push_back(input);
-		input = std::make_pair("Content-type", "yummy");
-		respMap.push_back(input);
-		HttpResponse response(404, "this is a test");
-		response.setResponseHeaders(respMap);
-		std::ifstream file("objects/body.txt");
-		if (!file)
-			throw Tools::Exception("nein");
-		std::ostringstream body;
-		body << file.rdbuf();
-		response.setBody(body.str());
-		std::cout << response.getFinalResponse() << std::endl;
+	temp.push_back("4443");
+	try {
+//		ParseConfig pc((std::string(av[1])));
+//		pc.printData();
+		ServerManager serverManager(temp);
+		serverManager.mainLoop();
 	}
 	catch (Tools::Exception &e)
 	{

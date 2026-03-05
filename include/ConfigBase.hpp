@@ -16,31 +16,54 @@
 #define FILE_FOLDER_NAME "/files"
 #define DEFAULT_CLIENT_MAX_BODY_SIZE "5M"
 
-// #define MAX_K 4194303
-// #define MAX_M 4095
-// #define MAX_G 3
-
-// #define FACTOR_K 1024
-// #define FACTOR_M 1048576
-// #define FACTOR_G 1073741824
-
 typedef uint8_t bitmask_t;
 
+/**
+ * @brief Metadata for validating and scaling numeric strings with unit suffixes.
+ * * This structure provides the paramenters required to convert a string (e.g., "2G") 
+ * into its raw integer representation while preventing arithmetic overflows.
+ */
 struct UnitConversion
 {
+	// @brief Bitmask from ValidChars representing the allowed suffix (e.g., MASK_K)
 	bitmask_t mask;
+
+	// The highest numeric value allowed *before* multiplication.
 	unsigned int maxVal;
+
+	// The multiplier associated with the unit (e.g., 1024, 1048576).
 	unsigned int factor;
+
+	/** @brief The maximum allowed string length for the numeric part of the input.
+     * Used for fast-fail validation before parsing the full string. */
 	std::size_t maxStrLen;
 };
 
+/**
+ * @brief Bitmask defining which size suffix characters are allowed.
+ *
+ * Each flag corresponds to a valid suffix character:
+ * ```
+ * |   Flag   | Character | Meaning   |
+ * |----------|-----------|-----------|
+ * | `MASK_K` |    `k`    | Kilobytes |
+ * | `MASK_M` |    `m`    | Megabytes |
+ * | `MASK_G` |    `g`    | Gigabytes |
+ * ```
+ * @attention case-insentive
+ */
 enum ValidChars
 {
+	NONE = 0,
 	MASK_K = 1 << 0,
 	MASK_M = 1 << 1,
 	MASK_G = 1 << 2
 };
 
+/**
+ * @brief Base class that holds variables for ServerBlockConfig,
+ * LocationConfig and Server classes
+ */
 class ConfigBase
 {
 private:
@@ -90,16 +113,17 @@ public:
 	void setAllowMethods(const std::set<std::string> &src);
 	void setReturnDirective(const std::pair<int, std::string> &src);
 
-	bool handleRoot(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleIndex(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleAutoindex(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleClientMaxBodySize(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleErrorPage(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleAllowMethods(const std::vector<std::string> &tokens, std::ifstream *infile);
-	bool handleReturn(const std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleRoot(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleIndex(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleAutoindex(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleClientMaxBodySize(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleErrorPage(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleAllowMethods(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleReturn(std::vector<std::string> &tokens, std::ifstream *infile);
 
-	bool handleErrorOneLiner(const std::vector<std::string> &tokens);
-	bool handleErrorMultiLiner(const std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleErrorOneLiner(std::vector<std::string> &tokens);
+	bool handleErrorMultiLiner(std::vector<std::string> &tokens, std::ifstream *infile);
+	void addOrReplaceErrorPage(int httpCode, const std::string& path);
 	bool handleMaxSizeConversion(std::string &maxSize);
 
 	unsigned int expandMaskedString(std::string &src, bitmask_t foundBit);

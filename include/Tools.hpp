@@ -25,7 +25,6 @@ public:
 		std::string _msgLog;
 
 		Exception();
-		//		Exception(const Exception &obj);
 		Exception &operator=(const Exception &obj);
 
 	public:

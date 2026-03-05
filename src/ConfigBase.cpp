@@ -6,6 +6,8 @@
 =================================================================
 */
 
+
+// Initializes the object with default values
 ConfigBase::ConfigBase() {
 	initWithDefaultData();
 }
@@ -63,8 +65,13 @@ void ConfigBase::setReturnDirective(const std::pair<int, std::string> &src) { _r
 =================================================================
 */
 
+// See ValidChars for explanation
 const bitmask_t ConfigBase::_allowedBits;
 
+/**
+ * @brief Initialize each ValidChar with their corresponding string to int
+ * helper parameters
+ */
 const UnitConversion ConfigBase::_conversionTable[] = {
 	{MASK_K, MAX_K, FACTOR_K, MAX_STR_K},
 	{MASK_M, MAX_M, FACTOR_M, MAX_STR_M},
@@ -76,47 +83,44 @@ const UnitConversion ConfigBase::_conversionTable[] = {
 =================================================================
 */
 
-bool ConfigBase::handleRoot(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleRoot(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() != 2)
 		return false;
 
-	std::vector<std::string> parseTokens(tokens);
-	if (!Tools::checkAndRemoveSemicolon(parseTokens[1]))
+	if (!Tools::checkAndRemoveSemicolon(tokens[1]))
 		return false;
 
-	parseTokens.erase(parseTokens.begin());
-	setRoot(parseTokens[0]);
+	tokens.erase(tokens.begin());
+	setRoot(tokens[0]);
 	return true;
 }
 
-bool ConfigBase::handleIndex(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleIndex(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() < 2)
 		return false;
 
-	std::vector<std::string> parseTokens(tokens);
-	if (!Tools::checkAndRemoveSemicolon(parseTokens.back()))
+	if (!Tools::checkAndRemoveSemicolon(tokens.back()))
 		return false;
 
-	parseTokens.erase(parseTokens.begin());
-	setIndex(parseTokens);
+	tokens.erase(tokens.begin());
+	setIndex(tokens);
 	return true;
 }
 
-bool ConfigBase::handleAutoindex(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleAutoindex(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() != 2)
 		return false;
 
-	std::vector<std::string> parseTokens(tokens);
-	if (!Tools::checkAndRemoveSemicolon(parseTokens[1]))
+	if (!Tools::checkAndRemoveSemicolon(tokens[1]))
 		return false;
 
-	std::string autoindexArgument(parseTokens[1]);
+	std::string autoindexArgument(tokens[1]);
 	if (autoindexArgument == "on")
 		setAutoIndex(true);
 	else if (autoindexArgument == "off")
@@ -127,24 +131,23 @@ bool ConfigBase::handleAutoindex(const std::vector<std::string> &tokens, std::if
 	return true;
 }
 
-bool ConfigBase::handleClientMaxBodySize(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleClientMaxBodySize(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() != 2)
 		return false;
 
-	std::vector<std::string> parseTokens(tokens);
-	if (!Tools::checkAndRemoveSemicolon(parseTokens[1]))
+	if (!Tools::checkAndRemoveSemicolon(tokens[1]))
 		return false;
 
-	std::string maxSize(parseTokens[1]);
+	std::string maxSize(tokens[1]);
 	return handleMaxSizeConversion(maxSize);
 }
 
 bool ConfigBase::handleMaxSizeConversion(std::string &maxSize)
 {
 	long resultMaxSize;
-	if (!Tools::isNumber(maxSize))
+	if (!Tools::isNumber(maxSize)) // numeric string has a character
 	{
 		const std::string digits("0123456789");
 		std::size_t pos = maxSize.find_first_not_of(digits);
@@ -159,7 +162,7 @@ bool ConfigBase::handleMaxSizeConversion(std::string &maxSize)
 
 		resultMaxSize = expandMaskedString(maxSize, foundBit);
 	}
-	else
+	else // string is purely a number, no kilo, mega or giga conversion needed
 	{
 		if (maxSize.size() > 10)
 			throw Tools::Exception("clientMaxBodySize value too big");
@@ -204,26 +207,29 @@ unsigned int ConfigBase::expandMaskedString(std::string &src, bitmask_t foundBit
 	return 0;
 }
 
+/**
+ * @brief Converts a suffix character to its corresponding bitmask.
+ * Maps 'k', 'm', or 'g' (case-insensitive) to their respective @ref ValidChars 
+ * flag for use in bitwise validation.
+ * @param c The character to convert (e.g., 'K', 'm', 'G').
+ * @return bitmask_t The matching @ref ValidChars flag, or `NONE` if the character is invalid.
+ * @note This function performs an internal `std::tolower` conversion to ensure
+ * case-insensitivity.
+ */
 bitmask_t ConfigBase::charToBit(char c)
 {
-
-	// Allow uppercase as well lowercase characters
 	c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 
 	switch (c)
 	{
-	case 'k':
-		return MASK_K;
-	case 'm':
-		return MASK_M;
-	case 'g':
-		return MASK_G;
-	default:
-		return 0;
+	case 'k': return MASK_K;
+	case 'm': return MASK_M;
+	case 'g': return MASK_G;
+	default: return NONE;
 	}
 }
 
-bool ConfigBase::handleErrorPage(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleErrorPage(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	if (tokens.size() > 2)
 		return handleErrorOneLiner(tokens);
@@ -231,19 +237,23 @@ bool ConfigBase::handleErrorPage(const std::vector<std::string> &tokens, std::if
 		return handleErrorMultiLiner(tokens, infile);
 }
 
-bool ConfigBase::handleErrorOneLiner(const std::vector<std::string> &tokens)
+/**
+ * @brief If the error_page directive is formatted on one line, match each HTTP code
+ * with the same path
+ * 
+ * (for e.g```error_page 400 404 /errors/api_error.json;```)
+ */
+bool ConfigBase::handleErrorOneLiner(std::vector<std::string> &tokens)
 {
-	std::vector<std::string> parseTokens(tokens);
-	std::string errorPagePath(parseTokens.back());
+	std::string errorPagePath(tokens.back());
 	if (!Tools::checkAndRemoveSemicolon(errorPagePath))
 		return false;
 
 	// erase first ("error_page") and last elements (errorPagePath)
-	parseTokens.erase(parseTokens.end() - 1);
-	parseTokens.erase(parseTokens.begin());
+	tokens.erase(tokens.end() - 1);
+	tokens.erase(tokens.begin());
 
-	std::map<int, std::string> errorPages;
-	for (std::vector<std::string>::const_iterator it = parseTokens.begin(); it != parseTokens.end(); it++)
+	for (std::vector<std::string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
 	{
 		std::string temp = *it;
 		if (temp.size() != 3 || !Tools::isNumber(temp))
@@ -253,32 +263,38 @@ bool ConfigBase::handleErrorOneLiner(const std::vector<std::string> &tokens)
 		if (httpCode < 300 || httpCode > 599)
 			return false;
 
-		errorPages.insert(std::make_pair(httpCode, errorPagePath));
+		addOrReplaceErrorPage(httpCode, errorPagePath);
 	}
-	setErrorPages(errorPages);
 	return true;
 }
 
-bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string> &tokens, std::ifstream *infile)
+/**
+ * @brief If the error_page directive is formatted as a block, match each HTTP code
+ * with their own path
+ * 
+ * for e.g
+ * ```
+ * error_page {
+		403 /errors/403.html;
+		404 /errors/404.html;
+		}
+	```
+ */
+bool ConfigBase::handleErrorMultiLiner(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	if (!Tools::isValidBraceFormat("error_page", tokens, infile))
 		return false;
 
-	std::map<int, std::string> temp;
 	std::string line;
 	while (std::getline(*infile, line))
 	{
 		if (line.empty() || line[0] == '#')
 			continue;
 
-		std::cout << line << std::endl;
-		std::vector<std::string> tokens = Tools::splitString(line);
+		tokens = Tools::splitString(line);
 
 		if (tokens[0] == "}")
-		{
-			setErrorPages(temp);
 			return true;
-		}
 
 		if (tokens.size() != 2 || tokens[0].size() != 3 || !Tools::isNumber(tokens[0]))
 			return false;
@@ -287,16 +303,29 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string> &tokens, s
 		if (httpCode < 300 || httpCode > 599)
 			return false;
 
-		std::string path(tokens[1]);
-		if (!Tools::checkAndRemoveSemicolon(path))
+		std::string errorPagePath(tokens[1]);
+		if (!Tools::checkAndRemoveSemicolon(errorPagePath))
 			return false;
 
-		temp.insert(std::make_pair(httpCode, path));
+		addOrReplaceErrorPage(httpCode, errorPagePath);
 	}
 	return false;
 }
 
-bool ConfigBase::handleAllowMethods(const std::vector<std::string> &tokens, std::ifstream *infile)
+/**
+ * @brief Updates or adds a custom error page for a specific HTTP status code.
+ *
+ * If a path already exists for the given @p httpCode, it is overwritten with 
+ * the new @p errorPagePath.
+ *
+ * @param httpCode The HTTP status code (e.g., 404, 500).
+ * @param errorPagePath The file system path to the custom HTML error page.
+ */
+void ConfigBase::addOrReplaceErrorPage(int httpCode, const std::string& errorPagePath) {
+	_errorPages[httpCode] = errorPagePath;
+}
+
+bool ConfigBase::handleAllowMethods(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() < 2)
@@ -319,7 +348,7 @@ bool ConfigBase::handleAllowMethods(const std::vector<std::string> &tokens, std:
 	return true;
 }
 
-bool ConfigBase::handleReturn(const std::vector<std::string> &tokens, std::ifstream *infile)
+bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
 	if (tokens.size() < 2 || tokens.size() > 3)
@@ -378,15 +407,28 @@ void ConfigBase::printData() const {
 	std::cout << std::endl;
 }
 
+/**
+ * @brief initializes the ConfigBase object with harcoded default values
+ * 
+ * ```
+ * **Root** | PWD/files
+ * **Index** | index.html
+ * **Auto Index** | false
+ * **Client Max Body Size** | 5M
+ * **Error Pages** | *empty*
+ * **Allowed Methods** | GET, POST, DELETE
+ * **Return Directive** | *empty*
+ * ```
+ */
 void ConfigBase::initWithDefaultData() {
-	initRoot();													// root
-	_index.push_back("index.html");								// index
-	setAutoIndex(false);										// autoindex
+	initRoot();
+	_index.push_back("index.html");
+	setAutoIndex(false);
 	std::string temp(DEFAULT_CLIENT_MAX_BODY_SIZE);
-	setClientMaxBodySize(expandMaskedString(temp, MASK_M));		// clientMaxBodySize
+	setClientMaxBodySize(expandMaskedString(temp, MASK_M));
 	_allowedMethods.insert("GET");
 	_allowedMethods.insert("POST");
-	_allowedMethods.insert("DELETE");							// allowMethods
+	_allowedMethods.insert("DELETE");
 }
 
 void ConfigBase::initRoot() {

@@ -2,7 +2,6 @@
 
 #include "ConfigBase.hpp"
 #include "Tools.hpp"
-// #include "Server.hpp"
 
 #include <fstream>
 #include <string>
@@ -22,17 +21,22 @@ public:
 	LocationConfig(const ConfigBase &obj);
 	LocationConfig(std::ifstream *infile);
 	LocationConfig(std::ifstream *infile, const ConfigBase &config);
-	// LocationConfig &operator=(const LocationConfig &obj);
 	LocationConfig &operator=(const ConfigBase &obj);
-	// LocationConfig &operator=(const Server &obj);
-	// LocationConfig &operator=(const ServerBlockConfig &obj);
 	~LocationConfig();
 
-	bool parseLocationBlock(const std::vector<std::string> &tokens);
+	bool parseLocationBlock(std::vector<std::string> &tokens);
 
 	const LocationConfig &getLocation() const;
 
-	typedef bool (ConfigBase::*DirectiveHandler)(const std::vector<std::string> &, std::ifstream *);
+/**
+ * @brief Pointer to a parsing function that matches the directive's name.
+ *
+ * Example:
+ * ```cpp
+ * &ConfigBase::handleRoot
+ * ```
+ */
+	typedef bool (ConfigBase::*DirectiveHandler)(std::vector<std::string> &, std::ifstream *);
 
 	static const std::map<std::string, DirectiveHandler> _locationHandlers;
 	static const std::map<std::string, DirectiveHandler> _initHandlers();
