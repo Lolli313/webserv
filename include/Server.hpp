@@ -6,6 +6,7 @@
 #include "terminalColors.hpp"
 #include "ConfigBase.hpp"
 #include "LocationConfig.hpp"
+#include "parsing/ServerBlockConfig.hpp"
 
 #include <csignal>
 #include <cerrno>
@@ -19,7 +20,7 @@ class Server : public ConfigBase
 {
 private:
 	ServerSocket _servSocket;
-	int _port;
+	std::string _port;
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
 	
@@ -30,9 +31,11 @@ private:
 public:
 	Server(const Server &obj);
 	Server(const std::string &port);
+	Server(const ServerBlockConfig &config);
+	Server(const ServerBlockConfig &config, const ServerSocket &servSocket);
 	~Server();
 
-	int getPort() const;
+	const std::string &getPort() const;
 	int getServSockFD() const;
 	const std::set<std::string> &getServerNames() const;
 	const ServerSocket &getServSocket() const;

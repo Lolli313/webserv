@@ -6,7 +6,7 @@
 =================================================================
 */
 
-Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(port), _port(std::atoi(port.c_str()))
+Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(port), _port(port)
 {
 	std::cout << GREEN << "Server constructor for _servSocketFD = " << _servSocket.getServSockFD() << std::endl;
 	std::cout << "Server constructor for _port = " << _port << RESET << std::endl;
@@ -22,6 +22,26 @@ Server::Server(const Server &obj) :
 	std::cout << BLUE << "Server copy constructor" << RESET << std::endl;
 }
 
+Server::Server(const ServerBlockConfig &config) : 
+	_servSocket(config.getPort()), 
+	_port(config.getPort()), 
+	_serverNames(config.getServerNames()), 
+	_locationConfigs(config.getLocationConfigs())
+	{
+		std::cout << BLUE << "Server constructor for _serverSocketFD = " << _servSocket.getServSockFD() <<
+			", port = " << _port << RESET << std::endl;
+	}
+
+
+Server::Server(const ServerBlockConfig &config, const ServerSocket &servSocket) :
+	_servSocket(servSocket),
+	_port(config.getPort()),
+	_serverNames(config.getServerNames()),
+	_locationConfigs(config.getLocationConfigs()) {
+		std::cout << "Server constructor when port is a duplicate: _servSocketFD = " << _servSocket.getServSockFD() <<
+			", port = " << _port << RESET << std::endl;
+	}
+
 Server::~Server()
 {
 	std::cout << RED << "Calling Server's destructor" << RESET << std::endl;
@@ -33,7 +53,7 @@ Server::~Server()
 =================================================================
 */
 
-int Server::getPort() const { return _port; }
+const std::string &Server::getPort() const { return _port; }
 int Server::getServSockFD() const { return _servSocket.getServSockFD(); }
 const std::set<std::string> &Server::getServerNames() const { return _serverNames; }
 const ServerSocket &Server::getServSocket() const { return _servSocket; }

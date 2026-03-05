@@ -23,7 +23,7 @@ private:
 	// If it has 3 names, them the map will have 3 entries for each of its combination <port, serverName>
 	//
 	// If insert fails, it should not stop the program but just print a log.
-	std::map<std::pair<int /*port*/, std::string /*serverName*/> &, Server &> _serversMap;
+	std::map<std::pair<int, std::string>, Server*> _serversMap;
 
 	std::set<int> _servSockFDs; // fd as para, to know if the fd is a server one.
 	Polling _polling;
@@ -34,11 +34,12 @@ private:
 	void handleClientRequest(int clientFD);
 
 public:
-	ServerManager(const std::vector<std::string> &ports);
+	// ServerManager(const std::vector<std::string> &ports);
+	ServerManager(const std::vector<ServerBlockConfig> &serverConfigs);
 	// ServerManager(ParseConfig); // Constructor with
 	~ServerManager();
 
-	// std::vector<Server> setupServers(const std::vector<std::string>& ports);
+	std::map<std::pair<int, std::string>, Server*> setupServersMap();
 	std::set<int> setupServSockFDs();
 	void existingClient(unsigned int i, int eventFD);
 	bool matchServerFD(int eventFD) const;

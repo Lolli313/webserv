@@ -22,6 +22,8 @@ public:
 	ParseConfig(const std::string& filePath);
 	~ParseConfig();
 
+	const std::vector<ServerBlockConfig>& getServerConfig() const;
+	
 	bool checkServerKeyword(const std::string& line, std::ifstream *infile);
 
 	void printData() const;	

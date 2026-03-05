@@ -50,6 +50,11 @@ ParseConfig &ParseConfig::operator=(const ParseConfig &obj)
 =================================================================
 */
 
+const std::vector<ServerBlockConfig>& ParseConfig::getServerConfig() const {
+	return _serverBlockConfigVector;
+}
+
+
 /*
 =================================================================
 ===== METHODS ===================================================
