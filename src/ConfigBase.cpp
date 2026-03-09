@@ -245,7 +245,7 @@ bool ConfigBase::handleErrorMultiLiner(const std::vector<std::string>& tokens, s
 		if (line.empty() || line[0] == '#')
 			continue;
 
-		std::cout << line << std::endl;
+		// std::cout << line << std::endl;
 		std::vector<std::string> tokens = Tools::splitString(line);
 
 		if (tokens[0] == "}") {

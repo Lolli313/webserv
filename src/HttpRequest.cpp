@@ -4,6 +4,7 @@
 #include <cctype>
 
 #include "HttpRequest.hpp"
+#include "terminalColors.hpp"
 
 bool HttpRequest::isValidHttpVersion(const std::string &version) const {
   return version == "HTTP/1.0" || version == "HTTP/1.1";
@@ -43,6 +44,11 @@ void HttpRequest::parseQueryParams() {
 }
 
 void HttpRequest::parse(const std::string &rawRequest) {
+
+  std::cout << PINK << "OUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII" << RESET << std::endl;
+
+  std::cout << PINK << rawRequest << RESET << std::endl;
+
   std::istringstream iss(rawRequest);
   std::string line;
 
@@ -50,10 +56,21 @@ void HttpRequest::parse(const std::string &rawRequest) {
     throw Tools::Exception(404, "WRONG METHOD");
   }
 
+  
+
+  std::cout << PINK << "OUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII" << RESET << std::endl;
+
+  
+
   std::istringstream requestLine(line);
+
+  
+
   if (!(requestLine >> _methodStr >> _path >> _httpVersion)) {
     throw Tools::Exception(404, "WRONG METHOD");
   }
+
+  
 
   if (_methodStr == "GET" || _methodStr == "POST" || _methodStr == "DELETE") {
       throw Tools::Exception(501, "Invalid HTTP method");

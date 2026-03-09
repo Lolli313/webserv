@@ -19,7 +19,7 @@ ServerBlockConfig::ServerBlockConfig(std::ifstream& infile) :
 	std::string line;
 
 	while (std::getline(_infile, line)) {
-		std::cout << line << std::endl;
+		// std::cout << line << std::endl;
 		if (line[0] == '#' || line.empty())
 			continue;
 		else if (line[0] == '}')

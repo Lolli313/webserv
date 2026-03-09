@@ -70,21 +70,27 @@ std::set<int> ServerManager::setupServSockFDs()
 
 void ServerManager::existingClient(unsigned int i, int eventFD)
 {
-
 	Client *tmpClient = _polling.handleExistingClient(eventFD, _polling.getEventArray()->events);
 	(void)i;
 
 	if (tmpClient)
 	{
+		// std::cout << PINK << "OUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII" << RESET << std::endl;
 		// Do something smart:
 		// Call HttpRequest parser
 		// Call the HttpMethod
 		// Send the response
 		// Then, delete the client
-		HttpRequest test;
-		test.parse(tmpClient->getTmpBufferPtr());
-		if (!_polling.deleteCLient(tmpClient))
-			throw Tools::Exception("Error at deleting client");
+		std::cout << "quelque chose" << std::endl;
+		std::cout << PURPLE << tmpClient->getBuffer() << RESET << std::endl;
+		// HttpRequest test;
+		// test.parse(tmpClient->getBuffer());
+
+		// test.print();
+
+
+		// if (!_polling.deleteCLient(tmpClient))
+		// 	throw Tools::Exception("Error at deleting client");
 	}
 	else
 	{
@@ -119,8 +125,10 @@ void ServerManager::eventLoop()
 			_polling.setCurrEventFD(eventFD);
 			if (matchServerFD(eventFD))
 				_polling.registerNewClient(eventFD);
-			else
+			else {
 				existingClient(i, eventFD);
+			}
+				
 		}
 	}
 }

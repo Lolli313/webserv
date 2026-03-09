@@ -189,13 +189,14 @@ void Polling::handleClientInput(Client &client)
 	}
 	else if (readSize > 0)
 	{
-		std::cout << "Received size " << readSize << " = " << client.getTmpBufferPtr() << std::endl;
+		// std::cout << "Received size " << readSize << " = " << client.getTmpBufferPtr() << std::endl;
 		client.getBuffer().append(client.getTmpBufferPtr(), readSize);
+		// std::cout << BLUE << client.getBuffer() << RESET << std::endl;
 	}
 	else
 	{
 		client.setReceivingStatus(true);
-		std::cout << MAGENTA << "EOF" << RESET << std::endl;
+		// std::cout << MAGENTA << "EOF" << RESET << std::endl;
 	}
 }
 
@@ -238,7 +239,9 @@ Client*  Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 				std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
     		}
 		}
-		std::cout << CYAN << "CLIENT MESSAGE : " << itClient->second.getBuffer() << RESET << std::endl;
+		if (!deleteCLient(&itClient->second))
+			throw Tools::Exception("Error at deleting client");
+		// std::cout << CYAN << "CLIENT MESSAGE : " << itClient->second.getBuffer() << RESET << std::endl;
 		return &itClient->second;
 
 	}
