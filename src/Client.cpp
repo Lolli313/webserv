@@ -18,7 +18,8 @@ Client::~Client() {
 
 Client::Client(const Client &obj) : _clientFD(obj._clientFD) { 
 	std::cout << PINK << "Client copy constructor" << RESET << std::endl;
-	// *this = obj; 
+	std::memcpy(_tmpBuff, obj._tmpBuff, BUFFERSIZE);
+	_buffer = obj._buffer;
 };
 
 /*

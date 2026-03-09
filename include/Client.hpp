@@ -3,6 +3,7 @@
 
 #include <string>
 #include <unistd.h>
+#include <cstring>
 
 #define BUFFERSIZE 4096
 

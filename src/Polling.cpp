@@ -243,9 +243,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 			}
 		}
 		std::cout << CYAN << "CLIENT MESSAGE : " << itClient->second.getBuffer() << RESET << std::endl;
-		if (!deleteCLient(&itClient->second))
-			throw Tools::Exception("Error at deleting client");
-
 		return &itClient->second;
 	}
 	// CLIENT INPUT
@@ -257,7 +254,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		std::ostringstream body; 
 		body << file.rdbuf();
 		std::string response = quickHttpReponse(404, body.str());
-		send(itClient->second.getFD(), response.c_str(), response.size(), 0);
+		send(itClient->second.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
 	}
 	return NULL;
 }
