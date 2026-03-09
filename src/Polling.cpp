@@ -250,7 +250,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	{
 		std::cout << "EPOLLIN" << std::endl;
 		handleClientInput(itClient->second);
-		std::ifstream file("objects/loremIpsum.txt");
+		std::ifstream file("loremIpsum.txt");
 		std::ostringstream body; 
 		body << file.rdbuf();
 		std::string response = quickHttpReponse(404, body.str());
