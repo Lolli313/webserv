@@ -9,10 +9,9 @@
 =================================================================
 */
 
-Polling::Polling(const std::set<int> &servSockFDs) :
-	// _servSockFDs(setupAddServSockFDs(servSockets)),
-	// _servSockets(servSockets),
-	_newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
+Polling::Polling(const std::set<int> &servSockFDs) : // _servSockFDs(setupAddServSockFDs(servSockets)),
+													 // _servSockets(servSockets),
+													 _newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
 	std::cout << PURPLE << "epoll CONSTRUCTOR, socket seize is: " << servSockFDs.size() << RESET << std::endl;
@@ -195,14 +194,16 @@ void Polling::handleClientInput(Client &client)
 	}
 	else
 	{
+		// MAYBE CLOSE THE CONNECTION HERE
 		client.setReceivingStatus(true);
 		std::cout << MAGENTA << "EOF" << RESET << std::endl;
 	}
 }
 
-// Exception on failure
-//
-// Receives client input and client diconnection
+/** 
+ * @brief Receives client input and client diconnection
+ * @exception Throws on failure
+ **/
 Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 {
 	std::cout << "Found an existing connection" << std::endl;
@@ -213,48 +214,48 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		return NULL;
 	}
 	else
-	{
 		std::cout << ORANGE << "Found clientFD match for FD: " << clientFD << RESET << std::endl;
-	}
 
 	std::map<const unsigned int, Client>::iterator itClient = _clientMap.find(clientFD);
 
 	if (itClient == _clientMap.end())
 		throw Tools::Exception("Client not found");
 
-	// CLIENT DISCONNECTED == MAYBE DELETE
-	if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
-	{
-		if (currEvent & EPOLLHUP)
-			std::cout << "EPOLLHUP" << std::endl;
-		if (currEvent & EPOLLRDHUP)
-			std::cout << "EPOLRDHUP" << std::endl;
-		std::cout << LIGHT_BLUE << "CLIENT DISCONNECTED" << RESET << std::endl;
-		if (currEvent & EPOLLERR)
-		{
-			std::cout << RED << "EPOLLERR" << RESET << std::endl;
-			int error = 0;
-			socklen_t len = sizeof(error);
-			if (getsockopt(clientFD, SOL_SOCKET, SO_ERROR, &error, &len) == -1)
-				std::cout << RED << "getsockopt error" << RESET << std::endl;
-			if (error != 0)
-			{
-				std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
-			}
-		}
-		std::cout << CYAN << "CLIENT MESSAGE : " << itClient->second.getBuffer() << RESET << std::endl;
-		return &itClient->second;
-	}
+
+	
 	// CLIENT INPUT
-	else if (currEvent & EPOLLIN)
+	if (currEvent & EPOLLIN)
 	{
 		std::cout << "EPOLLIN" << std::endl;
 		handleClientInput(itClient->second);
-		std::ifstream file("loremIpsum.txt");
-		std::ostringstream body; 
-		body << file.rdbuf();
-		std::string response = quickHttpReponse(404, body.str());
-		send(itClient->second.getFD(), response.c_str(), response.size(), MSG_NOSIGNAL);
+	}
+	// CLIENT DISCONNECTED
+	else if (currEvent & EPOLLHUP)
+	{
+		std::cout << "EPOLLHUP" << std::endl;
+		handleClientInput(itClient->second);
+		itClient->second.setReceivingStatus(true);
+		return &itClient->second;
+	}
+	// CLIENT IS DONE SENDING
+	// We should set _doneReceiving = true (i guess)
+	else if (currEvent & EPOLLRDHUP)
+	{
+		std::cout << "EPOLLRDHUP" << std::endl;
+		itClient->second.setReceivingStatus(true);
+		handleClientInput(itClient->second);
+		return &itClient->second;
+	}
+	// ERROR
+	else if (currEvent & EPOLLERR)
+	{
+		std::cout << RED << "EPOLLERR" << RESET << std::endl;
+		int error = 0;
+		socklen_t len = sizeof(error);
+		if (getsockopt(clientFD, SOL_SOCKET, SO_ERROR, &error, &len) == -1)
+			std::cout << RED << "getsockopt error" << RESET << std::endl;
+		if (error != 0)
+			std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
 	}
 	return NULL;
 }

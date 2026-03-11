@@ -57,6 +57,22 @@ void Client::setReceivingStatus(bool status) {
 	_doneReceiving = status;
 	std::cout << "Done receiving status is: " << status << std::endl; } 
 
+void Client::setKeepAlive(bool status) { _keepAlive = status; }
+bool Client::isKeepAlive() const { return _keepAlive; }
+
+void Client::setResponseSent(bool status) { _responseSent = status; }
+bool Client::responseSent() const { return _responseSent; }
+
+/**
+ * @brief If not keepAlive and is doneReceiving, the connexion should be closed.
+ */
+bool Client::toBeClosed() const
+{
+	if (!isKeepAlive() && responseSent())
+		return true;
+	return false;
+}
+
 /*
 =================================================================
 ===== METHODS ===================================================
