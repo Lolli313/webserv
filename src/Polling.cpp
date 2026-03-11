@@ -125,7 +125,7 @@ void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
 // SHOULD WE USE REFERENCE OR NOT ?
 void Polling::addClientToEpoll(Client &client)
 {
-	epollEventAction(_epollFD, client.getFD(), EPOLL_CTL_ADD, EPOLLIN | EPOLLRDHUP | EPOLLERR);
+	epollEventAction(_epollFD, client.getFD(), EPOLL_CTL_ADD, EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLHUP | EPOLLOUT);
 	_clientMap.insert(std::make_pair(client.getFD(), client));
 }
 
@@ -200,7 +200,7 @@ void Polling::handleClientInput(Client &client)
 	}
 }
 
-/** 
+/**
  * @brief Receives client input and client diconnection
  * @exception Throws on failure
  **/
@@ -221,20 +221,26 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	if (itClient == _clientMap.end())
 		throw Tools::Exception("Client not found");
 
-
-	
-	// CLIENT INPUT
-	if (currEvent & EPOLLIN)
+	// ERROR
+	if (currEvent & EPOLLERR)
 	{
-		std::cout << "EPOLLIN" << std::endl;
-		handleClientInput(itClient->second);
+		std::cout << RED << "EPOLLERR" << RESET << std::endl;
+		int error = 0;
+		socklen_t len = sizeof(error);
+		if (getsockopt(clientFD, SOL_SOCKET, SO_ERROR, &error, &len) == -1)
+			std::cout << RED << "getsockopt error" << RESET << std::endl;
+		if (error != 0)
+			std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
 	}
+
 	// CLIENT DISCONNECTED
 	else if (currEvent & EPOLLHUP)
 	{
 		std::cout << "EPOLLHUP" << std::endl;
 		handleClientInput(itClient->second);
 		itClient->second.setReceivingStatus(true);
+		itClient->second.setToBeClosed(true);
+		itClient->second.setResponseToBeSent(-1); // No response should be sent
 		return &itClient->second;
 	}
 	// CLIENT IS DONE SENDING
@@ -246,16 +252,17 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		handleClientInput(itClient->second);
 		return &itClient->second;
 	}
-	// ERROR
-	else if (currEvent & EPOLLERR)
+	// CLIENT INPUT
+	else if (currEvent & EPOLLIN)
 	{
-		std::cout << RED << "EPOLLERR" << RESET << std::endl;
-		int error = 0;
-		socklen_t len = sizeof(error);
-		if (getsockopt(clientFD, SOL_SOCKET, SO_ERROR, &error, &len) == -1)
-			std::cout << RED << "getsockopt error" << RESET << std::endl;
-		if (error != 0)
-			std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
+		std::cout << "EPOLLIN" << std::endl;
+		handleClientInput(itClient->second);
+	}
+	// CLIENT READY TO RECEIVE
+	if (currEvent & EPOLLOUT)
+	{
+		itClient->second.setReadyToReceive(true);
+		return &itClient->second;
 	}
 	return NULL;
 }

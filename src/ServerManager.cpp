@@ -104,17 +104,22 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 	if (tmpClient)
 	{
-		std::cout << "TMP " << tmpClient->getBuffer() << std::endl;
-		// HttpRequest request(tmpClient);
-		// HttpMethod method(request);
-		// HttpResponse response(method);
-
-		// return response;
-
-		// CHECK IF WE KEEP THE CONNECTION OR NOT.
-		// TO DO SO, USE A FLAG
-		if (!_polling.deleteCLient(tmpClient))
-			throw Tools::Exception("Error at deleting client");
+		if (tmpClient->doneReceiving())
+		{
+			// Main logic:
+			// 1. HttpRequest
+			// 2. HttpMethod
+			// 		responseToBeSent(true)
+			if (tmpClient->readyToReceive())
+			{
+				// 3. HttpResponse 
+			}
+		}
+		if (tmpClient->toBeClosed())
+		{
+			if (!_polling.deleteCLient(tmpClient))
+				throw Tools::Exception("Error at deleting client");
+		}
 	}
 	else
 	{

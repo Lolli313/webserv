@@ -15,8 +15,14 @@ private:
 	char _tmpBuff[BUFFERSIZE];
 
 	bool _doneReceiving; // Once the message is fully received
+	// Depending on the request, soemtimes no response should be sent.
+	// Base value = 0;
+	// if value < 1, do not send a response
+	int _responseToBeSent; 
 	bool _responseSent; // The response has been sent to this client, if _keepAlive, should be reset (i guess)
 	bool _keepAlive;
+	bool _readyToReceive; // Client is waiting for response
+	bool _toBeClosed; // CLient should be closed, can be set by EPOLLHUP
 
 	Client &operator=(const Client &obj);
 	
@@ -36,9 +42,16 @@ public:
 	void setReceivingStatus(bool status);
 	bool doneReceiving() const;
 
+	bool responseToBeSent() const;
+	void setResponseToBeSent(int status);	
+
+	bool readyToReceive() const;
+	void setReadyToReceive(bool status);	
+
 	bool responseSent() const;
 	void setResponseSent(bool status);	
 
+	void setToBeClosed(bool status);
 	bool toBeClosed() const;
 };
 

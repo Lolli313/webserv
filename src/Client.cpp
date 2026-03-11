@@ -64,11 +64,35 @@ void Client::setResponseSent(bool status) { _responseSent = status; }
 bool Client::responseSent() const { return _responseSent; }
 
 /**
- * @brief If not keepAlive and is doneReceiving, the connexion should be closed.
+ * @brief 
+ * @param status 
+ * { 1 = toBeSent, 
+ *   0 = not toBeSent, 
+ *   -1 = no respopnse should be sent, and the value cannot be changed. It means the end of the connection, for EPOLLHUP}
+ */
+void Client::setResponseToBeSent(int status) { 
+	if (_responseToBeSent != -1)
+		_responseToBeSent = status; 
+	}
+bool Client::responseToBeSent() const { 
+	if (_responseToBeSent < 1)
+		return true;
+	return false;
+}
+
+void Client::setReadyToReceive(bool status) { _readyToReceive = status; }
+bool Client::readyToReceive() const { return _readyToReceive; }
+
+void Client::setToBeClosed(bool status) { _toBeClosed = status; }
+
+/**
+ * @brief Check the conditions to determine if the client connection should be closed. 
  */
 bool Client::toBeClosed() const
 {
-	if (!isKeepAlive() && responseSent())
+	if (_toBeClosed)
+		return true;
+	else if (!isKeepAlive() && responseSent())
 		return true;
 	return false;
 }
