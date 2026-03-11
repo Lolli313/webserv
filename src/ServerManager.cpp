@@ -110,9 +110,17 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			// 1. HttpRequest
 			// 2. HttpMethod
 			// 		responseToBeSent(true)
+			if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
+			{
+				// Set the EPOLLOUT event to be monitored.
+			}
 			if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
 			{
 				// 3. HttpResponse 
+			}
+			if (tmpClient->responseSent())
+			{
+				// Remove the EPOLLOUT event
 			}
 		}
 		if (tmpClient->toBeClosed())
