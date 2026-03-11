@@ -110,7 +110,7 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			// 1. HttpRequest
 			// 2. HttpMethod
 			// 		responseToBeSent(true)
-			if (tmpClient->readyToReceive())
+			if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
 			{
 				// 3. HttpResponse 
 			}

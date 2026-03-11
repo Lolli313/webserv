@@ -14,11 +14,13 @@ private:
 	std::string _buffer;
 	char _tmpBuff[BUFFERSIZE];
 
+	std::size_t bytesSent; // Already sent bytes, an index for _buffer, waiting for client to send be ready to receive.
+
 	bool _doneReceiving; // Once the message is fully received
 	// Depending on the request, soemtimes no response should be sent.
 	// Base value = 0;
 	// if value < 1, do not send a response
-	int _responseToBeSent; 
+	int _responseToBeSent;
 	bool _responseSent; // The response has been sent to this client, if _keepAlive, should be reset (i guess)
 	bool _keepAlive;
 	bool _readyToReceive; // Client is waiting for response

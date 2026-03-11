@@ -221,6 +221,9 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	if (itClient == _clientMap.end())
 		throw Tools::Exception("Client not found");
 
+
+	// ================================================================================================
+	// ================================================================================================
 	// ERROR
 	if (currEvent & EPOLLERR)
 	{
@@ -234,7 +237,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	}
 
 	// CLIENT DISCONNECTED
-	else if (currEvent & EPOLLHUP)
+	if (currEvent & EPOLLHUP)
 	{
 		std::cout << "EPOLLHUP" << std::endl;
 		handleClientInput(itClient->second);
@@ -243,21 +246,24 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		itClient->second.setResponseToBeSent(-1); // No response should be sent
 		return &itClient->second;
 	}
+
 	// CLIENT IS DONE SENDING
 	// We should set _doneReceiving = true (i guess)
-	else if (currEvent & EPOLLRDHUP)
+	if (currEvent & EPOLLRDHUP)
 	{
 		std::cout << "EPOLLRDHUP" << std::endl;
 		itClient->second.setReceivingStatus(true);
 		handleClientInput(itClient->second);
 		return &itClient->second;
 	}
+
 	// CLIENT INPUT
-	else if (currEvent & EPOLLIN)
+	if (currEvent & EPOLLIN)
 	{
 		std::cout << "EPOLLIN" << std::endl;
 		handleClientInput(itClient->second);
 	}
+
 	// CLIENT READY TO RECEIVE
 	if (currEvent & EPOLLOUT)
 	{
@@ -265,6 +271,8 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		return &itClient->second;
 	}
 	return NULL;
+	// ================================================================================================
+	// ================================================================================================
 }
 
 void Polling::epollWaitEvent()
