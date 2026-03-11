@@ -7,7 +7,7 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Client::Client(int fd) : _clientFD(fd), _doneReceiving(false) {
+Client::Client(int fd) : _clientFD(fd), _doneReceiving(false), _responseToBeSent(0), _responseSent(false), _keepAlive(true), _readyToReceive(false), _toBeClosed(false) {
 	std::cout << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
 }
 

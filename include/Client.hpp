@@ -14,7 +14,7 @@ private:
 	std::string _buffer;
 	char _tmpBuff[BUFFERSIZE];
 
-	std::size_t bytesSent; // Already sent bytes, an index for _buffer, waiting for client to send be ready to receive.
+	// std::size_t bytesSent; // Already sent bytes, an index for _buffer, waiting for client to send be ready to receive.
 
 	bool _doneReceiving; // Once the message is fully received
 	// Depending on the request, soemtimes no response should be sent.

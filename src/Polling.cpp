@@ -253,6 +253,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	{
 		std::cout << "EPOLLRDHUP" << std::endl;
 		itClient->second.setReceivingStatus(true);
+		itClient->second.setToBeClosed(true);
 		handleClientInput(itClient->second);
 		return &itClient->second;
 	}
