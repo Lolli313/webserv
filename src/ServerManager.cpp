@@ -96,6 +96,21 @@ std::set<int> ServerManager::setupServSockFDs()
 	return tempServSockFDs;
 }
 
+// Just a test response that directly sends to the client.
+void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
+{
+		std::cout << "SENT" << std::endl;
+		HttpResponse response(code, message);
+		std::ifstream file(path.c_str());
+		std::ostringstream body; 
+		body << file.rdbuf();
+		response.setBody(body.str());
+		std::vector<std::pair<std::string, std::string> > tmp;
+		tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
+		response.setResponseHeaders(tmp);
+		send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
+}
+
 void ServerManager::existingClient(unsigned int i, int eventFD)
 {
 
@@ -104,17 +119,36 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 	if (tmpClient)
 	{
-		std::cout << "TMP " << tmpClient->getBuffer() << std::endl;
-		// HttpRequest request(tmpClient);
-		// HttpMethod method(request);
-		// HttpResponse response(method);
 
-		// return response;
+		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
 
-		// CHECK IF WE KEEP THE CONNECTION OR NOT.
-		// TO DO SO, USE A FLAG
-		if (!_polling.deleteCLient(tmpClient))
-			throw Tools::Exception("Error at deleting client");
+		if (tmpClient->doneReceiving())
+		{
+			// Main logic:
+			// 1. HttpRequest
+			// 2. HttpMethod
+			// 		responseToBeSent(true)
+			if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
+			{
+				// Set the EPOLLOUT event to be monitored.
+				_polling.setClientEPOLLOUT(tmpClient, true);
+			}
+			if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
+			{
+				// 3. HttpResponse 
+			}
+			if (tmpClient->responseSent())
+			{
+				// Remove the EPOLLOUT event
+				_polling.setClientEPOLLOUT(tmpClient, false);
+				tmpClient->refreshFlags();
+			}
+		}
+		if (tmpClient->toBeClosed())
+		{
+			if (!_polling.deleteCLient(tmpClient))
+				throw Tools::Exception("Error at deleting client");
+		}
 	}
 	else
 	{
