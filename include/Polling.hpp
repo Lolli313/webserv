@@ -26,7 +26,7 @@ class Polling
 {
 private:
 	epoll_event _eventArray[MAX_EVENTS];
-	std::map<const unsigned int, Client> _clientMap;
+	std::map<const unsigned int, Client *> _clientMap;
 	int _eventCount;
 	int _epollFD;
 	int _currEventFD;

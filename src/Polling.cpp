@@ -24,10 +24,10 @@ Polling::Polling(const std::set<int> &servSockFDs) : // _servSockFDs(setupAddSer
 Polling::~Polling()
 {
 	std::cout << RED << "Calling Polling destructor" << RESET << std::endl;
-	for (std::map<const unsigned int, Client>::iterator it = _clientMap.begin(); it != _clientMap.end();)
+	for (std::map<const unsigned int, Client *>::iterator it = _clientMap.begin(); it != _clientMap.end();)
 	{
-		std::map<const unsigned int, Client>::iterator curr = it++;
-		deleteCLient(&curr->second);
+		std::map<const unsigned int, Client *>::iterator curr = it++;
+		deleteCLient(curr->second);
 	}
 	close(_epollFD);
 }
@@ -66,10 +66,10 @@ int Polling::getNewClientFlags() const { return _newClientFlags; }
 // Exception on failure
 Client &Polling::getClient(const unsigned int fd)
 {
-	std::map<const unsigned int, Client>::iterator itClient = _clientMap.find(fd);
+	std::map<const unsigned int, Client *>::iterator itClient = _clientMap.find(fd);
 	if (itClient == _clientMap.end())
 		Tools::Exception("Client not found");
-	return itClient->second;
+	return *itClient->second;
 }
 /*
 =================================================================
@@ -117,17 +117,18 @@ void Polling::addFdToEpoll(int targetFD, int eventFlags)
 void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
 {
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
-	_clientMap.insert(std::make_pair(targetFD, targetFD));
+	_clientMap[targetFD] = new Client(targetFD);
 	std::cout << "Adding FD to epoll and client maps" << std::endl;
 }
 
-// Exception on failure
-// SHOULD WE USE REFERENCE OR NOT ?
-void Polling::addClientToEpoll(Client &client)
-{
-	epollEventAction(_epollFD, client.getFD(), EPOLL_CTL_ADD, EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLHUP | EPOLLOUT);
-	_clientMap.insert(std::make_pair(client.getFD(), client));
-}
+// // Exception on failure
+// // SHOULD WE USE REFERENCE OR NOT ?
+// void Polling::addClientToEpoll(Client &client)
+// {
+// 	epollEventAction(_epollFD, client.getFD(), EPOLL_CTL_ADD, EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLHUP | EPOLLOUT);
+// 	_clientMap[client.getFD()] = new Client(client);
+// 	_clientMap.insert(std::make_pair(client.getFD(), client));
+// }
 
 // returns true if client deleted, false on error
 bool Polling::deleteCLient(Client *client)
@@ -135,9 +136,12 @@ bool Polling::deleteCLient(Client *client)
 	std::cout << BLUE << "DELETE CLIENT" << RESET << std::endl;
 	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
 	close(client->getFD());
-	// delete client;
 	if ((_clientMap.erase(client->getFD())) != 1)
+	{
+		delete client;
 		return (false);
+	}
+	delete client;
 	return (true);
 }
 
@@ -216,7 +220,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	else
 		std::cout << ORANGE << "Found clientFD match for FD: " << clientFD << RESET << std::endl;
 
-	std::map<const unsigned int, Client>::iterator itClient = _clientMap.find(clientFD);
+	std::map<const unsigned int, Client *>::iterator itClient = _clientMap.find(clientFD);
 
 	if (itClient == _clientMap.end())
 		throw Tools::Exception("Client not found");
@@ -234,19 +238,19 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 			std::cout << RED << "getsockopt error" << RESET << std::endl;
 		if (error != 0)
 			std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
-		itClient->second.setToBeClosed(true);
-		return &itClient->second;
+		itClient->second->setToBeClosed(true);
+		return itClient->second;
 	}
 
 	// CLIENT DISCONNECTED
 	if (currEvent & EPOLLHUP)
 	{
 		std::cout << "EPOLLHUP" << std::endl;
-		handleClientInput(itClient->second);
-		itClient->second.setDoneReceiving(true);
-		itClient->second.setToBeClosed(true);
-		itClient->second.setResponseToBeSent(-1); // No response should be sent
-		return &itClient->second;
+		handleClientInput(*itClient->second);
+		itClient->second->setDoneReceiving(true);
+		itClient->second->setToBeClosed(true);
+		itClient->second->setResponseToBeSent(-1); // No response should be sent
+		return itClient->second;
 	}
 
 	// CLIENT IS DONE SENDING
@@ -254,26 +258,26 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	if (currEvent & EPOLLRDHUP)
 	{
 		std::cout << "EPOLLRDHUP" << std::endl;
-		itClient->second.setDoneReceiving(true);
-		itClient->second.setToBeClosed(true);
-		handleClientInput(itClient->second);
-		return &itClient->second;
+		itClient->second->setDoneReceiving(true);
+		itClient->second->setToBeClosed(true);
+		handleClientInput(*itClient->second);
+		return itClient->second;
 	}
 
 	// CLIENT INPUT
 	if (currEvent & EPOLLIN)
 	{
 		std::cout << "EPOLLIN" << std::endl;
-		handleClientInput(itClient->second);
+		handleClientInput(*itClient->second);
 		// THIS IS TEMPORARY
-		return &itClient->second;
+		return itClient->second;
 	}
 
 	// CLIENT READY TO RECEIVE
 	if (currEvent & EPOLLOUT)
 	{
-		itClient->second.setReadyToReceive(true);
-		return &itClient->second;
+		itClient->second->setReadyToReceive(true);
+		return itClient->second;
 	}
 	return NULL;
 	// ================================================================================================
