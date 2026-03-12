@@ -184,7 +184,7 @@ void Polling::handleClientInput(Client &client)
 	int readSize = recv(_currEventFD, client.getTmpBufferPtr(), BUFFERSIZE, 0);
 	if (readSize < 0)
 	{
-		deleteCLient(&client);
+		client.setToBeClosed(true);
 		throw Tools::Exception("error at receiving client input");
 	}
 	else if (readSize > 0)
@@ -234,6 +234,8 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 			std::cout << RED << "getsockopt error" << RESET << std::endl;
 		if (error != 0)
 			std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
+		itClient->second.setToBeClosed(true);
+		return &itClient->second;
 	}
 
 	// CLIENT DISCONNECTED

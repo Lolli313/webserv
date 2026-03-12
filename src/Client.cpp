@@ -7,7 +7,14 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Client::Client(int fd) : _clientFD(fd), _doneReceiving(false), _responseToBeSent(0), _responseSent(false), _keepAlive(true), _readyToReceive(false), _toBeClosed(false) {
+Client::Client(int fd) : _clientFD(fd), 
+						_doneReceiving(false), 
+						_responseToBeSent(0), 
+						_responseSent(false), 
+						_keepAlive(true), 
+						_readyToReceive(false), 
+						_toBeClosed(false) 
+						{
 	std::cout << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
 }
 
@@ -16,7 +23,14 @@ Client::~Client() {
 //	close(_clientFD); 
 }
 
-Client::Client(const Client &obj) : _clientFD(obj._clientFD) { 
+Client::Client(const Client &obj) : _clientFD(obj._clientFD),
+								_doneReceiving(obj._doneReceiving),  
+								_responseToBeSent(obj._responseToBeSent), 
+								_responseSent(obj._responseSent), 
+								_keepAlive(obj._keepAlive), 
+								_readyToReceive(obj._readyToReceive), 
+								_toBeClosed(obj._toBeClosed) 
+								{ 
 	std::cout << PINK << "Client copy constructor" << RESET << std::endl;
 	std::memcpy(_tmpBuff, obj._tmpBuff, BUFFERSIZE);
 	_buffer = obj._buffer;
