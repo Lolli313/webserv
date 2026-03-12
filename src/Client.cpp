@@ -89,7 +89,7 @@ void Client::setResponseToBeSent(int status) {
 		_responseToBeSent = status; 
 	}
 bool Client::responseToBeSent() const { 
-	if (_responseToBeSent < 1)
+	if (_responseToBeSent > 0)
 		return true;
 	return false;
 }

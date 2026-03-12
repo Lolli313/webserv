@@ -20,6 +20,7 @@ private:
 	// Depending on the request, soemtimes no response should be sent.
 	// Base value = 0;
 	// if value < 1, do not send a response
+	// -1 = once set, value cannot be changed and sending any response to this client wont ever be possible. 
 	int _responseToBeSent;
 	bool _responseSent; // The response has been sent to this client, if _keepAlive, should be reset (i guess)
 	bool _keepAlive;

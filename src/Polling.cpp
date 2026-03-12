@@ -137,10 +137,7 @@ bool Polling::deleteCLient(Client *client)
 	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
 	close(client->getFD());
 	if ((_clientMap.erase(client->getFD())) != 1)
-	{
-		delete client;
 		return (false);
-	}
 	delete client;
 	return (true);
 }
