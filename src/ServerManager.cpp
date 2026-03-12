@@ -96,6 +96,21 @@ std::set<int> ServerManager::setupServSockFDs()
 	return tempServSockFDs;
 }
 
+void TEST_RESPONSE(Client *tmpClient)
+{
+		std::cout << "SENT" << std::endl;
+		HttpResponse response(200, "actually");
+		std::ifstream file("files/ascii/dog.html");
+		// std::ifstream file("loremIpsum.txt");
+		std::ostringstream body; 
+		body << file.rdbuf();
+		response.setBody(body.str());
+		std::vector<std::pair<std::string, std::string> > tmp;
+		tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
+		response.setResponseHeaders(tmp);
+		send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
+}
+
 void ServerManager::existingClient(unsigned int i, int eventFD)
 {
 
@@ -104,6 +119,9 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 	if (tmpClient)
 	{
+
+		TEST_RESPONSE(tmpClient);
+
 		if (tmpClient->doneReceiving())
 		{
 			// Main logic:

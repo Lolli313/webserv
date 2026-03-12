@@ -265,6 +265,8 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	{
 		std::cout << "EPOLLIN" << std::endl;
 		handleClientInput(itClient->second);
+		// THIS IS TEMPORARY
+		return &itClient->second;
 	}
 
 	// CLIENT READY TO RECEIVE
