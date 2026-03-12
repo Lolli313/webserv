@@ -121,6 +121,7 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			if (tmpClient->responseSent())
 			{
 				// Remove the EPOLLOUT event
+				tmpClient->refreshFlags();
 			}
 		}
 		if (tmpClient->toBeClosed())

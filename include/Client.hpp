@@ -41,7 +41,7 @@ public:
 	bool isKeepAlive() const;
 	void setKeepAlive(bool status);
 	
-	void setReceivingStatus(bool status);
+	void setDoneReceiving(bool status);
 	bool doneReceiving() const;
 
 	bool responseToBeSent() const;
@@ -55,6 +55,8 @@ public:
 
 	void setToBeClosed(bool status);
 	bool toBeClosed() const;
+
+	void refreshFlags();
 };
 
 #endif

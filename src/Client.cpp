@@ -53,7 +53,7 @@ bool Client::doneReceiving() const {
 	std::cout << "Done receiving :)" << std::endl;
 	return _doneReceiving; }
 
-void Client::setReceivingStatus(bool status) {
+void Client::setDoneReceiving(bool status) {
 	_doneReceiving = status;
 	std::cout << "Done receiving status is: " << status << std::endl; } 
 
@@ -102,3 +102,16 @@ bool Client::toBeClosed() const
 ===== METHODS ===================================================
 =================================================================
 */
+
+/**
+ * @brief Reset the flags for the next request.
+ * @note Do not reset _toBeClosed nor _keepAlive.
+ */
+void Client::refreshFlags()
+{
+	// _bytesSent = 0;
+	_doneReceiving = false;
+	_responseToBeSent = 0;
+	_responseSent = false;
+	_readyToReceive = false;
+}

@@ -195,7 +195,7 @@ void Polling::handleClientInput(Client &client)
 	else
 	{
 		// MAYBE CLOSE THE CONNECTION HERE
-		client.setReceivingStatus(true);
+		client.setDoneReceiving(true);
 		std::cout << MAGENTA << "EOF" << RESET << std::endl;
 	}
 }
@@ -241,7 +241,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	{
 		std::cout << "EPOLLHUP" << std::endl;
 		handleClientInput(itClient->second);
-		itClient->second.setReceivingStatus(true);
+		itClient->second.setDoneReceiving(true);
 		itClient->second.setToBeClosed(true);
 		itClient->second.setResponseToBeSent(-1); // No response should be sent
 		return &itClient->second;
@@ -252,7 +252,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	if (currEvent & EPOLLRDHUP)
 	{
 		std::cout << "EPOLLRDHUP" << std::endl;
-		itClient->second.setReceivingStatus(true);
+		itClient->second.setDoneReceiving(true);
 		itClient->second.setToBeClosed(true);
 		handleClientInput(itClient->second);
 		return &itClient->second;
