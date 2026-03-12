@@ -184,7 +184,7 @@ void Polling::handleClientInput(Client &client)
 	int readSize = recv(_currEventFD, client.getTmpBufferPtr(), BUFFERSIZE, 0);
 	if (readSize < 0)
 	{
-		client.setToBeClosed(true);
+		deleteCLient(&client);
 		throw Tools::Exception("error at receiving client input");
 	}
 	else if (readSize > 0)
