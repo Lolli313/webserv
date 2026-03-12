@@ -34,7 +34,7 @@ public:
     HttpTools &operator=(const HttpTools &obj);
     ~HttpTools();
 
-    static const std::pair<int, const std::string &> getReturnPair(int code);
+    static const std::pair<int, std::string> getReturnPair(int code);
     static const MapType &getHttpCodes();
     static const std::string &getHttpReturnMessage(int code);
     static bool isValidHttpCode(int code);
