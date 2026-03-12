@@ -65,7 +65,7 @@ public:
 	void successfulNewSocket(int newSocket);
 	void failedNewSocket();
 
-
+	void setClientEPOLLOUT(Client *client, bool add);
 };
 
 #endif

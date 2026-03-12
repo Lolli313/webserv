@@ -98,6 +98,20 @@ void epollEventAction(int epollFD, int targetFd, int epollEvent, int epollEventF
 		throw Tools::Exception("epollEventAction");
 }
 
+/**
+ * @brief Add or remove the EPOLLOUT of the client to the epoll.
+ * @param client The target client.
+ * @param add 1 to add and 0 to remove EPOLLOUT.
+ * @exception Exception on failure.
+ */
+void Polling::setClientEPOLLOUT(Client *client, bool add)
+{
+	int mask = _newClientFlags;
+	if (add)
+		mask |= EPOLLOUT; 
+	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_MOD, mask);
+}
+
 // std::vector<int> *Polling::setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets) {
 // 	std::vector<int> *temp = new std::vector<int>;
 // 	for (std::size_t i = 0; i < servSockets.size(); i++) {

@@ -96,12 +96,12 @@ std::set<int> ServerManager::setupServSockFDs()
 	return tempServSockFDs;
 }
 
-void TEST_RESPONSE(Client *tmpClient)
+// Just a test response that directly sends to the client.
+void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
 {
 		std::cout << "SENT" << std::endl;
-		HttpResponse response(200, "actually");
-		std::ifstream file("files/ascii/dog.html");
-		// std::ifstream file("loremIpsum.txt");
+		HttpResponse response(code, message);
+		std::ifstream file(path.c_str());
 		std::ostringstream body; 
 		body << file.rdbuf();
 		response.setBody(body.str());
@@ -120,7 +120,7 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 	if (tmpClient)
 	{
 
-		TEST_RESPONSE(tmpClient);
+		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
 
 		if (tmpClient->doneReceiving())
 		{
@@ -131,6 +131,7 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 			{
 				// Set the EPOLLOUT event to be monitored.
+				_polling.setClientEPOLLOUT(tmpClient, true);
 			}
 			if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
 			{
@@ -139,6 +140,7 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			if (tmpClient->responseSent())
 			{
 				// Remove the EPOLLOUT event
+				_polling.setClientEPOLLOUT(tmpClient, false);
 				tmpClient->refreshFlags();
 			}
 		}
