@@ -136,7 +136,7 @@ void HttpRequest::parse(const std::string &request) {
 	}
 	_body = bodyStream.str();
 	if (itContentLength != _header.end() && static_cast<long>(_body.size()) != std::atol(itContentLength->second.c_str())) {
-    throw Tools::Exception(400, "HttpRequest: Wrong body size, should be:" + _body.size());
+    throw Tools::Exception(400, "HttpRequest: Wrong body size");
 	}
 }
 

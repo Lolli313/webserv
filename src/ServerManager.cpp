@@ -1,6 +1,7 @@
 
 #include "ServerManager.hpp"
 #include "HttpMethod.hpp"
+#include "Post.hpp"
 
 std::vector<Server> setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 
@@ -124,6 +125,19 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 		if (tmpClient->doneReceiving())
 		{
+			HttpRequest request;
+			std::cout << RED << "<-------->TEST<------->" << RESET << std::endl;
+			request.parse(tmpClient->getBuffer());
+			request.print();
+			if (request.getMethodStr() == "POST") {
+				std::cout << RED << "<-------->POST<------->" << RESET << std::endl;
+				Post post(request);
+				post.parseBody();
+				post.saveInFile();
+				post.print();
+				std::cout << RED << "<-------->POST<------->" << RESET << std::endl;
+			}
+			std::cout << RED << "<-------->TEST<------->" << RESET << std::endl;
 			// Main logic:
 			// 1. HttpRequest
 			// 2. HttpMethod
