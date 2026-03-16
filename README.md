@@ -16,7 +16,7 @@ localhost:8080
 ```
 
 ## Manual testing
-you can use ``teslnet`` to send handwritten commands.
+you can use ``telnet`` to send handwritten commands.
 
 
 ## nginx
