@@ -26,7 +26,7 @@ private:
 	std::map<std::pair<int, std::string>, Server*> _serversMap;
 
 	std::set<int> _servSockFDs; // fd as para, to know if the fd is a server one.
-	Polling _polling;
+	Polling *_polling;
 	ServerManager();
 	ServerManager(const ServerManager &obj);
 	ServerManager &operator=(const ServerManager &obj);

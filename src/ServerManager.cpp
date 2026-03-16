@@ -17,14 +17,23 @@ ServerManager::~ServerManager()
 		close(*it);
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
 		delete (*it);
+	delete _polling;
 }
 
-ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs) :
-	_serverArray(setupServers(serverConfigs)),
-	_serversMap(setupServersMap()),
-	_servSockFDs(setupServSockFDs()),
-	_polling(_servSockFDs) {}
-
+ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs)
+{
+	try
+	{
+	_serverArray = setupServers(serverConfigs);
+	_serversMap = setupServersMap();
+	_servSockFDs = setupServSockFDs();
+	_polling = new Polling(_servSockFDs);
+	}
+	catch (Tools::Exception &e)
+	{
+		throw;
+	}
+}
 /*
 =================================================================
 ===== OPERATORS =================================================
@@ -116,7 +125,7 @@ void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, cons
 void ServerManager::existingClient(unsigned int i, int eventFD)
 {
 
-	Client *tmpClient = _polling.handleExistingClient(eventFD, _polling.getEventArray()->events);
+	Client *tmpClient = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
 	(void)i;
 
 	if (tmpClient)
@@ -133,7 +142,7 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 			{
 				// Set the EPOLLOUT event to be monitored.
-				_polling.setClientEPOLLOUT(tmpClient, true);
+				_polling->setClientEPOLLOUT(tmpClient, true);
 			}
 			if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
 			{
@@ -142,13 +151,13 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			if (tmpClient->responseSent())
 			{
 				// Remove the EPOLLOUT event
-				_polling.setClientEPOLLOUT(tmpClient, false);
+				_polling->setClientEPOLLOUT(tmpClient, false);
 				tmpClient->refreshFlags();
 			}
 		}
 		if (tmpClient->toBeClosed())
 		{
-			if (!_polling.deleteCLient(tmpClient))
+			if (!_polling->deleteCLient(tmpClient))
 				throw Tools::Exception("Error at deleting client");
 		}
 	}
@@ -172,19 +181,19 @@ void ServerManager::eventLoop()
 {
 	while (!_sigStop)
 	{
-		_polling.epollWaitEvent();
-		if (_polling.getEventCount() == -1)
+		_polling->epollWaitEvent();
+		if (_polling->getEventCount() == -1)
 		{
 			if (errno == EINTR)
 				return;
 		}
-		const epoll_event *eventArray = _polling.getEventArray();
-		for (int i = 0; i < _polling.getEventCount(); i++)
+		const epoll_event *eventArray = _polling->getEventArray();
+		for (int i = 0; i < _polling->getEventCount(); i++)
 		{
 			int eventFD = eventArray[i].data.fd;
-			_polling.setCurrEventFD(eventFD);
+			_polling->setCurrEventFD(eventFD);
 			if (matchServerFD(eventFD))
-				_polling.registerNewClient(eventFD);
+				_polling->registerNewClient(eventFD);
 			else
 				existingClient(i, eventFD);
 		}
