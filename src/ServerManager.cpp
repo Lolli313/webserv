@@ -2,7 +2,7 @@
 #include "ServerManager.hpp"
 #include "HttpMethod.hpp"
 
-std::vector<Server> setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
+std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 
 /*
 =================================================================
@@ -15,6 +15,8 @@ ServerManager::~ServerManager()
 	std::cout << RED << "Calling ServerManager's destructor" << RESET << std::endl;
 	for (std::set<int>::iterator it = _servSockFDs.begin(); it != _servSockFDs.end(); it++)
 		close(*it);
+	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
+		delete (*it);
 }
 
 ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs) :
@@ -49,34 +51,34 @@ ServerManager &ServerManager::operator=(const ServerManager &obj)
 std::map<std::pair<int, std::string>, Server*> ServerManager::setupServersMap()
 {
 	std::map<std::pair<int, std::string>, Server*> tmpMap;
-	std::vector<Server>::iterator it = _serverArray.begin();
+	std::vector<Server *>::iterator it = _serverArray.begin();
 	for (; it != _serverArray.end(); it++) {
-		std::set<std::string>::const_iterator sit = it->getServerNames().begin();
-		for (;sit != it->getServerNames().end(); sit++)
+		std::set<std::string>::const_iterator sit = (*it)->getServerNames().begin();
+		for (;sit != (*it)->getServerNames().end(); sit++)
 			tmpMap.insert(std::make_pair
-				(std::make_pair(std::atoi(it->getPort().c_str()), *sit), &(*it)));
+				(std::make_pair(std::atoi((*it)->getPort().c_str()), *sit), (*it)));
 	}
 	return tmpMap;
 }
 
-std::vector<Server> setupServers(const std::vector<ServerBlockConfig> &serverConfigs)
+std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverConfigs)
 {
 	bool found = false;
-	std::vector<Server> tempServers;
+	std::vector<Server *> tempServers;
 	for (std::vector<ServerBlockConfig>::const_iterator mit = serverConfigs.begin(); mit != serverConfigs.end(); mit++) {
-		std::vector<Server>::iterator it = tempServers.begin();
+		std::vector<Server *>::iterator it = tempServers.begin();
 		for (;it != tempServers.end(); it++)
 		{
-			if (it->getPort() == mit->getPort())
+			if ((*it)->getPort() == mit->getPort())
 			{
 				found = true;
 				break;
 			}
 		}
 		if (!found)
-			tempServers.push_back(*mit);
+			tempServers.push_back(new Server(*mit));
 		else
-			tempServers.push_back(Server(*mit, it->getServSocket()));
+			tempServers.push_back(new Server(*mit, (*it)->getServSocket()));
 		found = false;
 		// std::cout << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
 	}
@@ -86,11 +88,11 @@ std::vector<Server> setupServers(const std::vector<ServerBlockConfig> &serverCon
 std::set<int> ServerManager::setupServSockFDs()
 {
 	std::set<int> tempServSockFDs;
-	std::vector<Server>::const_iterator it = _serverArray.begin();
+	std::vector<Server *>::const_iterator it = _serverArray.begin();
 	for (; it != _serverArray.end(); it++)
 	{
-		std::cout << YELLOW_BRIGHT << "setupServSockFDs for fd = " << it->getServSockFD() << RESET << std::endl;
-		tempServSockFDs.insert(it->getServSockFD());
+		std::cout << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
+		tempServSockFDs.insert((*it)->getServSockFD());
 	}
 
 	return tempServSockFDs;
