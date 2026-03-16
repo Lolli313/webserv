@@ -119,24 +119,27 @@ void Post::saveInFile() const {
         }
         std::string filename;
         const std::string& name = it->second;
-        size_t start = name.find("name=\"") + 6;
-        size_t end = name.find("\"", start);
-        if (start == std::string::npos || end == std::string::npos) {
+        size_t namePos = name.find("name=\"");
+        if (namePos == std::string::npos) {
             filename = "post";
         } else {
-            filename = name.substr(start, end - start);
+            size_t start = namePos + 6;
+            size_t end = name.find("\"", start);
+            if (end == std::string::npos) {
+                filename = "post";
+            } else {
+                filename = name.substr(start, end - start);
+            }
         }
-
         it = _header[i].find("Content-Type");
         if (it != _header[i].end()) {
             const std::string& format = it->second;
             size_t start = format.find("/");
             std::string formatType = format.substr(start + 1);
             size_t end = formatType.find_first_of(" \r\n\t;");
-            if (start == std::string::npos || end == std::string::npos) {
-                formatType = "txt";
+            if (end != std::string::npos) {
+                formatType.erase(end);
             }
-            formatType.erase(end);
             filename += '.' + formatType;
         }
         std::ofstream outFile(("files/" + filename).c_str(), std::ios::out | std::ios::binary);

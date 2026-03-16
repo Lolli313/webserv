@@ -9,7 +9,7 @@ int main() {
     "POST /api/utilisateurs HTTP/1.1\r\n"
     "Host: exemple.com\r\n"
     "Content-Type: application/json\r\n"
-    "Content-Length: 70\r\n"
+    "Content-Length: 5\r\n"
     "Authorization: Bearer token123\r\n"
     "User-Agent: MonClient/1.0\r\n"
     "\r\n"
@@ -25,6 +25,7 @@ int main() {
         //     break;
         // }
     // }
+    client.clientDisconnect();
     return 0;
 }
 
