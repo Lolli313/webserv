@@ -31,6 +31,8 @@ private:
 	ServerManager(const ServerManager &obj);
 	ServerManager &operator=(const ServerManager &obj);
 
+	void cleanRessources();
+
 	void handleClientRequest(int clientFD);
 
 public:
