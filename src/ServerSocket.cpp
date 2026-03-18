@@ -16,15 +16,24 @@
 
 // Exception on failure
 ServerSocket::ServerSocket(std::string port) : _servSockFD(-1), _netwConf(NetworkConfig(port)) {
-	createServerSocket();
-	setSocketOptions();
-	connectSocketToPort();
+	try 
+	{
+		createServerSocket();
+		setSocketOptions();
+		connectSocketToPort();
+	}
+	catch (Tools::Exception &e)
+	{
+		if (_servSockFD != -1)
+			close(_servSockFD); 
+		throw;
+	}
 }
 
 ServerSocket::~ServerSocket() { 
 	std::cout << RED << "ServerSocket destructor" << RESET << std::endl;
-	// if (_servSockFD != -1)
-	// 	close(_servSockFD); 
+	if (_servSockFD != -1)
+		close(_servSockFD); 
 	}
 
 ServerSocket::ServerSocket(const ServerSocket &obj) :
