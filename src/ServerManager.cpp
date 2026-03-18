@@ -13,8 +13,8 @@ std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverC
 ServerManager::~ServerManager()
 {
 	std::cout << RED << "Calling ServerManager's destructor" << RESET << std::endl;
-	for (std::set<int>::iterator it = _servSockFDs.begin(); it != _servSockFDs.end(); it++)
-		close(*it);
+	// for (std::set<int>::iterator it = _servSockFDs.begin(); it != _servSockFDs.end(); it++)
+	// 	close(*it);
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
 		delete (*it);
 	delete _polling;
