@@ -10,6 +10,7 @@
 class Client
 {
 private:
+
 	const int _clientFD;
 	std::string _buffer;
 	char _tmpBuff[BUFFERSIZE];

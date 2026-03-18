@@ -9,7 +9,7 @@ int main() {
     "POST /api/utilisateurs HTTP/1.1\r\n"
     "Host: exemple.com\r\n"
     "Content-Type: application/json\r\n"
-    "Content-Length: 5\r\n"
+    "Content-Length: 71\r\n"
     "Authorization: Bearer token123\r\n"
     "User-Agent: MonClient/1.0\r\n"
     "\r\n"
@@ -17,14 +17,14 @@ int main() {
     "  \"nom\": \"Charles\",\n"
     "  \"age\": 30,\n"
     "  \"email\": \"charles@example.com\"\n"
-    "}";
+    "}\r\n";
 
     client.clientSend(test);
-    // while(true) {
+    while(true) {
         // if (client.clientReceive().empty() == true) {
         //     break;
         // }
-    // }
+    }
     client.clientDisconnect();
     return 0;
 }

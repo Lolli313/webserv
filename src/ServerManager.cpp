@@ -13,7 +13,7 @@ std::vector<Server> setupServers(const std::vector<ServerBlockConfig> &serverCon
 
 ServerManager::~ServerManager()
 {
-	std::cout << RED << "Calling ServerManager's destructor" << RESET << std::endl;
+	// std::cout << RED << "Calling ServerManager's destructor" << RESET << std::endl;
 	for (std::set<int>::iterator it = _servSockFDs.begin(); it != _servSockFDs.end(); it++)
 		close(*it);
 }
@@ -79,7 +79,7 @@ std::vector<Server> setupServers(const std::vector<ServerBlockConfig> &serverCon
 		else
 			tempServers.push_back(Server(*mit, it->getServSocket()));
 		found = false;
-		// std::cout << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
+		// // std::cout << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
 	}
 	return tempServers;
 }
@@ -90,7 +90,7 @@ std::set<int> ServerManager::setupServSockFDs()
 	std::vector<Server>::const_iterator it = _serverArray.begin();
 	for (; it != _serverArray.end(); it++)
 	{
-		std::cout << YELLOW_BRIGHT << "setupServSockFDs for fd = " << it->getServSockFD() << RESET << std::endl;
+		// std::cout << YELLOW_BRIGHT << "setupServSockFDs for fd = " << it->getServSockFD() << RESET << std::endl;
 		tempServSockFDs.insert(it->getServSockFD());
 	}
 
@@ -100,7 +100,7 @@ std::set<int> ServerManager::setupServSockFDs()
 // Just a test response that directly sends to the client.
 void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
 {
-		std::cout << "SENT" << std::endl;
+		// std::cout << "SENT" << std::endl;
 		HttpResponse response(code, message);
 		std::ifstream file(path.c_str());
 		std::ostringstream body; 
@@ -120,24 +120,25 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 	if (tmpClient)
 	{
-
 		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
 
+		// tmpClient
+
+		// tmpClient->setDoneReceiving(true);
 		if (tmpClient->doneReceiving())
 		{
+			/////////////////////////////////////////////////////////////////////////////////////
 			HttpRequest request;
-			std::cout << RED << "<-------->TEST<------->" << RESET << std::endl;
 			request.parse(tmpClient->getBuffer());
 			request.print();
 			if (request.getMethodStr() == "POST") {
-				std::cout << RED << "<-------->POST<------->" << RESET << std::endl;
 				Post post(request);
 				post.parseBody();
 				post.saveInFile();
 				post.print();
-				std::cout << RED << "<-------->POST<------->" << RESET << std::endl;
 			}
-			std::cout << RED << "<-------->TEST<------->" << RESET << std::endl;
+			/////////////////////////////////////////////////////////////////////////////////////
+
 			// Main logic:
 			// 1. HttpRequest
 			// 2. HttpMethod
@@ -174,7 +175,7 @@ bool ServerManager::matchServerFD(int eventFD) const
 {
 	if (_servSockFDs.find(eventFD) != _servSockFDs.end())
 	{
-		std::cout << ORANGE << "matchServerFD new client found from FD " << eventFD <<  RESET << std::endl;
+		// std::cout << ORANGE << "matchServerFD new client found from FD " << eventFD <<  RESET << std::endl;
 		return true;
 	}
 	return false;
@@ -213,16 +214,16 @@ void ServerManager::mainLoop()
 		}
 		catch (Tools::Exception &e)
 		{
-			if (e.getReturnCode() == 0)
-				std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
+			// if (e.getReturnCode() == 0)
+				// std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
 		}
 		catch (std::exception &e)
 		{
-			std::clog << ORANGE << e.what() << RESET << std::endl;
+			// std::clog << ORANGE << e.what() << RESET << std::endl;
 		}
 		catch (...)
 		{
-			std::clog << ORANGE << "Undefined error" << RESET << std::endl;
+			// std::clog << ORANGE << "Undefined error" << RESET << std::endl;
 		}
 	}
 }

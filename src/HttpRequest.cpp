@@ -73,35 +73,35 @@ void HttpRequest::parse(const std::string &request) {
 
 	// verifie que la requete n'est pas vide
 	if (request.empty()) {
-    throw Tools::Exception(400, "HttpRequest: Request is empty");
+    	throw Tools::Exception(400, "HttpRequest: Request is empty");
 	}
 
 	// parse la methode, le path et la version du http
 	std::istringstream iss(request);
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
-    throw Tools::Exception(400, "HttpRequest: Malformed request");
+    	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
 	if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
-    throw Tools::Exception(501, "HttpRequest: Unknown method");
+    	throw Tools::Exception(501, "HttpRequest: Unknown method");
 	}
 	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty() || _path[0] != '/') {
-    throw Tools::Exception(400, "HttpRequest: Wrong path request");
+    	throw Tools::Exception(400, "HttpRequest: Wrong path request");
 	}
 	if (_httpVersion != "HTTP/1.0" && _httpVersion != "HTTP/1.1") {
-    throw Tools::Exception(505, "HttpRequest: Neither http1.0 nor http1.1");
+    	throw Tools::Exception(505, "HttpRequest: Neither http1.0 nor http1.1");
 	}
 
 	// parse les query params grace a la fonction ET RENVOIE LE PURE-PATH DONC LE PATH SANS LES QUERY PARAMS
 	parseQueryParams();
 	if (_purePath.find("/../") != std::string::npos || _purePath.find("//") != std::string::npos || _purePath.empty() || _purePath[0] != '/') {
-    throw Tools::Exception(400, "HttpRequest: Wrong query params");
+    	throw Tools::Exception(400, "HttpRequest: Wrong query params");
 	}
 
 	// parse les headers
 	std::string line;
-  HttpTools tools;
+  	HttpTools tools;
 	if (!std::getline(iss, line)) {
-    throw Tools::Exception(400, "HttpRequest: Malformed body");
+    	throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
 	while (std::getline(iss, line) && !line.empty() && line != "\r") {
 		size_t pos = line.find(':');
@@ -130,13 +130,15 @@ void HttpRequest::parse(const std::string &request) {
 
 	// parse le body
 	std::stringstream bodyStream;
-	std::map<std::string, std::string>::const_iterator itContentLength = _header.find("Content-Length");
 	while (std::getline(iss, line)) {
     	bodyStream << line << "\n";
 	}
 	_body = bodyStream.str();
+	std::map<std::string, std::string>::const_iterator itContentLength = _header.find("Content-Length");
+	std::cout << std::atol(itContentLength->second.c_str()) << " " << _body.size() << std::endl;
 	if (itContentLength != _header.end() && static_cast<long>(_body.size()) != std::atol(itContentLength->second.c_str())) {
-    throw Tools::Exception(400, "HttpRequest: Wrong body size" + Tools::intToString(static_cast<int>(_body.size())));
+		std::cout << RED << "SIZE MUST BE : " << _body.size() << RESET << std::endl;
+    	throw Tools::Exception(400, "HttpRequest: Wrong body size" + Tools::intToString(static_cast<int>(_body.size())));
 	}
 }
 

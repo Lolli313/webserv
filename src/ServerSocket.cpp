@@ -22,7 +22,7 @@ ServerSocket::ServerSocket(std::string port) : _servSockFD(-1), _netwConf(Networ
 }
 
 ServerSocket::~ServerSocket() { 
-	std::cout << RED << "ServerSocket destructor" << RESET << std::endl;
+	// std::cout << RED << "ServerSocket destructor" << RESET << std::endl;
 	// if (_servSockFD != -1)
 	// 	close(_servSockFD); 
 	}
@@ -31,7 +31,7 @@ ServerSocket::ServerSocket(const ServerSocket &obj) :
 	_servSockFD(obj.getServSockFD()),
 	_netwConf(obj.getNetwConf()) 
 	{
-		std::cout << BLUE << "ServerSocket copy constructor" << RESET << std::endl;
+		// std::cout << BLUE << "ServerSocket copy constructor" << RESET << std::endl;
 	}
 /*
 =================================================================
@@ -63,9 +63,9 @@ NetworkConfig ServerSocket::getNetwConf() const { return _netwConf; }
 // Exception on failure
 void ServerSocket::createServerSocket()
 {
-	// std::cout << _netwConf.getFamily() << " and " << _netwConf.getSockType() << " and " << _netwConf.getProtocol() << std::endl;
+	// // std::cout << _netwConf.getFamily() << " and " << _netwConf.getSockType() << " and " << _netwConf.getProtocol() << std::endl;
 	_servSockFD = socket(_netwConf.getFamily(), _netwConf.getSockType(), _netwConf.getProtocol());
-	std::cout << PINK << "servSocketFD inside ServerSocket class is: " << _servSockFD << RESET << std::endl;
+	// std::cout << PINK << "servSocketFD inside ServerSocket class is: " << _servSockFD << RESET << std::endl;
 	if (_servSockFD < 0)
 		throw Tools::Exception("createServerSocket");
 }
@@ -74,7 +74,7 @@ void ServerSocket::createServerSocket()
 void ServerSocket::setSocketOptions()
 {
 	int option = 1;
-	std::cout << PURPLE << "servsockFD" << _servSockFD << RESET << std::endl;
+	// std::cout << PURPLE << "servsockFD" << _servSockFD << RESET << std::endl;
 	if (setsockopt(_servSockFD, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0)
 		throw Tools::Exception("setsockeopt REUSEADDR");
 	if (setsockopt(_servSockFD, SOL_SOCKET, SO_KEEPALIVE, &option, sizeof(option)) < 0)
@@ -86,7 +86,7 @@ void ServerSocket::setSocketOptions()
 // Exception on failure
 void ServerSocket::connectSocketToPort()
 {
-	std::cout << "HELLO BIND" << std::endl;
+	// std::cout << "HELLO BIND" << std::endl;
 	if (bind(_servSockFD, _netwConf.getAdrr(), _netwConf.getAddrLen()) < 0)
 		throw Tools::Exception("bind");
 

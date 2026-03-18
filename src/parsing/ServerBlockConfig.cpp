@@ -224,26 +224,26 @@ void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 }
 
 void ServerBlockConfig::printData() const {
-	std::cout << "port: " << _port << std::endl;
+	// std::cout << "port: " << _port << std::endl;
 
-	std::cout << "server names: ";
+	// std::cout << "server names: ";
 	std::set<std::string>::const_iterator it = _serverNames.begin();
 	for (; it != _serverNames.end(); it++) {
-		std::cout << *it << ", ";
+		// std::cout << *it << ", ";
 	}
-	std::cout << std::endl;
+	// std::cout << std::endl;
 
 	ConfigBase::printData();
-	std::cout << std::endl;
+	// std::cout << std::endl;
 
 	std::map<std::string, LocationConfig>::const_iterator mit = _locationConfigs.begin();
-	std::cout << "LocationCondig data" << std::endl;
+	// std::cout << "LocationCondig data" << std::endl;
 	for (; mit != _locationConfigs.end(); mit++) {
-		std::cout << "location path: " << mit->first << std::endl;
+		// std::cout << "location path: " << mit->first << std::endl;
 		mit->second.printData();
-		std::cout << std::endl;
+		// std::cout << std::endl;
 	}
-	std::cout << std::endl;
+	// std::cout << std::endl;
 	
 }
 

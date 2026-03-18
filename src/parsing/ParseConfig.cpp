@@ -86,6 +86,6 @@ void ParseConfig::printData() const {
 	std::vector<ServerBlockConfig>::const_iterator it = _serverBlockConfigVector.begin();
 	for (; it != _serverBlockConfigVector.end(); it++) {
 		it->printData();
-		std::cout << std::endl;
+		// std::cout << std::endl;
 	}
 }
