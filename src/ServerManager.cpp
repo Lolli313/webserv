@@ -13,56 +13,19 @@ std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverC
 ServerManager::~ServerManager()
 {
 	std::cout << RED << "Calling ServerManager's destructor" << RESET << std::endl;
-	// for (std::set<int>::iterator it = _servSockFDs.begin(); it != _servSockFDs.end(); it++)
-	// 	close(*it);
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
 		delete (*it);
 	delete _polling;
 }
 
-void ServerManager::cleanRessources()
-{
-	std::cout << ORANGE << "Server Manager cleanRessources" << RESET << std::endl;
-	if (!_servSockFDs.empty())
-	{
-		for (std::set<int>::iterator it = _servSockFDs.begin(); it != _servSockFDs.end(); it++)
-			close(*it);
-	}
-	if (!_serverArray.empty())
-	{
-		for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
-			delete (*it);
-	}
-}
-
 ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs)
 {
-	try
-	{
 		_serverArray = setupServers(serverConfigs);
 		_serversMap = setupServersMap();
 		_servSockFDs = setupServSockFDs();
 		_polling = new Polling(_servSockFDs);
-	}
-	catch (Tools::Exception &e)
-	{
-		cleanRessources();
-		std::cout << "In the ServerManager constructor" << std::endl;
-		throw;
-	}
-	catch (std::exception &e)
-	{
-		cleanRessources();
-		std::clog << ORANGE << e.what() << RESET << std::endl;
-		throw;
-	}
-	catch (...)
-	{
-		cleanRessources();
-		std::clog << ORANGE << "Undefined error" << RESET << std::endl;
-		throw;
-	}
 }
+
 /*
 =================================================================
 ===== OPERATORS =================================================

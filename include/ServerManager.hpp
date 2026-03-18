@@ -31,10 +31,6 @@ private:
 	ServerManager(const ServerManager &obj);
 	ServerManager &operator=(const ServerManager &obj);
 
-	void cleanRessources();
-
-	void handleClientRequest(int clientFD);
-
 public:
 	// ServerManager(const std::vector<std::string> &ports);
 	ServerManager(const std::vector<ServerBlockConfig> &serverConfigs);
