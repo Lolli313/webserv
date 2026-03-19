@@ -23,7 +23,7 @@
 // }
 
 Server::Server(const ServerBlockConfig &config, ServerSocket *socket) : 
-	_servSocket(new ServerSocket(*socket)), 
+	_servSocket(socket), 
 	_port(config.getPort()), 
 	_serverNames(config.getServerNames()), 
 	_locationConfigs(config.getLocationConfigs())
@@ -44,7 +44,7 @@ Server::Server(const ServerBlockConfig &config, ServerSocket *socket) :
 
 Server::~Server()
 {
-	delete _servSocket;
+	// delete _servSocket;
 	std::cout << RED << "Calling Server's destructor" << RESET << std::endl;
 }
 
