@@ -6,44 +6,45 @@
 =================================================================
 */
 
-Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(port), _port(port)
-{
-	std::cout << GREEN << "Server constructor for _servSocketFD = " << _servSocket.getServSockFD() << std::endl;
-	std::cout << "Server constructor for _port = " << _port << RESET << std::endl;
-}
+// Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(port), _port(port)
+// {
+// 	std::cout << GREEN << "Server constructor for _servSocketFD = " << _servSocket.getServSockFD() << std::endl;
+// 	std::cout << "Server constructor for _port = " << _port << RESET << std::endl;
+// }
 
-Server::Server(const Server &obj) :
-	ConfigBase(*this),
-	_servSocket(obj.getServSocket()),
-	_port(obj.getPort()),
-	_serverNames(obj.getServerNames()),
-	_locationConfigs(obj.getLocationConfigs())
-{
-	std::cout << BLUE << "Server copy constructor" << RESET << std::endl;
-}
+// Server::Server(const Server &obj) :
+// 	ConfigBase(*this),
+// 	_servSocket(obj.getServSocket()),
+// 	_port(obj.getPort()),
+// 	_serverNames(obj.getServerNames()),
+// 	_locationConfigs(obj.getLocationConfigs())
+// {
+// 	std::cout << BLUE << "Server copy constructor" << RESET << std::endl;
+// }
 
-Server::Server(const ServerBlockConfig &config) : 
-	_servSocket(config.getPort()), 
+Server::Server(const ServerBlockConfig &config, ServerSocket *socket) : 
+	_servSocket(new ServerSocket(*socket)), 
 	_port(config.getPort()), 
 	_serverNames(config.getServerNames()), 
 	_locationConfigs(config.getLocationConfigs())
 	{
-		std::cout << BLUE << "Server constructor for _serverSocketFD = " << _servSocket.getServSockFD() <<
+		std::cout << BLUE << "Server constructor for _serverSocketFD = " << _servSocket->getServSockFD() <<
 			", port = " << _port << RESET << std::endl;
 	}
 
 
-Server::Server(const ServerBlockConfig &config, const ServerSocket &servSocket) :
-	_servSocket(servSocket),
-	_port(config.getPort()),
-	_serverNames(config.getServerNames()),
-	_locationConfigs(config.getLocationConfigs()) {
-		std::cout << "Server constructor when port is a duplicate: _servSocketFD = " << _servSocket.getServSockFD() <<
-			", port = " << _port << RESET << std::endl;
-	}
+// Server::Server(const ServerBlockConfig &config, const ServerSocket &servSocket) :
+// 	_servSocket(servSocket),
+// 	_port(config.getPort()),
+// 	_serverNames(config.getServerNames()),
+// 	_locationConfigs(config.getLocationConfigs()) {
+// 		std::cout << "Server constructor when port is a duplicate: _servSocketFD = " << _servSocket.getServSockFD() <<
+// 			", port = " << _port << RESET << std::endl;
+// 	}
 
 Server::~Server()
 {
+	delete _servSocket;
 	std::cout << RED << "Calling Server's destructor" << RESET << std::endl;
 }
 
@@ -54,9 +55,9 @@ Server::~Server()
 */
 
 const std::string &Server::getPort() const { return _port; }
-int Server::getServSockFD() const { return _servSocket.getServSockFD(); }
+int Server::getServSockFD() const { return _servSocket->getServSockFD(); }
 const std::set<std::string> &Server::getServerNames() const { return _serverNames; }
-const ServerSocket &Server::getServSocket() const { return _servSocket; }
+const ServerSocket *Server::getServSocket() const { return _servSocket; }
 const std::map<std::string, LocationConfig> &Server::getLocationConfigs() const { return _locationConfigs; }
 
 /** @brief Access directly to the path's config, abstracting all the different locationConfigs and the Server's.

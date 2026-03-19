@@ -2,8 +2,6 @@
 #include "ServerManager.hpp"
 #include "HttpMethod.hpp"
 
-std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
-
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
@@ -13,6 +11,8 @@ std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverC
 ServerManager::~ServerManager()
 {
 	std::cout << RED << "Calling ServerManager's destructor" << RESET << std::endl;
+	for (std::vector<ServerSocket *>::iterator it = _serverSocketArray.begin(); it != _serverSocketArray.end(); it++)
+		delete (*it);
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
 		delete (*it);
 	delete _polling;
@@ -20,10 +20,10 @@ ServerManager::~ServerManager()
 
 ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs)
 {
-		_serverArray = setupServers(serverConfigs);
-		_serversMap = setupServersMap();
-		_servSockFDs = setupServSockFDs();
-		_polling = new Polling(_servSockFDs);
+	setupServers(serverConfigs);
+	_serversMap = setupServersMap();
+	_servSockFDs = setupServSockFDs();
+	_polling = new Polling(_servSockFDs);
 }
 
 /*
@@ -62,40 +62,34 @@ std::map<std::pair<int, std::string>, Server *> ServerManager::setupServersMap()
 	return tmpMap;
 }
 
-std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverConfigs)
+void ServerManager::setupServers(const std::vector<ServerBlockConfig> &serverConfigs)
 {
 	bool found = false;
-	std::vector<Server *> tempServers;
-	try
+	for (std::vector<ServerBlockConfig>::const_iterator mit = serverConfigs.begin(); mit != serverConfigs.end(); mit++)
 	{
-		for (std::vector<ServerBlockConfig>::const_iterator mit = serverConfigs.begin(); mit != serverConfigs.end(); mit++)
+		std::vector<ServerSocket *>::iterator it = _serverSocketArray.begin();
+		for (; it != _serverSocketArray.end(); it++)
 		{
-			std::vector<Server *>::iterator it = tempServers.begin();
-			for (; it != tempServers.end(); it++)
+			if ((*it)->getPort() == mit->getPort())
 			{
-				if ((*it)->getPort() == mit->getPort())
-				{
-					found = true;
-					break;
-				}
+				found = true;
+				break;
 			}
-			if (!found)
-				tempServers.push_back(new Server(*mit));
-			else
-				tempServers.push_back(new Server(*mit, (*it)->getServSocket()));
-			found = false;
-			// std::cout << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
 		}
+		if (!found)
+		{
+			// Create the socket here
+			_serverSocketArray.push_back(new ServerSocket(mit->getPort()));
+			_serverArray.push_back(new Server(*mit, _serverSocketArray.back()));
+		}
+		else
+		{
+			std::cout << "ALREADY EXISTING SOCKET" << std::endl;
+			_serverArray.push_back(new Server(*mit, *it));
+		}
+		found = false;
+		// std::cout << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
 	}
-	catch (Tools::Exception &e)
-	{
-				// cleanup already-created Server*
-		for (std::vector<Server *>::iterator it = tempServers.begin(); it != tempServers.end(); ++it)
-			delete *it;
-		tempServers.clear();
-		throw; // rethrow original exception	
-	}
-	return tempServers;
 }
 
 std::set<int> ServerManager::setupServSockFDs()

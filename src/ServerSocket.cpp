@@ -15,7 +15,7 @@
 // }
 
 // Exception on failure
-ServerSocket::ServerSocket(std::string port) : _servSockFD(-1), _netwConf(NetworkConfig(port)) {
+ServerSocket::ServerSocket(std::string port) : _port(port), _servSockFD(-1), _netwConf(NetworkConfig(port)) {
 	try 
 	{
 		createServerSocket();
@@ -37,6 +37,7 @@ ServerSocket::~ServerSocket() {
 	}
 
 ServerSocket::ServerSocket(const ServerSocket &obj) :
+	_port(obj.getPort()),
 	_servSockFD(obj.getServSockFD()),
 	_netwConf(obj.getNetwConf()) 
 	{
@@ -62,6 +63,7 @@ ServerSocket &ServerSocket::operator=(const ServerSocket &obj)
 
 int ServerSocket::getServSockFD() const { return _servSockFD; }
 NetworkConfig ServerSocket::getNetwConf() const { return _netwConf; }
+const std::string &ServerSocket::getPort() const { return _port; }
 
 /*
 =================================================================

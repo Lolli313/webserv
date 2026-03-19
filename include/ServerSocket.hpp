@@ -15,6 +15,7 @@
 class ServerSocket
 {
 private:
+	const std::string _port;
 	int _servSockFD;
 	NetworkConfig _netwConf;
 	ServerSocket();
@@ -27,6 +28,7 @@ public:
 
 	int getServSockFD() const;
 	NetworkConfig getNetwConf() const;
+	const std::string &getPort() const;
 
 	void createServerSocket();
 	void setSocketOptions();
