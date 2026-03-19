@@ -22,8 +22,8 @@ Server::Server(const Server &obj) :
 	// std::cout << BLUE << "Server copy constructor" << RESET << std::endl;
 }
 
-Server::Server(const ServerBlockConfig &config) : 
-	_servSocket(config.getPort()), 
+Server::Server(const ServerBlockConfig &config, ServerSocket *socket) : 
+	_servSocket(socket), 
 	_port(config.getPort()), 
 	_serverNames(config.getServerNames()), 
 	_locationConfigs(config.getLocationConfigs())
@@ -54,9 +54,9 @@ Server::~Server()
 */
 
 const std::string &Server::getPort() const { return _port; }
-int Server::getServSockFD() const { return _servSocket.getServSockFD(); }
+int Server::getServSockFD() const { return _servSocket->getServSockFD(); }
 const std::set<std::string> &Server::getServerNames() const { return _serverNames; }
-const ServerSocket &Server::getServSocket() const { return _servSocket; }
+const ServerSocket *Server::getServSocket() const { return _servSocket; }
 const std::map<std::string, LocationConfig> &Server::getLocationConfigs() const { return _locationConfigs; }
 
 /** @brief Access directly to the path's config, abstracting all the different locationConfigs and the Server's.
