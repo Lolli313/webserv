@@ -11,7 +11,9 @@ int main() {
     "Content-Type: application/json\r\n"
     "Content-Length: 71\r\n"
     "Authorization: Bearer token123\r\n"
-    "User-Agent: MonClient/1.0\r\n"
+    "User-Agent: MonClient/1.0\r\n";
+
+    std::string test2 =
     "\r\n"
     "{\n"
     "  \"nom\": \"Charles\",\n"
@@ -19,11 +21,15 @@ int main() {
     "  \"email\": \"charles@example.com\"\n"
     "}\r\n";
 
+    std::string test3 =
+    "DELETE files/post.json HTTP/1.1\r\n";
+
     client.clientSend(test);
+    client.clientSend(test2);
     while(true) {
-        // if (client.clientReceive().empty() == true) {
-        //     break;
-        // }
+        std::string message;
+        std::getline(std::cin, message);
+        client.clientSend(test3);
     }
     client.clientDisconnect();
     return 0;

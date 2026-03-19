@@ -53,6 +53,6 @@ class HttpRequest {
     // FUNCTIONS
 
     void parseQueryParams();
-    void parse(const std::string &request);
+    bool parse(const std::string &request);
     void print() const;
 };

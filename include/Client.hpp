@@ -59,6 +59,8 @@ public:
 	bool toBeClosed() const;
 
 	void refreshFlags();
+
+	void bufferManager();
 };
 
 #endif

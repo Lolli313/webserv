@@ -13,7 +13,7 @@ std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverC
 
 ServerManager::~ServerManager()
 {
-	std::cout << RED << "Calling ServerManager's destructor" << RESET << std::endl;
+	// std::cout << RED << "Calling ServerManager's destructor" << RESET << std::endl;
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
 		delete (*it);
 	delete _polling;
@@ -105,7 +105,7 @@ std::set<int> ServerManager::setupServSockFDs()
 	std::vector<Server *>::const_iterator it = _serverArray.begin();
 	for (; it != _serverArray.end(); it++)
 	{
-		std::cout << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
+		// std::cout << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
 		tempServSockFDs.insert((*it)->getServSockFD());
 	}
 
@@ -115,7 +115,7 @@ std::set<int> ServerManager::setupServSockFDs()
 // Just a test response that directly sends to the client.
 void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
 {
-	std::cout << "SENT" << std::endl;
+	// std::cout << "SENT" << std::endl;
 	HttpResponse response(code, message);
 	std::ifstream file(path.c_str());
 	std::ostringstream body;
@@ -137,21 +137,33 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 	{
 		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
 
-		// tmpClient
+		tmpClient->bufferManager();
+		HttpRequest request;
+		if (request.parse(tmpClient->getBuffer())) {
+			tmpClient->setDoneReceiving(true);
+		}
 
-		// tmpClient->setDoneReceiving(true);
 		if (tmpClient->doneReceiving())
 		{
-			/////////////////////////////////////////////////////////////////////////////////////
-			HttpRequest request;
-			request.parse(tmpClient->getBuffer());
+			// std::cout << GREEN << "RECU" << RESET << std::endl;
 			request.print();
 			if (request.getMethodStr() == "POST") {
 				Post post(request);
 				post.parseBody();
 				post.saveInFile();
-				post.print();
+			} else if (request.getMethodStr() == "DELETE") {
+				// std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
+				int fd = open(request.getPath().c_str(), O_RDONLY);
+				std::cout << request.getPath() << std::endl;
+				if (fd == -1) {
+					// Gérer l'erreur (strerror(errno))
+					// std::cout << "ICI" << std::endl;
+				} else {
+					// std::cout << "LA" << std::endl;
+					std::remove(request.getPath().c_str());
+				}
 			}
+			tmpClient->getBuffer().erase();
 			/////////////////////////////////////////////////////////////////////////////////////
 
 			// Main logic:
@@ -190,7 +202,7 @@ bool ServerManager::matchServerFD(int eventFD) const
 {
 	if (_servSockFDs.find(eventFD) != _servSockFDs.end())
 	{
-		std::cout << ORANGE << "matchServerFD new client found from FD " << eventFD << RESET << std::endl;
+		// std::cout << ORANGE << "matchServerFD new client found from FD " << eventFD << RESET << std::endl;
 		return true;
 	}
 	return false;

@@ -31,7 +31,7 @@ ServerSocket::ServerSocket(std::string port) : _servSockFD(-1), _netwConf(Networ
 }
 
 ServerSocket::~ServerSocket() { 
-	std::cout << RED << "ServerSocket destructor" << RESET << std::endl;
+	// std::cout << RED << "ServerSocket destructor" << RESET << std::endl;
 	if (_servSockFD != -1)
 		close(_servSockFD); 
 	}

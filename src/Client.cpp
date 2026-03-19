@@ -130,3 +130,32 @@ void Client::refreshFlags()
 	_responseSent = false;
 	_readyToReceive = false;
 }
+
+void Client::bufferManager() {
+
+	// std::cout << "BEFORE" << std::endl;
+	// std::cout << BLUE << _buffer << RESET << std::endl;
+	// std::cout << GREEN << _tmpBuff << RESET << std::endl;
+
+	const char* methods[] = {"GET ", "POST ", "DELETE "};
+	const size_t num_methods = sizeof(methods) / sizeof(methods[0]);
+	size_t earliest_pos = std::string::npos;
+
+	for (size_t i = 0; i < num_methods; ++i) {
+		size_t pos = _buffer.find(methods[i]);
+		if (pos != std::string::npos && (earliest_pos == std::string::npos || pos < earliest_pos)) {
+			earliest_pos = pos;
+		}
+	}
+
+	if (earliest_pos != std::string::npos) {
+		_buffer.erase(0, earliest_pos);
+	} else {
+		_buffer.erase();
+	}
+
+	// std::cout << std::endl;
+	// std::cout << "AFTER" << std::endl;
+	// std::cout << BLUE << _buffer << RESET << std::endl;
+	// std::cout << GREEN << _tmpBuff << RESET << std::endl;
+}
