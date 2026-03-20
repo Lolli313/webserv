@@ -98,9 +98,7 @@ bool Client::responseToBeSent() const {
 }
 
 void Client::setReadyToReceive(bool status) { _readyToReceive = status; }
-bool Client::readyToReceive() const { 
-	std::cout << PINK << "READY TO RECEIVE" << RESET << std::endl;
-	return _readyToReceive; }
+bool Client::readyToReceive() const { return _readyToReceive; }
 
 void Client::setToBeClosed(bool status) { _toBeClosed = status; }
 

@@ -161,10 +161,8 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 		if (tmpClient->doneReceiving())
 		{
-			// Main logic:
-			// 1. HttpRequest
-			// 2. HttpMethod
-			// 		responseToBeSent(true)
+			// HARD CODED TO SEND A CLIENT RESPONSE.
+			// THIS SHOULD BE DONE BY THE METHOD (GET / POST / DELETE)
 			tmpClient->setResponseBuff(quickHttpReponse(HttpTools::getReturnPair(200)));
 			tmpClient->setResponseToBeSent(true);
 			
