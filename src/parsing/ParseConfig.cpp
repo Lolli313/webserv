@@ -6,6 +6,7 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
+
 ParseConfig::ParseConfig() {};
 
 ParseConfig::~ParseConfig() {};
@@ -36,11 +37,11 @@ ParseConfig::ParseConfig(const std::string& filePath) : _fileName(filePath) {
 ===== OPERATORS =================================================
 =================================================================
 */
+
 ParseConfig &ParseConfig::operator=(const ParseConfig &obj)
 {
 	if (this != &obj)
-	{
-	}
+		_serverBlockConfigVector = obj._serverBlockConfigVector;
 	return (*this);
 };
 
@@ -53,7 +54,6 @@ ParseConfig &ParseConfig::operator=(const ParseConfig &obj)
 const std::vector<ServerBlockConfig>& ParseConfig::getServerConfig() const {
 	return _serverBlockConfigVector;
 }
-
 
 /*
 =================================================================
@@ -75,7 +75,6 @@ bool ParseConfig::checkServerKeyword(const std::string& line, std::ifstream *inf
 	if (line.compare(0, 6, "server") != 0)
 		return false;
 	std::vector<std::string> tokens(Tools::splitString(line));
-
 	if (!Tools::isValidBraceFormat("server", tokens, infile))
 		return false;
 	_serverBlockConfigVector.push_back(ServerBlockConfig(infile));
@@ -86,6 +85,5 @@ void ParseConfig::printData() const {
 	std::vector<ServerBlockConfig>::const_iterator it = _serverBlockConfigVector.begin();
 	for (; it != _serverBlockConfigVector.end(); it++) {
 		it->printData();
-		// std::cout << std::endl;
 	}
 }

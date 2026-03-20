@@ -31,8 +31,8 @@ int main()
 	(void)status;
 
 	clientFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	// std::cout << clientFD << std::endl;
-	// std::cout << connect(clientFD, res->ai_addr, res->ai_addrlen) << std::endl;
+	// std::clog << clientFD << std::endl;
+	// std::clog << connect(clientFD, res->ai_addr, res->ai_addrlen) << std::endl;
 	std::string str;
 	int readSize = 0;
 	while (std::getline(std::cin, str))
@@ -62,7 +62,7 @@ int main()
 			response.erase(pos, 2);
 		}
 
-		// std::cout << response << std::endl;
+		// std::clog << response << std::endl;
 	}
 
 	close(clientFD);

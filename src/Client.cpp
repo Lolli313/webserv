@@ -15,12 +15,12 @@ Client::Client(int fd) : _clientFD(fd),
 						_readyToReceive(false), 
 						_toBeClosed(false) 
 						{
-	// std::cout << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
+	// std::clog << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
 }
 
 Client::~Client() {
-	// std::cout << RED << "Client destructor" << RESET << std::endl;
-//	close(_clientFD); 
+	// std::clog << RED << "Client destructor" << RESET << std::endl;
+	// close(_clientFD); 
 }
 
 Client::Client(const Client &obj) : _clientFD(obj._clientFD),
@@ -31,7 +31,7 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD),
 								_readyToReceive(obj._readyToReceive), 
 								_toBeClosed(obj._toBeClosed) 
 								{ 
-	// std::cout << PINK << "Client copy constructor" << RESET << std::endl;
+	// std::clog << PINK << "Client copy constructor" << RESET << std::endl;
 	std::memcpy(_tmpBuff, obj._tmpBuff, BUFFERSIZE);
 	_buffer = obj._buffer;
 };
@@ -45,7 +45,7 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD),
 // Undefined behavior / deprecated
 Client &Client::operator=(const Client &obj)
 {
-	// std::cout << PINK << "Client = operator" << RESET << std::endl;
+	// std::clog << PINK << "Client = operator" << RESET << std::endl;
 	(void)obj;
 	return (*this);
 };
@@ -64,12 +64,13 @@ char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
 
 bool Client::doneReceiving() const { 
-	// std::cout << "Done receiving :)" << std::endl;
-	return _doneReceiving; }
+	// std::clog << "Done receiving :)" << std::endl;
+	return _doneReceiving;
+}
 
 void Client::setDoneReceiving(bool status) {
 	_doneReceiving = status;
-	// std::cout << "Done receiving status is: " << status << std::endl;
+	// std::clog << "Done receiving status is: " << status << std::endl;
 }
 
 void Client::setKeepAlive(bool status) { _keepAlive = status; }
@@ -133,9 +134,9 @@ void Client::refreshFlags()
 
 void Client::bufferManager() {
 
-	// std::cout << "BEFORE" << std::endl;
-	// std::cout << BLUE << _buffer << RESET << std::endl;
-	// std::cout << GREEN << _tmpBuff << RESET << std::endl;
+	// std::clog << "BEFORE" << std::endl;
+	// std::clog << BLUE << _buffer << RESET << std::endl;
+	// std::clog << GREEN << _tmpBuff << RESET << std::endl;
 
 	const char* methods[] = {"GET ", "POST ", "DELETE "};
 	const size_t num_methods = sizeof(methods) / sizeof(methods[0]);
@@ -154,8 +155,8 @@ void Client::bufferManager() {
 		_buffer.erase();
 	}
 
-	// std::cout << std::endl;
-	// std::cout << "AFTER" << std::endl;
-	// std::cout << BLUE << _buffer << RESET << std::endl;
-	// std::cout << GREEN << _tmpBuff << RESET << std::endl;
+	// std::clog << std::endl;
+	// std::clog << "AFTER" << std::endl;
+	// std::clog << BLUE << _buffer << RESET << std::endl;
+	// std::clog << GREEN << _tmpBuff << RESET << std::endl;
 }

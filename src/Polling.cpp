@@ -14,7 +14,7 @@ Polling::Polling(const std::set<int> &servSockFDs) : // _servSockFDs(setupAddSer
 													 _newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
-	// std::cout << PURPLE << "epoll CONSTRUCTOR, socket seize is: " << servSockFDs.size() << RESET << std::endl;
+	// std::clog << PURPLE << "epoll CONSTRUCTOR, socket seize is: " << servSockFDs.size() << RESET << std::endl;
 	for (std::set<int>::iterator it = servSockFDs.begin(); it != servSockFDs.end(); it++)
 	{
 		addFdToEpoll(*it, _newClientFlags);
@@ -23,7 +23,7 @@ Polling::Polling(const std::set<int> &servSockFDs) : // _servSockFDs(setupAddSer
 
 Polling::~Polling()
 {
-	// std::cout << RED << "Calling Polling destructor" << RESET << std::endl;
+	// std::clog << RED << "Calling Polling destructor" << RESET << std::endl;
 	for (std::map<const unsigned int, Client *>::iterator it = _clientMap.begin(); it != _clientMap.end();)
 	{
 		std::map<const unsigned int, Client *>::iterator curr = it++;
@@ -115,7 +115,7 @@ void Polling::setClientEPOLLOUT(Client *client, bool add)
 // std::vector<int> *Polling::setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets) {
 // 	std::vector<int> *temp = new std::vector<int>;
 // 	for (std::size_t i = 0; i < servSockets.size(); i++) {
-// 		// std::cout << servSockets[i]->getServSockFD() << std::endl;
+// 		// std::clog << servSockets[i]->getServSockFD() << std::endl;
 // 		temp->push_back(servSockets[i]->getServSockFD());
 // 	}
 // 	return temp;
@@ -123,7 +123,7 @@ void Polling::setClientEPOLLOUT(Client *client, bool add)
 
 void Polling::addFdToEpoll(int targetFD, int eventFlags)
 {
-	// std::cout << GREEN << "Adding fd " << targetFD << " to epoll." << RESET << std::endl;
+	// std::clog << GREEN << "Adding fd " << targetFD << " to epoll." << RESET << std::endl;
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
 }
 
@@ -132,7 +132,7 @@ void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
 {
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
 	_clientMap[targetFD] = new Client(targetFD);
-	// std::cout << "Adding FD to epoll and client maps" << std::endl;
+	// std::clog << "Adding FD to epoll and client maps" << std::endl;
 }
 
 // // Exception on failure
@@ -147,7 +147,7 @@ void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
 // returns true if client deleted, false on error
 bool Polling::deleteCLient(Client *client)
 {
-	// std::cout << BLUE << "DELETE CLIENT" << RESET << std::endl;
+	// std::clog << BLUE << "DELETE CLIENT" << RESET << std::endl;
 	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
 	close(client->getFD());
 	if ((_clientMap.erase(client->getFD())) != 1)
@@ -167,7 +167,7 @@ void Polling::createEpoll()
 // Exception on failure
 void Polling::successfulNewSocket(int newSocket)
 {
-	// std::cout << "Succesfully created new socket for client :)" << std::endl;
+	// std::clog << "Succesfully created new socket for client :)" << std::endl;
 	fcntl(newSocket, F_SETFL, O_NONBLOCK);
 	addFDtoEpollAndClientMap(newSocket, _newClientFlags);
 }
@@ -180,7 +180,7 @@ void Polling::failedNewSocket()
 // Exception on failure
 void Polling::registerNewClient(int serverSocketFD)
 {
-	// std::cout << LIGHT_BLUE << "Registering a new client n" << _clientMap.size() << RESET << std::endl;
+	// std::clog << LIGHT_BLUE << "Registering a new client n" << _clientMap.size() << RESET << std::endl;
 	int newSocket;
 	sockaddr_in clientAddr;
 	socklen_t clientLen = sizeof(clientAddr);
@@ -195,7 +195,7 @@ void Polling::registerNewClient(int serverSocketFD)
 // Exception on failure
 void Polling::handleClientInput(Client &client)
 {
-	// std::cout << GREEN_BRIGHT << "HandleClientInput for fd = " << _currEventFD << RESET << std::endl;
+	// std::clog << GREEN_BRIGHT << "HandleClientInput for fd = " << _currEventFD << RESET << std::endl;
 	int readSize = recv(_currEventFD, client.getTmpBufferPtr(), BUFFERSIZE, 0);
 	if (readSize < 0)
 	{
@@ -204,20 +204,20 @@ void Polling::handleClientInput(Client &client)
 	}
 	else if (readSize > 0)
 	{
-		// std::cout << "Received size " << readSize << " = " << client.getTmpBufferPtr() << std::endl;
-		// std::cout << "BEFORE" << std::endl;
-		// std::cout << PINK << client.getBuffer() << RESET << std::endl;
-		// std::cout << PURPLE << client.getTmpBufferPtr() << RESET << std::endl;
+		// std::clog << "Received size " << readSize << " = " << client.getTmpBufferPtr() << std::endl;
+		// std::clog << "BEFORE" << std::endl;
+		// std::clog << PINK << client.getBuffer() << RESET << std::endl;
+		// std::clog << PURPLE << client.getTmpBufferPtr() << RESET << std::endl;
 		client.getBuffer().append(client.getTmpBufferPtr(), readSize);
-		// std::cout << "AFTER" << std::endl;
-		// std::cout << PINK << client.getBuffer() << RESET << std::endl;
-		// std::cout << PURPLE << client.getTmpBufferPtr() << RESET << std::endl;
+		// std::clog << "AFTER" << std::endl;
+		// std::clog << PINK << client.getBuffer() << RESET << std::endl;
+		// std::clog << PURPLE << client.getTmpBufferPtr() << RESET << std::endl;
 	}
 	else
 	{
 		// MAYBE CLOSE THE CONNECTION HERE
 		client.setDoneReceiving(true);
-		// std::cout << MAGENTA << "EOF" << RESET << std::endl;
+		// std::clog << MAGENTA << "EOF" << RESET << std::endl;
 	}
 }
 
@@ -227,15 +227,15 @@ void Polling::handleClientInput(Client &client)
  **/
 Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 {
-	// std::cout << "Found an existing connection" << std::endl;
+	// std::clog << "Found an existing connection" << std::endl;
 
 	if (_clientMap.find(clientFD) == _clientMap.end())
 	{
-		// std::cout << "Unexpected no match for existing client" << std::endl;
+		// std::clog << "Unexpected no match for existing client" << std::endl;
 		return NULL;
 	}
 	else {}
-		// std::cout << ORANGE << "Found clientFD match for FD: " << clientFD << RESET << std::endl;
+		// std::clog << ORANGE << "Found clientFD match for FD: " << clientFD << RESET << std::endl;
 
 	std::map<const unsigned int, Client *>::iterator itClient = _clientMap.find(clientFD);
 
@@ -248,13 +248,13 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	// ERROR
 	if (currEvent & EPOLLERR)
 	{
-		// std::cout << RED << "EPOLLERR" << RESET << std::endl;
+		// std::clog << RED << "EPOLLERR" << RESET << std::endl;
 		int error = 0;
 		socklen_t len = sizeof(error);
 		if (getsockopt(clientFD, SOL_SOCKET, SO_ERROR, &error, &len) == -1)
-			// std::cout << RED << "getsockopt error" << RESET << std::endl;
+			// std::clog << RED << "getsockopt error" << RESET << std::endl;
 		if (error != 0)
-			// std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
+			// std::clog << RED << "Socket error " << strerror(error) << RESET << std::endl;
 		itClient->second->setToBeClosed(true);
 		return itClient->second;
 	}
@@ -262,7 +262,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	// CLIENT DISCONNECTED
 	if (currEvent & EPOLLHUP)
 	{
-		// std::cout << "EPOLLHUP" << std::endl;
+		// std::clog << "EPOLLHUP" << std::endl;
 		handleClientInput(*itClient->second);
 		itClient->second->setDoneReceiving(true);
 		itClient->second->setToBeClosed(true);
@@ -274,7 +274,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	// We should set _doneReceiving = true (i guess)
 	if (currEvent & EPOLLRDHUP)
 	{
-		// std::cout << "EPOLLRDHUP" << std::endl;
+		// std::clog << "EPOLLRDHUP" << std::endl;
 		itClient->second->setDoneReceiving(true);
 		itClient->second->setToBeClosed(true);
 		handleClientInput(*itClient->second);
@@ -284,7 +284,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	// CLIENT INPUT
 	if (currEvent & EPOLLIN)
 	{
-		// std::cout << "EPOLLIN" << std::endl;
+		// std::clog << "EPOLLIN" << std::endl;
 		handleClientInput(*itClient->second);
 		// THIS IS TEMPORARY
 		return itClient->second;
@@ -303,6 +303,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 
 void Polling::epollWaitEvent()
 {
-	// std::cout << "epoll WAITING, " << _clientMap.size() << " clients." << std::endl;
+	// std::clog << "epoll WAITING, " << _clientMap.size() << " clients." << std::endl;
 	_eventCount = epoll_wait(_epollFD, _eventArray, MAX_EVENTS, TIMEOUT);
 }

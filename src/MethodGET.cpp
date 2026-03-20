@@ -18,9 +18,7 @@ MethodGET::MethodGET(const MethodGET &obj) { *this = obj; }
 */
 MethodGET &MethodGET::operator=(const MethodGET &obj)
 {
-	if (this != &obj)
-	{
-	}
+	(void)obj;
 	return (*this);
 }
 

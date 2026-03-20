@@ -52,10 +52,10 @@ void Post::parseBody() {
     }
 
     while (std::getline(iss, line)) {
-
-        if (line == boundary + "\r" || line == boundary + "--\r") {
+        // std::cout << line << std::endl;
+        if (line == boundary + "\r" || line == boundary + "--\r" || line == "--" + boundary + "\r" || line == "--" +boundary + "--\r") {
             if (inPart && !part.empty()) {
-
+                
                 std::string currLine;
                 std::istringstream currStream(part);
                 std::map<std::string, std::string> head;
@@ -97,14 +97,14 @@ void Post::parseBody() {
 
 void Post::print() const {
     for (size_t i = 0; i < _header.size(); ++i) {
-        std::cout << BLUE << "PART : " << i + 1 << RESET << std::endl;
+        std::clog << BLUE << "PART : " << i + 1 << RESET << std::endl;
         for (std::map<std::string, std::string>::const_iterator it = _header[i].begin();
             it != _header[i].end(); ++it) {
-            std::cout << YELLOW << it->first << " : " << RESET;
+            std::clog << YELLOW << it->first << " : " << RESET;
             if (it->first == "Body") {
-                std::cout << std::endl;
+                std::clog << std::endl;
             }
-            std::cout << it->second << std::endl;
+            std::clog << it->second << std::endl;
         }
     }
 	
@@ -112,7 +112,7 @@ void Post::print() const {
 
 void Post::saveInFile() const {
     for (size_t i = 0; i < _header.size(); ++i) {
-
+        // std::cout << RED << "CACA" << RESET << std::endl;
         std::map<std::string, std::string>::const_iterator it = _header[i].find("Content-Disposition");
         if (it == _header[i].end()) {
             throw Tools::Exception(400, "Post: No content disposition");
@@ -142,6 +142,7 @@ void Post::saveInFile() const {
             }
             filename += '.' + formatType;
         }
+        // std::cout << RED << filename << RESET << std::endl;
         std::ofstream outFile(("files/" + filename).c_str(), std::ios::out | std::ios::binary);
         if (!outFile) {
             throw Tools::Exception(500, "Post: Can't create file");

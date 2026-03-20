@@ -18,9 +18,7 @@ HttpTools::HttpTools(const HttpTools &obj) { *this = obj; };
 */
 HttpTools &HttpTools::operator=(const HttpTools &obj)
 {
-    if (this != &obj)
-    {
-    }
+    (void)obj;
     return (*this);
 };
 

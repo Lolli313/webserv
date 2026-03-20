@@ -16,11 +16,8 @@ Token::Token(const Token &obj) { *this = obj; };
 ===== OPERATORS =================================================
 =================================================================
 */
-Token &Token::operator=(const Token &obj)
-{
-	if (this != &obj)
-	{
-	}
+Token &Token::operator=(const Token &obj) {
+	(void)obj;
 	return (*this);
 };
 

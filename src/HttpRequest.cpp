@@ -102,7 +102,7 @@ bool HttpRequest::parse(const std::string &request) {
 
 	// parse les query params grace a la fonction ET RENVOIE LE PURE-PATH DONC LE PATH SANS LES QUERY PARAMS
 	parseQueryParams();
-	if (_purePath.find("/../") != std::string::npos || _purePath.find("//") != std::string::npos || _purePath.empty() || _purePath[0] != '/') {
+	if (_purePath.find("/../") != std::string::npos || _purePath.find("//") != std::string::npos || _purePath.empty()) {
 		std::cerr << RED << "ERROR : PURE PATH " << RESET << std::endl;
 		return false;
     	// throw Tools::Exception(400, "HttpRequest: Wrong query params");
@@ -147,30 +147,30 @@ bool HttpRequest::parse(const std::string &request) {
     	bodyStream << line << "\n";
 	}
 	_body = bodyStream.str();
-	std::map<std::string, std::string>::const_iterator itContentLength = _header.find("Content-Length");
-	if (itContentLength != _header.end() && static_cast<long>(_body.size()) != std::atol(itContentLength->second.c_str())) {
-		std::cerr << RED << "ERROR : BODY SIZE MUST BE : " << _body.size() << RESET << std::endl;
-		return false;
-    	// throw Tools::Exception(400, "HttpRequest: Wrong body size" + Tools::intToString(static_cast<int>(_body.size())));
-	}
-	std::cout << GREEN << "EVERYTHING GOOD" << std::endl;
+	// std::map<std::string, std::string>::const_iterator itContentLength = _header.find("Content-Length");
+	// if (itContentLength != _header.end() && static_cast<long>(_body.size()) != std::atol(itContentLength->second.c_str())) {
+	// 	std::cerr << RED << "ERROR : BODY SIZE MUST BE : " << _body.size() << RESET << std::endl;
+	// 	return false;
+    // 	// throw Tools::Exception(400, "HttpRequest: Wrong body size" + Tools::intToString(static_cast<int>(_body.size())));
+	// }
+	// std::clog << GREEN << "EVERYTHING GOOD" << std::endl;
 	return true;
 }
 
 void HttpRequest::print() const {
-	std::cout << YELLOW << "Method : " << RESET << _methodStr << std::endl;
-	std::cout << YELLOW << "Path : " << RESET << _path << std::endl;
-	std::cout << YELLOW << "Pure Path : " << RESET << _purePath << std::endl;
-	std::cout << YELLOW << "Query Params : " << RESET << std::endl;
+	std::clog << YELLOW << "Method : " << RESET << _methodStr << std::endl;
+	std::clog << YELLOW << "Path : " << RESET << _path << std::endl;
+	std::clog << YELLOW << "Pure Path : " << RESET << _purePath << std::endl;
+	std::clog << YELLOW << "Query Params : " << RESET << std::endl;
 	for (std::map<std::string, std::string>::const_iterator it = _queryParams.begin();
 		it != _queryParams.end(); ++it) {
-		std::cout << " " << it->first << " : " << it->second << std::endl;
+		std::clog << " " << it->first << " : " << it->second << std::endl;
 	}
-	std::cout << YELLOW << "HTTP Version : " << RESET << _httpVersion << std::endl;
-	std::cout << YELLOW << "Headers : " << RESET << std::endl; 
+	std::clog << YELLOW << "HTTP Version : " << RESET << _httpVersion << std::endl;
+	std::clog << YELLOW << "Headers : " << RESET << std::endl; 
 	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); ++it) {
-		std::cout << " " << it->first << " : " << it->second << std::endl;
+		std::clog << " " << it->first << " : " << it->second << std::endl;
 	}
-	std::cout << YELLOW << "Boundary : " << RESET << _boundary << std::endl;
-	std::cout << YELLOW << "Body : " << std::endl << RESET << _body;
+	std::clog << YELLOW << "Boundary : " << RESET << _boundary << std::endl;
+	std::clog << YELLOW << "Body : " << std::endl << RESET << _body;
 }
