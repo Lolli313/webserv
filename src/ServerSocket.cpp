@@ -15,19 +15,29 @@
 // }
 
 // Exception on failure
-ServerSocket::ServerSocket(std::string port) : _servSockFD(-1), _netwConf(NetworkConfig(port)) {
-	createServerSocket();
-	setSocketOptions();
-	connectSocketToPort();
+ServerSocket::ServerSocket(std::string port) : _port(port), _servSockFD(-1), _netwConf(NetworkConfig(port)) {
+	try 
+	{
+		createServerSocket();
+		setSocketOptions();
+		connectSocketToPort();
+	}
+	catch (Tools::Exception &e)
+	{
+		if (_servSockFD != -1)
+			close(_servSockFD); 
+		throw;
+	}
 }
 
 ServerSocket::~ServerSocket() { 
 	std::cout << RED << "ServerSocket destructor" << RESET << std::endl;
-	// if (_servSockFD != -1)
-	// 	close(_servSockFD); 
+	if (_servSockFD != -1)
+		close(_servSockFD); 
 	}
 
 ServerSocket::ServerSocket(const ServerSocket &obj) :
+	_port(obj.getPort()),
 	_servSockFD(obj.getServSockFD()),
 	_netwConf(obj.getNetwConf()) 
 	{
@@ -53,6 +63,7 @@ ServerSocket &ServerSocket::operator=(const ServerSocket &obj)
 
 int ServerSocket::getServSockFD() const { return _servSockFD; }
 NetworkConfig ServerSocket::getNetwConf() const { return _netwConf; }
+const std::string &ServerSocket::getPort() const { return _port; }
 
 /*
 =================================================================

@@ -13,8 +13,19 @@ private:
 	const int _clientFD;
 	std::string _buffer;
 	char _tmpBuff[BUFFERSIZE];
-	bool _doneReceiving;
-	// HttpRequest class
+
+	// std::size_t bytesSent; // Already sent bytes, an index for _buffer, waiting for client to send be ready to receive.
+
+	bool _doneReceiving; // Once the message is fully received
+	// Depending on the request, soemtimes no response should be sent.
+	// Base value = 0;
+	// if value < 1, do not send a response
+	// -1 = once set, value cannot be changed and sending any response to this client wont ever be possible. 
+	int _responseToBeSent;
+	bool _responseSent; // The response has been sent to this client, if _keepAlive, should be reset (i guess)
+	bool _keepAlive;
+	bool _readyToReceive; // Client is waiting for response
+	bool _toBeClosed; // CLient should be closed, can be set by EPOLLHUP
 
 	Client &operator=(const Client &obj);
 	
@@ -25,10 +36,28 @@ public:
 
 	int getFD();
 	std::string &getBuffer();
+	
 	char *getTmpBufferPtr();
-	// std::string &getTmpBuffer();
-	void setReceivingStatus(bool status);
+	
+	bool isKeepAlive() const;
+	void setKeepAlive(bool status);
+	
+	void setDoneReceiving(bool status);
 	bool doneReceiving() const;
+
+	bool responseToBeSent() const;
+	void setResponseToBeSent(int status);	
+
+	bool readyToReceive() const;
+	void setReadyToReceive(bool status);	
+
+	bool responseSent() const;
+	void setResponseSent(bool status);	
+
+	void setToBeClosed(bool status);
+	bool toBeClosed() const;
+
+	void refreshFlags();
 };
 
 #endif

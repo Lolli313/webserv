@@ -59,14 +59,14 @@ const std::string &HttpTools::getHttpReturnMessage(int code)
 
 /** @return A pair<int, const std::string &> with the Http Return Code and the Http Reason-Phrase
  **/
-const std::pair<int, const std::string &> HttpTools::getReturnPair(int code)
+const std::pair<int, std::string> HttpTools::getReturnPair(int code)
 {
     const HttpTools::MapType &temp = getHttpCodes();
     HttpTools::MapType::const_iterator it = temp.find(code);
     if (it == temp.end())
         it = temp.find(0);
 
-    return std::pair<int, const std::string &>(it->first, it->second);
+    return std::pair<int, std::string>(it->first, it->second);
 }
 
 void HttpTools::initHttpCodes(HttpTools::MapType &httpCodes)
