@@ -148,12 +148,9 @@ void ServerManager::sendResponse(Client *client)
 	}
 }
 
-void ServerManager::existingClient(unsigned int i, int eventFD)
+void ServerManager::existingClient(int eventFD)
 {
-
 	Client *tmpClient = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
-	(void)i;
-
 	if (tmpClient)
 	{
 		// TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
@@ -222,7 +219,7 @@ void ServerManager::eventLoop()
 			if (matchServerFD(eventFD))
 				_polling->registerNewClient(eventFD);
 			else
-				existingClient(i, eventFD);
+				existingClient(eventFD);
 		}
 	}
 }

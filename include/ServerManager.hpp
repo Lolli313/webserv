@@ -43,7 +43,7 @@ public:
 	void setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 	std::map<std::pair<int, std::string>, Server*> setupServersMap();
 	std::set<int> setupServSockFDs();
-	void existingClient(unsigned int i, int eventFD);
+	void existingClient(int eventFD);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();
 	void mainLoop();

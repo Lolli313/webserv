@@ -250,7 +250,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		if (error != 0)
 			std::cout << RED << "Socket error " << strerror(error) << RESET << std::endl;
 		itClient->second->setToBeClosed(true);
-		// return itClient->second;
 	}
 
 	// CLIENT DISCONNECTED
@@ -261,7 +260,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		itClient->second->setDoneReceiving(true);
 		itClient->second->setToBeClosed(true);
 		itClient->second->setResponseToBeSent(-1); // No response should be sent
-		// return itClient->second;
 	}
 
 	// CLIENT IS DONE SENDING
@@ -272,7 +270,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		itClient->second->setDoneReceiving(true);
 		itClient->second->setToBeClosed(true);
 		handleClientInput(*itClient->second);
-		// return itClient->second;
 	}
 
 	// CLIENT INPUT
@@ -280,8 +277,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	{
 		std::cout << "EPOLLIN" << std::endl;
 		handleClientInput(*itClient->second);
-		// THIS IS TEMPORARY
-		// return itClient->second;
 	}
 
 	// CLIENT READY TO RECEIVE
@@ -289,12 +284,9 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	{
 		std::cout << PINK << "EPOLLOUT" << RESET << std::endl;
 		itClient->second->setReadyToReceive(true);
-		// return itClient->second;
 	}
 
 	return itClient->second;
-	// ================================================================================================
-	// ================================================================================================
 }
 
 void Polling::epollWaitEvent()
