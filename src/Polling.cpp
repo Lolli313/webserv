@@ -290,8 +290,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		itClient->second->setReadyToReceive(true);
 		return itClient->second;
 	}
-	else
-		itClient->second->setReadyToReceive(false);
 
 	return NULL;
 	// ================================================================================================

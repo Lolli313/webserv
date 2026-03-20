@@ -111,6 +111,15 @@ bool Client::toBeClosed() const
 	return false;
 }
 
+const std::string &Client::getResponseBuff() const { return _responseBuff; }
+void Client::setResponseBuff(const std::string &response) { _responseBuff = response; }
+
+std::size_t Client::getBytesSent() const { return _bytesSent; }
+// Overwrite the _bytesSent by the input
+void Client::setBytesSent(std::size_t bytes) { _bytesSent = bytes; }
+// Add the bytes to the total bytesSent
+void Client::addBytesSent(std::size_t bytes) { _bytesSent += bytes; }
+
 /*
 =================================================================
 ===== METHODS ===================================================
@@ -121,11 +130,13 @@ bool Client::toBeClosed() const
  * @brief Reset the flags for the next request.
  * @note Do not reset _toBeClosed nor _keepAlive.
  */
-void Client::refreshFlags()
+void Client::refreshClient()
 {
-	// _bytesSent = 0;
+	_bytesSent = 0;
 	_doneReceiving = false;
 	_responseToBeSent = 0;
 	_responseSent = false;
 	_readyToReceive = false;
+	_buffer.clear();
+	_responseBuff.clear();
 }

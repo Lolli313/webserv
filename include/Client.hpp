@@ -15,7 +15,7 @@ private:
 	char _tmpBuff[BUFFERSIZE];
 
 	std::string _responseBuff; // The response buffer
-	std::size_t bytesSent; // Already sent bytes, an index for _responseBuff, waiting for client to send be ready to receive.
+	std::size_t _bytesSent; // Already sent bytes, an index for _responseBuff, waiting for client to send be ready to receive.
 
 	bool _doneReceiving; // Once the message is fully received
 	// Depending on the request, soemtimes no response should be sent.
@@ -58,7 +58,14 @@ public:
 	void setToBeClosed(bool status);
 	bool toBeClosed() const;
 
-	void refreshFlags();
+	void setResponseBuff(const std::string &response);
+	const std::string &getResponseBuff() const;
+
+	std::size_t getBytesSent() const;
+	void setBytesSent(std::size_t bytes);
+	void addBytesSent(std::size_t bytes);
+
+	void refreshClient();
 };
 
 #endif

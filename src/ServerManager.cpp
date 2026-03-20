@@ -135,6 +135,17 @@ void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, cons
 	// quickHttpReponse(HttpTools::getReturnPair(404));
 }
 
+void ServerManager::sendResponse(Client *client)
+{
+	int sent = send(client->getFD(), client->getResponseBuff().c_str() + client->getBytesSent(), client->getResponseBuff().size() - client->getBytesSent(), MSG_NOSIGNAL);
+
+	client->addBytesSent(sent);
+	if (client->getBytesSent() == client->getBuffer().size())
+	{
+		client->setResponseSent(true);
+	}
+}
+
 void ServerManager::existingClient(unsigned int i, int eventFD)
 {
 
@@ -144,7 +155,8 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 	if (tmpClient)
 	{
 
-		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
+		// TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
+		tmpClient->setDoneReceiving(true);
 
 		if (tmpClient->doneReceiving())
 		{
@@ -152,6 +164,9 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			// 1. HttpRequest
 			// 2. HttpMethod
 			// 		responseToBeSent(true)
+			
+			tmpClient->setResponseSent(true);
+			
 			if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 			{
 				// Set the EPOLLOUT event to be monitored.
@@ -159,14 +174,13 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			}
 			if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
 			{
-				// 3. HttpResponse
-					
+				sendResponse(tmpClient);
 			}
 			if (tmpClient->responseSent())
 			{
 				// Remove the EPOLLOUT event
 				_polling->setClientEPOLLOUT(tmpClient, false);
-				tmpClient->refreshFlags();
+				tmpClient->refreshClient();
 			}
 		}
 		if (tmpClient->toBeClosed())

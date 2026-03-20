@@ -47,6 +47,7 @@ public:
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();
 	void mainLoop();
+	void sendResponse(Client *client);
 };
 
 #endif
