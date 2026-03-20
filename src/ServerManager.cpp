@@ -132,6 +132,7 @@ void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, cons
 	tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
 	response.setResponseHeaders(tmp);
 	send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
+	// quickHttpReponse(HttpTools::getReturnPair(404));
 }
 
 void ServerManager::existingClient(unsigned int i, int eventFD)
@@ -159,6 +160,7 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
 			{
 				// 3. HttpResponse
+					
 			}
 			if (tmpClient->responseSent())
 			{
