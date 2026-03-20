@@ -37,6 +37,7 @@ public:
 
 	int getFD();
 	std::string &getBuffer();
+	void setBuffer(const std::string &input);
 	
 	char *getTmpBufferPtr();
 	

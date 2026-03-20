@@ -120,27 +120,29 @@ std::set<int> ServerManager::setupServSockFDs()
 }
 
 // Just a test response that directly sends to the client.
-void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
-{
-	std::cout << "SENT" << std::endl;
-	HttpResponse response(code, message);
-	std::ifstream file(path.c_str());
-	std::ostringstream body;
-	body << file.rdbuf();
-	response.setBody(body.str());
-	std::vector<std::pair<std::string, std::string> > tmp;
-	tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
-	response.setResponseHeaders(tmp);
-	send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
-	// quickHttpReponse(HttpTools::getReturnPair(404));
-}
+// void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
+// {
+// 	std::cout << "SENT" << std::endl;
+// 	HttpResponse response(code, message);
+// 	std::ifstream file(path.c_str());
+// 	std::ostringstream body;
+// 	body << file.rdbuf();
+// 	response.setBody(body.str());
+// 	std::vector<std::pair<std::string, std::string> > tmp;
+// 	tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
+// 	response.setResponseHeaders(tmp);
+// 	send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
+// 	// quickHttpReponse(HttpTools::getReturnPair(404));
+// }
 
 void ServerManager::sendResponse(Client *client)
 {
 	int sent = send(client->getFD(), client->getResponseBuff().c_str() + client->getBytesSent(), client->getResponseBuff().size() - client->getBytesSent(), MSG_NOSIGNAL);
 
+	if (sent < 0)
+		throw Tools::Exception("sendResponse = -1");
 	client->addBytesSent(sent);
-	if (client->getBytesSent() == client->getBuffer().size())
+	if (client->getBytesSent() >= client->getBuffer().size())
 	{
 		client->setResponseSent(true);
 	}
@@ -154,7 +156,6 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 	if (tmpClient)
 	{
-
 		// TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
 		tmpClient->setDoneReceiving(true);
 
@@ -164,8 +165,8 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			// 1. HttpRequest
 			// 2. HttpMethod
 			// 		responseToBeSent(true)
-			
-			tmpClient->setResponseSent(true);
+			tmpClient->setResponseBuff(quickHttpReponse(HttpTools::getReturnPair(200)));
+			tmpClient->setResponseToBeSent(true);
 			
 			if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 			{
