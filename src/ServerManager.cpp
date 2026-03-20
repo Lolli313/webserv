@@ -15,15 +15,29 @@ ServerManager::~ServerManager()
 		delete (*it);
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
 		delete (*it);
-	delete _polling;
+	if (_polling)
+		delete _polling;
 }
 
-ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs)
+ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs) : _polling(NULL)
 {
-	setupServers(serverConfigs);
-	_serversMap = setupServersMap();
-	_servSockFDs = setupServSockFDs();
-	_polling = new Polling(_servSockFDs);
+	try
+	{
+		setupServers(serverConfigs);
+		_serversMap = setupServersMap();
+		_servSockFDs = setupServSockFDs();
+		_polling = new Polling(_servSockFDs);
+	}
+	catch (Tools::Exception &e)
+	{
+		for (std::vector<ServerSocket *>::iterator it = _serverSocketArray.begin(); it != _serverSocketArray.end(); it++)
+			delete (*it);
+		for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
+			delete (*it);
+		if (_polling)
+			delete _polling;
+		throw;
+	}
 }
 
 /*
