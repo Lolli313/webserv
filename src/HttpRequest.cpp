@@ -10,7 +10,7 @@
 // 2. Analyse and throw errors accordingly if found.
 HttpRequest::HttpRequest(const std::string &request)
 {
-  (void)request;
+	(void)request;
 };
 
 HttpRequest::~HttpRequest() {};
@@ -24,10 +24,10 @@ HttpRequest::HttpRequest(const HttpRequest &obj) { *this = obj; };
 */
 HttpRequest &HttpRequest::operator=(const HttpRequest &obj)
 {
-  if (this != &obj)
-  {
-  }
-  return (*this);
+	if (this != &obj)
+	{
+	}
+	return (*this);
 };
 
 /*
@@ -43,3 +43,8 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &obj)
 */
 
 bool HttpRequest::hasBody() { return !_body.empty(); }
+
+bool HttpRequest::parse(const std::string &request) {
+	(void)request;
+	return true;
+}

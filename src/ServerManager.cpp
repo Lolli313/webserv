@@ -134,6 +134,42 @@ void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, cons
 	send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
 }
 
+const std::string& ServerManager::findPort(int eventFD) {
+	std::vector<ServerSocket *>::const_iterator it = _serverSocketArray.begin();
+	for (; it != _serverSocketArray.end(); it++) {
+		if (eventFD == (*it)->getServSockFD())
+			return (*it)->getPort();
+	}
+	return _serverSocketArray[0]->getPort();
+}
+
+std::pair<std::string, std::string> exctractHostPair(const std::string& str) {
+	std::vector<std::string> split = Tools::splitString(str, ":");
+	return std::make_pair(split[0], split[1]);
+}
+
+Server* ServerManager::findServer(std::pair<std::string, std::string> hostPair) {
+	// check if if the serverName is an IP address
+	std::map<std::pair<int, std::string>, Server*>::const_iterator it = _serversMap.find(hostPair);
+	if (it == _serversMap.end())
+		// no straight serverName + Port match, find the server with a port that matches as a fallback
+	Server* server = _serversMap.find(hostPair)->second;
+}
+
+void ServerManager::checkRequestValidity(const Client &client, const HttpRequest &request, int eventFD) {
+	std::string port = findPort(eventFD);
+	(void)client;
+	std::map<std::string, std::string>::const_iterator it = request.getHeader().find("Host");
+	if (it == request.getHeader().end())
+		throw Tools::Exception(400, "Host header missing");
+	std::pair<std::string, std::string> hostPair = exctractHostPair(it->second);
+
+	std::map<std::pair<int, std::string>, Server*>::const_iterator sit = _serversMap.find(hostPair);
+	if (sit == _serversMap.end())
+
+	Server* server = _serversMap.find(hostPair)->second;
+}
+
 void ServerManager::existingClient(unsigned int i, int eventFD)
 {
 
@@ -145,12 +181,23 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
 
+		HttpRequest request;
+		if (request.parse(tmpClient->getBuffer())) {
+			tmpClient->setDoneReceiving(true);
+		}
+
+		if (request.getHeadersParsed() == true)
+			checkRequestValidity(*tmpClient, request, eventFD);
+
 		if (tmpClient->doneReceiving())
 		{
 			// Main logic:
 			// 1. HttpRequest
 			// 2. HttpMethod
 			// 		responseToBeSent(true)
+
+//			checkRequestValidity(*tmpClient, eventFD);
+
 			if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 			{
 				// Set the EPOLLOUT event to be monitored.
