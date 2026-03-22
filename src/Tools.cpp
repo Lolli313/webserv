@@ -76,6 +76,19 @@ const char &Tools::getLastCharacter(const std::string &str)
 	return *str.rbegin();
 }
 
+void Tools::removeLastCharacter(std::string& str) {
+	if (!str.empty())
+		str.resize(str.size() - 1);
+}
+
+void Tools::eraseAfterLastCharacter(std::string& str, char c) {
+	std::string::size_type pos = str.find_last_of(c);
+	if (pos != std::string::npos) {
+		str.erase(pos + 1);
+	}
+}
+
+
 const std::string::const_iterator Tools::getLastIterator(const std::string &str)
 {
 	if (str.empty())

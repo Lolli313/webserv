@@ -150,26 +150,61 @@ std::pair<std::string, std::string> splitHostPair(const std::string& str) {
 
 Server* ServerManager::findServer(const std::string& host) {
 	std::pair<std::string, std::string> hostPair = splitHostPair(host);
-	
+
 	int targetPort = std::atoi(hostPair.second.c_str());
 	std::pair<int, std::string> exactKey(targetPort, hostPair.first);
 
 	std::map<std::pair<int, std::string>, Server*>::const_iterator it = _serversMap.find(exactKey);
 	if (it != _serversMap.end())  {// found exact match for Port + Server Name
-		std::cout << "Found exact match for Port + Server Name" << std::endl;
+		std::cout << LIGHT_BLUE << "Found exact match for " << exactKey.first
+		<< ":" << exactKey.second << RESET << std::endl;
 		return it->second;
 	}
 
 	std::pair<int, std::string> defaultKey(targetPort, "");
 	it = _serversMap.lower_bound(defaultKey); // Find the first match for targetPort regardless of the Server Name
 	if (it != _serversMap.end()) {
-		std::cout << "Found match for default port " << it->first.first
+		std::cout << LIGHT_BLUE << "Found match for default port " << RESET << it->first.first
 		<< " with server name: " << it->first.second << std::endl;
 		return it->second;
 	}
 
 	throw Tools::Exception(500, "Error finding server");
 }
+
+bool locationMatchesPath(std::string& path, const std::string& location) {
+	if (path == location)
+		return true;
+
+	// check if a path with a trailing / matches a location path
+	if (!path.empty() && path.size() - 1 == location.size() && Tools::getLastCharacter(path) == '/')
+		return path.compare(0, location.size(), location) == 0;
+	
+	return false;
+}
+
+const ConfigBase& findConfigBase(Server* server, const HttpRequest& request) {
+	std::string path = request.getPath();
+	std::cout << LIGHT_BLUE << "Path to look for is: " << path << RESET << std::endl;
+	while (!path.empty()) {
+		std::map<std::string, LocationConfig>::const_iterator it = server->getLocationConfigs().begin();
+		for (; it != server->getLocationConfigs().end(); it++) {
+			if (locationMatchesPath(path, it->first)) {
+				std::cout << LIGHT_BLUE << "Found a match for the location: " << it->first << RESET << std::endl;
+				return it->second;
+			}
+		}
+		if (Tools::getLastCharacter(path) == '/')
+			Tools::removeLastCharacter(path);
+		
+		Tools::eraseAfterLastCharacter(path, '/');
+	}
+	return *server;
+}
+
+// void handleReturnAndAllowMethod(const ConfigBase& base) {
+
+// }
 
 void ServerManager::checkRequestValidity(const Client &client, const HttpRequest &request, int eventFD) {
 	std::string port = findPort(eventFD);
@@ -180,6 +215,9 @@ void ServerManager::checkRequestValidity(const Client &client, const HttpRequest
 	}
 	
 	Server *server = findServer(it->second);
+	const ConfigBase& base = findConfigBase(server, request);
+	// handleReturnAndAllowMethod(base);
+	(void)base;
 	(void)server;
 }
 

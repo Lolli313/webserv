@@ -1,20 +1,18 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "ServerSocket.hpp"
-#include "Polling.hpp"
-#include "terminalColors.hpp"
-#include "ConfigBase.hpp"
-#include "LocationConfig.hpp"
 #include "parsing/ServerBlockConfig.hpp"
+#include "terminalColors.hpp"
+#include "LocationConfig.hpp"
+#include "ServerSocket.hpp"
+#include "ConfigBase.hpp"
+#include "Polling.hpp"
 
 #include <csignal>
-#include <cerrno>
 #include <cstdlib>
+#include <cerrno>
 #include <set>
 #include <map>
-
-// class LocationConfig;
 
 class Server : public ConfigBase
 {
