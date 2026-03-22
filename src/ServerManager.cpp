@@ -202,9 +202,16 @@ const ConfigBase& findConfigBase(Server* server, const HttpRequest& request) {
 	return *server;
 }
 
-// void handleReturnAndAllowMethod(const ConfigBase& base) {
+void handleReturnAndAllowMethod(const ConfigBase& base, const std::string& method) {
+	if (base.getReturnDirective().first)
+	//	throw Tools::Exception(base.getReturnDirective().first, base.getReturnDirective().second);
+		std::cout << LIGHT_BLUE << "Found return directive with code " << base.getReturnDirective().first << RESET << std::endl;
 
-// }
+	std::set<std::string>::const_iterator it = base.getAllowMethods().find(method);
+	if (it == base.getAllowMethods().end())
+	//	throw Tools::Exception(405, "Method not allowed");
+		std::cout << LIGHT_BLUE << method << " method not allowed" << RESET << std::endl;
+}
 
 void ServerManager::checkRequestValidity(const Client &client, const HttpRequest &request, int eventFD) {
 	std::string port = findPort(eventFD);
@@ -216,7 +223,7 @@ void ServerManager::checkRequestValidity(const Client &client, const HttpRequest
 	
 	Server *server = findServer(it->second);
 	const ConfigBase& base = findConfigBase(server, request);
-	// handleReturnAndAllowMethod(base);
+	handleReturnAndAllowMethod(base, request.getMethodStr());
 	(void)base;
 	(void)server;
 }

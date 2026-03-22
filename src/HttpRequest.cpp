@@ -52,7 +52,8 @@ bool HttpRequest::parse(const std::string &request) {
 	std::vector<std::string> split = Tools::splitString(host);
 	Tools::removeLastCharacter(split[0]);
 	_header[split[0]] = split[1];
-	_path = "/uploads/images/img.png";
+	_path = "/images/";
+	_methodStr = "POST";
 	_headersParsed = true;
 	return true;
 }
