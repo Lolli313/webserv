@@ -61,7 +61,7 @@ std::vector<std::string> Tools::splitString(const std::string &input, const std:
 	std::string::size_type start = 0;
 	std::string::size_type pos;
 
-	while ((pos = input.find(separator, start) != std::string::npos))
+	while ((pos = input.find(separator, start)) != std::string::npos)
 	{
 		returnVector.push_back(input.substr(start, pos - start));
 		start = pos + separator.size();

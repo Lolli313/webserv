@@ -34,7 +34,7 @@ public:
 	Client(const Client &obj);
 	~Client();
 
-	int getFD();
+	int getFD() const;
 	std::string &getBuffer();
 	
 	char *getTmpBufferPtr();

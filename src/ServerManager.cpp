@@ -149,25 +149,37 @@ std::pair<std::string, std::string> exctractHostPair(const std::string& str) {
 }
 
 Server* ServerManager::findServer(std::pair<std::string, std::string> hostPair) {
-	// check if if the serverName is an IP address
-	std::map<std::pair<int, std::string>, Server*>::const_iterator it = _serversMap.find(hostPair);
-	if (it == _serversMap.end())
-		// no straight serverName + Port match, find the server with a port that matches as a fallback
-	Server* server = _serversMap.find(hostPair)->second;
+	int targetPort = std::atoi(hostPair.second.c_str());
+	std::pair<int, std::string> exactKey(targetPort, hostPair.first);
+
+	std::map<std::pair<int, std::string>, Server*>::const_iterator it = _serversMap.find(exactKey);
+	if (it != _serversMap.end())  {// found exact match for Port + Server Name
+		std::cout << "Found exact match for Port + Server Name" << std::endl;
+		return it->second;
+	}
+
+	std::pair<int, std::string> defaultKey(targetPort, "");
+	it = _serversMap.lower_bound(defaultKey); // Find the first match for targetPort regardless of the Server Name
+	if (it != _serversMap.end()) {
+		std::cout << "Found match for default port " << it->first.first
+		<< " with server name: " << it->first.second << std::endl;
+		return it->second;
+	}
+
+	throw Tools::Exception(500, "Error finding server");
 }
 
 void ServerManager::checkRequestValidity(const Client &client, const HttpRequest &request, int eventFD) {
 	std::string port = findPort(eventFD);
 	(void)client;
 	std::map<std::string, std::string>::const_iterator it = request.getHeader().find("Host");
-	if (it == request.getHeader().end())
+	if (it == request.getHeader().end()) {
 		throw Tools::Exception(400, "Host header missing");
+	}
 	std::pair<std::string, std::string> hostPair = exctractHostPair(it->second);
-
-	std::map<std::pair<int, std::string>, Server*>::const_iterator sit = _serversMap.find(hostPair);
-	if (sit == _serversMap.end())
-
-	Server* server = _serversMap.find(hostPair)->second;
+	
+	Server *server = findServer(hostPair);
+	(void)server;
 }
 
 void ServerManager::existingClient(unsigned int i, int eventFD)
@@ -182,12 +194,13 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
 
 		HttpRequest request;
-		if (request.parse(tmpClient->getBuffer())) {
+		if (request.parse("Host: localhost:8081")) {
 			tmpClient->setDoneReceiving(true);
 		}
-
-		if (request.getHeadersParsed() == true)
+		
+		if (request.getHeadersParsed() == true) {
 			checkRequestValidity(*tmpClient, request, eventFD);
+		}
 
 		if (tmpClient->doneReceiving())
 		{

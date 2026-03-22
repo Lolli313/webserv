@@ -57,7 +57,7 @@ private:
     std::map<std::string, std::string> _header;
     std::string _boundary;
     std::string _body;
-	bool headersParsed;
+	bool _headersParsed;
 
 public:
 	HttpRequest();
@@ -74,7 +74,7 @@ public:
     const std::map<std::string, std::string> &getHeader() const {return _header;}
     const std::string &getBoundary() const {return _boundary;}
     const std::string &getBody() const {return _body;}
-	bool getHeadersParsed();
+	bool getHeadersParsed() const { return _headersParsed; }
 
 	bool hasBody();
 	bool parse(const std::string &request);
