@@ -416,7 +416,7 @@ void ConfigBase::printData() const {
  * **Auto Index** | false
  * **Client Max Body Size** | 5M
  * **Error Pages** | *empty*
- * **Allowed Methods** | GET, POST, DELETE
+ * **Allowed Methods** | GET
  * **Return Directive** | *empty*
  * ```
  */
@@ -427,8 +427,7 @@ void ConfigBase::initWithDefaultData() {
 	std::string temp(DEFAULT_CLIENT_MAX_BODY_SIZE);
 	setClientMaxBodySize(expandMaskedString(temp, MASK_M));
 	_allowedMethods.insert("GET");
-	_allowedMethods.insert("POST");
-	_allowedMethods.insert("DELETE");
+	setReturnDirective(std::make_pair(0, ""));
 }
 
 void ConfigBase::initRoot() {
