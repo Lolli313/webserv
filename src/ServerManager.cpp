@@ -143,12 +143,14 @@ const std::string& ServerManager::findPort(int eventFD) {
 	return _serverSocketArray[0]->getPort();
 }
 
-std::pair<std::string, std::string> exctractHostPair(const std::string& str) {
+std::pair<std::string, std::string> splitHostPair(const std::string& str) {
 	std::vector<std::string> split = Tools::splitString(str, ":");
 	return std::make_pair(split[0], split[1]);
 }
 
-Server* ServerManager::findServer(std::pair<std::string, std::string> hostPair) {
+Server* ServerManager::findServer(const std::string& host) {
+	std::pair<std::string, std::string> hostPair = splitHostPair(host);
+	
 	int targetPort = std::atoi(hostPair.second.c_str());
 	std::pair<int, std::string> exactKey(targetPort, hostPair.first);
 
@@ -176,9 +178,8 @@ void ServerManager::checkRequestValidity(const Client &client, const HttpRequest
 	if (it == request.getHeader().end()) {
 		throw Tools::Exception(400, "Host header missing");
 	}
-	std::pair<std::string, std::string> hostPair = exctractHostPair(it->second);
 	
-	Server *server = findServer(hostPair);
+	Server *server = findServer(it->second);
 	(void)server;
 }
 
@@ -194,7 +195,7 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
 
 		HttpRequest request;
-		if (request.parse("Host: localhost:8081")) {
+		if (request.parse("nonsense")) {
 			tmpClient->setDoneReceiving(true);
 		}
 		
