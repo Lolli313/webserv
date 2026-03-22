@@ -18,15 +18,29 @@ ServerManager::~ServerManager()
 		delete (*it);
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
 		delete (*it);
-	delete _polling;
+	if (_polling)
+		delete _polling;
 }
 
-ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs)
+ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs) : _polling(NULL)
 {
-	setupServers(serverConfigs);
-	_serversMap = setupServersMap();
-	_servSockFDs = setupServSockFDs();
-	_polling = new Polling(_servSockFDs);
+	try
+	{
+		setupServers(serverConfigs);
+		_serversMap = setupServersMap();
+		_servSockFDs = setupServSockFDs();
+		_polling = new Polling(_servSockFDs);
+	}
+	catch (Tools::Exception &e)
+	{
+		for (std::vector<ServerSocket *>::iterator it = _serverSocketArray.begin(); it != _serverSocketArray.end(); it++)
+			delete (*it);
+		for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
+			delete (*it);
+		if (_polling)
+			delete _polling;
+		throw;
+	}
 }
 
 /*
@@ -123,12 +137,22 @@ void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, cons
 	send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
 }
 
-void ServerManager::existingClient(unsigned int i, int eventFD)
+void ServerManager::sendResponse(Client *client)
 {
+	int sent = send(client->getFD(), client->getResponseBuff().c_str() + client->getBytesSent(), client->getResponseBuff().size() - client->getBytesSent(), MSG_NOSIGNAL);
 
+	if (sent < 0)
+		throw Tools::Exception("sendResponse = -1");
+	client->addBytesSent(sent);
+	if (client->getBytesSent() >= client->getBuffer().size())
+	{
+		client->setResponseSent(true);
+	}
+}
+
+void ServerManager::existingClient(int eventFD)
+{
 	Client *tmpClient = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
-	(void)i;
-
 	if (tmpClient)
 	{
 		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
@@ -177,13 +201,13 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 			}
 			if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
 			{
-				// 3. HttpResponse
+				sendResponse(tmpClient);
 			}
 			if (tmpClient->responseSent())
 			{
 				// Remove the EPOLLOUT event
 				_polling->setClientEPOLLOUT(tmpClient, false);
-				tmpClient->refreshFlags();
+				tmpClient->refreshClient();
 			}
 		}
 		if (tmpClient->toBeClosed())
@@ -226,7 +250,7 @@ void ServerManager::eventLoop()
 			if (matchServerFD(eventFD))
 				_polling->registerNewClient(eventFD);
 			else
-				existingClient(i, eventFD);
+				existingClient(eventFD);
 		}
 	}
 }

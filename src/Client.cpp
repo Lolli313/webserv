@@ -8,12 +8,13 @@
 =================================================================
 */
 Client::Client(int fd) : _clientFD(fd), 
+						_bytesSent(0),
 						_doneReceiving(false), 
 						_responseToBeSent(0), 
 						_responseSent(false), 
 						_keepAlive(true), 
 						_readyToReceive(false), 
-						_toBeClosed(false) 
+						_toBeClosed(false)
 						{
 	// std::clog << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
 }
@@ -24,12 +25,13 @@ Client::~Client() {
 }
 
 Client::Client(const Client &obj) : _clientFD(obj._clientFD),
+								_bytesSent(obj._bytesSent),
 								_doneReceiving(obj._doneReceiving),  
 								_responseToBeSent(obj._responseToBeSent), 
 								_responseSent(obj._responseSent), 
 								_keepAlive(obj._keepAlive), 
 								_readyToReceive(obj._readyToReceive), 
-								_toBeClosed(obj._toBeClosed) 
+								_toBeClosed(obj._toBeClosed)
 								{ 
 	// std::clog << PINK << "Client copy constructor" << RESET << std::endl;
 	std::memcpy(_tmpBuff, obj._tmpBuff, BUFFERSIZE);
@@ -59,6 +61,7 @@ Client &Client::operator=(const Client &obj)
 int Client::getFD() { return _clientFD; }
 
 std::string &Client::getBuffer() { return _buffer; }
+void Client::setBuffer(const std::string &input) { _buffer = input; }
 
 char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
@@ -113,6 +116,15 @@ bool Client::toBeClosed() const
 	return false;
 }
 
+const std::string &Client::getResponseBuff() const { return _responseBuff; }
+void Client::setResponseBuff(const std::string &response) { _responseBuff = response; }
+
+std::size_t Client::getBytesSent() const { return _bytesSent; }
+// Overwrite the _bytesSent by the input
+void Client::setBytesSent(std::size_t bytes) { _bytesSent = bytes; }
+// Add the bytes to the total bytesSent
+void Client::addBytesSent(std::size_t bytes) { _bytesSent += bytes; }
+
 /*
 =================================================================
 ===== METHODS ===================================================
@@ -123,9 +135,9 @@ bool Client::toBeClosed() const
  * @brief Reset the flags for the next request.
  * @note Do not reset _toBeClosed nor _keepAlive.
  */
-void Client::refreshFlags()
+void Client::refreshClient()
 {
-	// _bytesSent = 0;
+	_bytesSent = 0;
 	_doneReceiving = false;
 	_responseToBeSent = 0;
 	_responseSent = false;

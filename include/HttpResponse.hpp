@@ -58,4 +58,4 @@ public:
 };
 
 const std::string quickHttpReponse(int code, const std::string &message);
-const std::string quickHttpReponse(std::pair<int, const std::string &> &response);
+const std::string quickHttpReponse(const std::pair<int, const std::string &> &response);
