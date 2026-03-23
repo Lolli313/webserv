@@ -60,7 +60,7 @@ public:
 	bool deleteCLient(Client *client);
 	void registerNewClient(int eventFD);
 	Client *handleExistingClient(int eventFD, uint32_t currEvent);
-	void handleClientInput(Client &client);
+	void readClientInput(Client &client);
 
 	void successfulNewSocket(int newSocket);
 	void failedNewSocket();

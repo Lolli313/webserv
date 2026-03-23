@@ -184,9 +184,9 @@ void Polling::registerNewClient(int serverSocketFD)
 }
 
 // Exception on failure
-void Polling::handleClientInput(Client &client)
+void Polling::readClientInput(Client &client)
 {
-	std::clog << GREEN_BRIGHT << "HandleClientInput for fd = " << _currEventFD << RESET << std::endl;
+	std::clog << GREEN_BRIGHT << "readClientInput for fd = " << _currEventFD << RESET << std::endl;
 	int readSize = recv(_currEventFD, client.getTmpBufferPtr(), BUFFERSIZE, 0);
 	if (readSize < 0)
 	{
@@ -196,13 +196,7 @@ void Polling::handleClientInput(Client &client)
 	else if (readSize > 0)
 	{
 		std::clog << "Received size " << readSize << " = " << client.getTmpBufferPtr() << std::endl;
-		std::clog << "BEFORE" << std::endl;
-		std::clog << PINK << client.getBuffer() << RESET << std::endl;
-		std::clog << PURPLE << client.getTmpBufferPtr() << RESET << std::endl;
 		client.getBuffer().append(client.getTmpBufferPtr(), readSize);
-		std::clog << "AFTER" << std::endl;
-		std::clog << PINK << client.getBuffer() << RESET << std::endl;
-		std::clog << PURPLE << client.getTmpBufferPtr() << RESET << std::endl;
 	}
 	else
 	{
@@ -233,9 +227,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	if (itClient == _clientMap.end())
 		throw Tools::Exception("Client not found");
 
-
-	// ================================================================================================
-	// ================================================================================================
 	// ERROR
 	if (currEvent & EPOLLERR)
 	{
@@ -253,7 +244,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	if (currEvent & EPOLLHUP)
 	{
 		std::clog << "EPOLLHUP" << std::endl;
-		handleClientInput(*itClient->second);
 		itClient->second->setDoneReceiving(true);
 		itClient->second->setToBeClosed(true);
 		itClient->second->setResponseToBeSent(-1); // No response should be sent
@@ -266,14 +256,13 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		std::clog << "EPOLLRDHUP" << std::endl;
 		itClient->second->setDoneReceiving(true);
 		itClient->second->setToBeClosed(true);
-		handleClientInput(*itClient->second);
 	}
 
 	// CLIENT INPUT
 	if (currEvent & EPOLLIN)
 	{
 		std::clog << "EPOLLIN" << std::endl;
-		handleClientInput(*itClient->second);
+		readClientInput(*itClient->second);
 	}
 
 	// CLIENT READY TO RECEIVE

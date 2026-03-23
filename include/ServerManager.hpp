@@ -47,6 +47,9 @@ public:
 	void setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 	std::map<std::pair<int, std::string>, Server*> setupServersMap();
 	std::set<int> setupServSockFDs();
+	const std::string& findPort(int eventFD);
+	Server* findServer(const std::string& host);
+	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
 	void existingClient(int eventFD);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();

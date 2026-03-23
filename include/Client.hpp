@@ -36,7 +36,7 @@ public:
 	Client(const Client &obj);
 	~Client();
 
-	int getFD();
+	int getFD() const;
 	std::string &getBuffer();
 	void setBuffer(const std::string &input);
 	
