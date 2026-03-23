@@ -14,8 +14,12 @@
 #include <iostream>
 #include <stdexcept>
 #include <cctype>
+#include <fcntl.h>
 #include <sstream>
 #include <cstdlib>
+#include <unistd.h>
+
+class Post;
 
 class HttpRequest {
 
@@ -53,6 +57,7 @@ class HttpRequest {
     // FUNCTIONS
 
     void parseQueryParams();
-    bool parse(const std::string &request);
+    void parse(const std::string &request);
+    void execute();
     void print() const;
 };

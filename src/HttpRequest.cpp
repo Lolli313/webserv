@@ -1,4 +1,6 @@
 #include "HttpRequest.hpp"
+#include "Post.hpp"
+#include "Cookie.hpp"
 
 /*
 ================================================================================
@@ -68,63 +70,44 @@ void HttpRequest::parseQueryParams() {
 	}
 }
 
-bool HttpRequest::parse(const std::string &request) {
-
-	// verifie que la requete n'est pas vide
-	if (request.empty()) {
-		std::cerr << RED << "ERROR : REQUEST" << RESET << std::endl;
-		return false;
-    	// throw Tools::Exception(400, "HttpRequest: Request is empty");
-	}
+void HttpRequest::parse(const std::string &request) {
 
 	// parse la methode, le path et la version du http
 	std::istringstream iss(request);
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
-		std::cerr << RED << "ERROR : MALFORMED REQUEST" << RESET << std::endl;
-		return false;
-    	// throw Tools::Exception(400, "HttpRequest: Malformed request");
+    	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
 	if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
-		std::cerr << RED << "ERROR : METHOD" << RESET << std::endl;
-		return false;
-    	// throw Tools::Exception(501, "HttpRequest: Unknown method");
+    	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
 	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty()) {
-		std::cerr << RED << "ERROR : PATH " << RESET << std::endl;
-    	return false;
-		// throw Tools::Exception(400, "HttpRequest: Wrong path request");
+		throw Tools::Exception(400, "HttpRequest: Wrong path request");
 	}
 	if (_httpVersion != "HTTP/1.0" && _httpVersion != "HTTP/1.1") {
-		std::cerr << RED << "ERROR : HTTP " << RESET << std::endl;
-		return false;
-    	// throw Tools::Exception(505, "HttpRequest: Neither http1.0 nor http1.1");
+    	throw Tools::Exception(505, "HttpRequest: Neither http1.0 nor http1.1");
 	}
 
 	// parse les query params grace a la fonction ET RENVOIE LE PURE-PATH DONC LE PATH SANS LES QUERY PARAMS
 	parseQueryParams();
 	if (_purePath.find("/../") != std::string::npos || _purePath.find("//") != std::string::npos || _purePath.empty()) {
-		std::cerr << RED << "ERROR : PURE PATH " << RESET << std::endl;
-		return false;
-    	// throw Tools::Exception(400, "HttpRequest: Wrong query params");
+    	throw Tools::Exception(400, "HttpRequest: Wrong query params");
 	}
 
 	// parse les headers
 	std::string line;
   	HttpTools tools;
-	if (!std::getline(iss, line) && _methodStr == "POST") {
-		std::cerr << RED << "ERROR : MALFORMED BODY" << RESET << std::endl;
-    	return false;
-    	// throw Tools::Exception(400, "HttpRequest: Malformed body");
+	if (std::getline(iss, line) && line != "\r") {
+    	throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
 	while (std::getline(iss, line) && !line.empty() && line != "\r") {
 		size_t pos = line.find(':');
 		if (pos != std::string::npos) {
 			std::string key = line.substr(0, pos);
-      if (tools.isValidHttpRequestHeader(key)) {
-        std::string value = line.substr(pos + 1);
-        value.erase(0, value.find_first_not_of(" \t"));
-        _header[key] = value;
-      }
+			if (tools.isValidHttpRequestHeader(key)) {
+				std::string value = line.substr(pos + 1);
+				value.erase(0, value.find_first_not_of(" \t"));
+				_header[key] = value;
+			}
 		}
 	}
 
@@ -141,20 +124,30 @@ bool HttpRequest::parse(const std::string &request) {
 		}
 	}
 
-	// parse le body
+	// stock le body pour post
 	std::stringstream bodyStream;
 	while (std::getline(iss, line)) {
     	bodyStream << line << "\n";
 	}
 	_body = bodyStream.str();
-	// std::map<std::string, std::string>::const_iterator itContentLength = _header.find("Content-Length");
-	// if (itContentLength != _header.end() && static_cast<long>(_body.size()) != std::atol(itContentLength->second.c_str())) {
-	// 	std::cerr << RED << "ERROR : BODY SIZE MUST BE : " << _body.size() << RESET << std::endl;
-	// 	return false;
-    // 	// throw Tools::Exception(400, "HttpRequest: Wrong body size" + Tools::intToString(static_cast<int>(_body.size())));
-	// }
-	// std::clog << GREEN << "EVERYTHING GOOD" << std::endl;
-	return true;
+}
+
+void HttpRequest::execute() {
+	if (_methodStr == "GET") {
+		// std::cout << "code pour get" << std::endl;
+	} else if (_methodStr == "POST") {
+		Post post(*this);
+		post.parseBody();
+		post.saveInFile();
+	} else if (_methodStr == "DELETE") {
+		int fd = open(_path.c_str(), O_RDONLY);
+		if (fd == -1) {
+			throw Tools::Exception(500, "HttpRequest: Wrong query params");
+		} else {
+			std::remove(_path.c_str());
+		}
+		close(fd);
+	}
 }
 
 void HttpRequest::print() const {

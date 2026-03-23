@@ -69,7 +69,7 @@ public:
 
 	void refreshClient();
 
-	void bufferManager();
+	std::string bufferManager();
 };
 
 #endif

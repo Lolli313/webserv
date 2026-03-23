@@ -9,6 +9,7 @@
 #include "HttpResponse.hpp"
 #include "MethodGET.hpp"
 #include "HttpRequest.hpp"
+#include "Cookie.hpp"
 
 #include <vector>
 
@@ -17,6 +18,9 @@ extern int _sigStop;
 class ServerManager
 {
 private:
+
+	Cookie _cookie;
+
 	std::vector<Server *> _serverArray; // To store the servers, that will be retrieved throw the following map
 
 	std::vector<ServerSocket *> _serverSocketArray;

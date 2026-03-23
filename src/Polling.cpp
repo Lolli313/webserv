@@ -115,7 +115,7 @@ void Polling::setClientEPOLLOUT(Client *client, bool add)
 // std::vector<int> *Polling::setupAddServSockFDs(const std::vector<ServerSocket*>& servSockets) {
 // 	std::vector<int> *temp = new std::vector<int>;
 // 	for (std::size_t i = 0; i < servSockets.size(); i++) {
-// 		// std::clog << servSockets[i]->getServSockFD() << std::endl;
+		// std::clog << servSockets[i]->getServSockFD() << std::endl;
 // 		temp->push_back(servSockets[i]->getServSockFD());
 // 	}
 // 	return temp;
@@ -288,7 +288,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	// CLIENT READY TO RECEIVE
 	if (currEvent & EPOLLOUT)
 	{
-		std::cout << PINK << "EPOLLOUT" << RESET << std::endl;
+		// std::clog << PINK << "EPOLLOUT" << RESET << std::endl;
 		itClient->second->setReadyToReceive(true);
 	}
 

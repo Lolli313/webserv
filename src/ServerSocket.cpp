@@ -74,7 +74,7 @@ const std::string &ServerSocket::getPort() const { return _port; }
 // Exception on failure
 void ServerSocket::createServerSocket()
 {
-	// // std::clog << _netwConf.getFamily() << " and " << _netwConf.getSockType() << " and " << _netwConf.getProtocol() << std::endl;
+	// std::clog << _netwConf.getFamily() << " and " << _netwConf.getSockType() << " and " << _netwConf.getProtocol() << std::endl;
 	_servSockFD = socket(_netwConf.getFamily(), _netwConf.getSockType(), _netwConf.getProtocol());
 	// std::clog << PINK << "servSocketFD inside ServerSocket class is: " << _servSockFD << RESET << std::endl;
 	if (_servSockFD < 0)

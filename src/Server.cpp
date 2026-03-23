@@ -8,7 +8,7 @@
 
 Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(new ServerSocket(port)), _port(port)
 {
-	// // std::clog << GREEN << "Server constructor for _servSocketFD = " << _servSocket.getServSockFD() << std::endl;
+	// std::clog << GREEN << "Server constructor for _servSocketFD = " << _servSocket.getServSockFD() << std::endl;
 	// std::clog << "Server constructor for _port = " << _port << RESET << std::endl;
 }
 
@@ -28,7 +28,7 @@ Server::Server(const ServerBlockConfig &config, ServerSocket *socket) :
 	_serverNames(config.getServerNames()), 
 	_locationConfigs(config.getLocationConfigs())
 	{
-		// // std::clog << BLUE << "Server constructor for _serverSocketFD = " << _servSocket.getServSockFD() << ", port = " << _port << RESET << std::endl;
+		// std::clog << BLUE << "Server constructor for _serverSocketFD = " << _servSocket.getServSockFD() << ", port = " << _port << RESET << std::endl;
 	}
 
 
@@ -37,8 +37,7 @@ Server::Server(const ServerBlockConfig &config, ServerSocket *socket) :
 // 	_port(config.getPort()),
 // 	_serverNames(config.getServerNames()),
 // 	_locationConfigs(config.getLocationConfigs()) {
-// 		// std::clog << "Server constructor when port is a duplicate: _servSocketFD = " << _servSocket.getServSockFD() <<
-// 		// ", port = " << _port << RESET << std::endl;
+		// std::clog << "Server constructor when port is a duplicate: _servSocketFD = " << _servSocket.getServSockFD() << ", port = " << _port << RESET << std::endl;
 // 	}
 
 Server::~Server()

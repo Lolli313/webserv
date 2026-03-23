@@ -24,7 +24,7 @@ std::atomic<int> failedConnections(0);
 std::mutex printMutex;
 
 // FIX 1: Signal handler must only use async-signal-safe operations.
-// // std::clog is NOT async-signal-safe. Just set the flag.
+// std::clog is NOT async-signal-safe. Just set the flag.
 void handle_sigint(int) {
     stopRequested.store(true, std::memory_order_relaxed);
 }
@@ -32,8 +32,7 @@ void handle_sigint(int) {
 void raise_fd_limit(int newLimit) {
     struct rlimit rl;
     if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
-        // std::clog << "Current RLIMIT_NOFILE: soft=" << rl.rlim_cur 
-                  << " hard=" << rl.rlim_max << std::endl;
+        // std::clog << "Current RLIMIT_NOFILE: soft=" << rl.rlim_cur << " hard=" << rl.rlim_max << std::endl;
         
         rlim_t requested = static_cast<rlim_t>(newLimit);
         

@@ -6,18 +6,9 @@
 ================================================================================
 */
 
-Post::Post() : _request() {}
+Post::Post(const HttpRequest &request) : _request(request) {}
 
-Post::Post(HttpRequest &request) : _request(request) {}
-
-Post::Post(const Post &other) : _request(other._request) {}
-
-Post &Post::operator=(const Post &other) {
-    if (this != &other) {
-        _request = other._request;
-    }
-    return *this;
-}
+Post::Post(const Post &other) : _request(other._request), _header(other._header) {}
 
 Post::~Post() {}
 
@@ -52,7 +43,6 @@ void Post::parseBody() {
     }
 
     while (std::getline(iss, line)) {
-        // std::cout << line << std::endl;
         if (line == boundary + "\r" || line == boundary + "--\r" || line == "--" + boundary + "\r" || line == "--" +boundary + "--\r") {
             if (inPart && !part.empty()) {
                 
@@ -112,7 +102,6 @@ void Post::print() const {
 
 void Post::saveInFile() const {
     for (size_t i = 0; i < _header.size(); ++i) {
-        // std::cout << RED << "CACA" << RESET << std::endl;
         std::map<std::string, std::string>::const_iterator it = _header[i].find("Content-Disposition");
         if (it == _header[i].end()) {
             throw Tools::Exception(400, "Post: No content disposition");
@@ -142,7 +131,6 @@ void Post::saveInFile() const {
             }
             filename += '.' + formatType;
         }
-        // std::cout << RED << filename << RESET << std::endl;
         std::ofstream outFile(("files/" + filename).c_str(), std::ios::out | std::ios::binary);
         if (!outFile) {
             throw Tools::Exception(500, "Post: Can't create file");

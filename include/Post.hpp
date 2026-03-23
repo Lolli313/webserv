@@ -2,21 +2,23 @@
 
 #include "HttpRequest.hpp"
 
+#include <vector>
+#include <map>
+#include <string>
+
 class Post {
 
     private:
 
-        HttpRequest _request;
+        const HttpRequest &_request;
         std::vector<std::map<std::string, std::string> > _header;
 
     public: 
 
         // CONSTRUCTORS
 
-        Post();
-        Post(HttpRequest &request);
+        Post(const HttpRequest &request);
         Post(const Post &other);
-        Post &operator=(const Post &other);
         ~Post();
 
         // FUNCTIONS

@@ -59,8 +59,8 @@ int main()
 	// int status = 0;
 	// if ((status = getaddrinfo("127.0.0.1", "8080", &prep, &res)) != 0)
 	// {
-	// 	// std::clog << gai_strerror(status) << std::endl;
-	// 	// std::clog << res->ai_flags << std::endl;
+		// std::clog << gai_strerror(status) << std::endl;
+		// std::clog << res->ai_flags << std::endl;
 	// 	freeaddrinfo(res);
 	// 	return (1);
 	// }

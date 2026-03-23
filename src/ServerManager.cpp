@@ -1,7 +1,6 @@
 
 #include "ServerManager.hpp"
 #include "HttpMethod.hpp"
-#include "Post.hpp"
 
 std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 
@@ -105,7 +104,7 @@ void ServerManager::setupServers(const std::vector<ServerBlockConfig> &serverCon
 			_serverArray.push_back(new Server(*mit, *it));
 		}
 		found = false;
-		// // std::clog << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
+		// std::clog << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
 	}
 }
 
@@ -155,41 +154,25 @@ void ServerManager::existingClient(int eventFD)
 	Client *tmpClient = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
 	if (tmpClient)
 	{
-		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
+		// TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
 
-		tmpClient->bufferManager();
-		HttpRequest request;
-		if (request.parse(tmpClient->getBuffer())) {
-			// std::cout << tmpClient->getBuffer() << std::endl;
-			tmpClient->setDoneReceiving(true);
-		}
+		// pour voir avant apres le buffer manager, il isole les request et set a true le done receiving
+		// std::cout << RED << tmpClient->getBuffer() << RESET << std::endl;
+		std::string tmpRequest = tmpClient->bufferManager();
+		// std::cout << GREEN << tmpClient->getBuffer() << RESET << std::endl;
 
 		if (tmpClient->doneReceiving())
 		{
-			// std::cout << RED << "LA" << RESET << std::endl;
-			// request.print();
-			if (request.getMethodStr() == "POST") {
-				// std::cout << RED << "ICI" << RESET << std::endl;
-				Post post(request);
-				post.parseBody();
-				// std::cout << RED << "PROUT1" << RESET << std::endl;
-				// post.print();
-				// std::cout << RED << "PROUT2" << RESET << std::endl;
-				post.saveInFile();
-				// std::cout << RED << "PROUT3" << RESET << std::endl;
-			} else if (request.getMethodStr() == "DELETE") {
-				int fd = open(request.getPath().c_str(), O_RDONLY);
-				if (fd == -1) {
-					// Gérer l'erreur (strerror(errno))
-					// std::clog << "ICI" << std::endl;
-				} else {
-					// std::clog << "LA" << std::endl;
-					std::remove(request.getPath().c_str());
-				}
+			HttpRequest request;
+			request.parse(tmpRequest);
+			std::map<std::string, std::string>::const_iterator itCookie = request.getHeader().find("Cookie");
+			if (itCookie != request.getHeader().end()) {
+				_cookie.setCookie(itCookie->second);
+				// _cookie.printCookie();
 			}
-			tmpClient->getBuffer().erase();
-			/////////////////////////////////////////////////////////////////////////////////////
-
+			// request.print();
+			request.execute();
+			
 			// Main logic:
 			// 1. HttpRequest
 			// 2. HttpMethod

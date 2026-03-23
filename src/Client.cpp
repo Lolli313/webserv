@@ -1,6 +1,11 @@
 #include "Client.hpp"
 #include <iostream>
 #include "terminalColors.hpp"
+#include "Tools.hpp"
+#include <cstdlib>
+#include <errno.h>
+#include <iostream>
+#include <string>
 
 /*
 =================================================================
@@ -144,31 +149,57 @@ void Client::refreshClient()
 	_readyToReceive = false;
 }
 
-void Client::bufferManager() {
-
-	// std::clog << "BEFORE" << std::endl;
-	// std::clog << BLUE << _buffer << RESET << std::endl;
-	// std::clog << GREEN << _tmpBuff << RESET << std::endl;
-
-	const char* methods[] = {"GET ", "POST ", "DELETE "};
-	const size_t num_methods = sizeof(methods) / sizeof(methods[0]);
-	size_t earliest_pos = std::string::npos;
-
-	for (size_t i = 0; i < num_methods; ++i) {
-		size_t pos = _buffer.find(methods[i]);
-		if (pos != std::string::npos && (earliest_pos == std::string::npos || pos < earliest_pos)) {
-			earliest_pos = pos;
-		}
-	}
-
-	if (earliest_pos != std::string::npos) {
-		_buffer.erase(0, earliest_pos);
-	} else {
+std::string Client::bufferManager() {
+	
+	// Check la position dela request dans le buffer pour pouvoir isoler la request
+	size_t posGet = _buffer.find("GET ");
+	size_t posPost = _buffer.find("POST ");
+	size_t posDelete = _buffer.find("DELETE ");
+	
+	// Isole le debut de la request pour analyser la suite
+	size_t pos = std::min(posGet, posPost);
+	size_t minPos = std::min(posDelete, pos);
+	if (minPos == std::string::npos) {
 		_buffer.erase();
+		return "";
+	}
+	_buffer.erase(0, minPos);
+
+	// maintenant on verifie si la partie des headers est finit et note le debut du body
+	size_t posHeaderEnd = _buffer.find("\r\n\r\n");
+	if (posHeaderEnd == std::string::npos) {
+        return "";
+    }
+	std::string headers = _buffer.substr(0, posHeaderEnd);
+	size_t posBodyStart = posHeaderEnd + 4;
+
+	// la il faut trouver Content-Length pour savoir si le body est finit si il y en a un
+	size_t posContentLengthStart = headers.find("Content-Length: ");
+	if (posContentLengthStart == std::string::npos) {
+		std::string request = _buffer.substr(0, posBodyStart);
+        _buffer.erase(0, posBodyStart);
+		setDoneReceiving(true);
+		return request;
 	}
 
-	// std::clog << std::endl;
-	// std::clog << "AFTER" << std::endl;
-	// std::clog << BLUE << _buffer << RESET << std::endl;
-	// std::clog << GREEN << _tmpBuff << RESET << std::endl;
+	// si il y a un content length on verifie qu'il soit remplit
+	size_t posContentLengthStop = headers.find("\r\n", posContentLengthStart);
+	if (posContentLengthStop == std::string::npos) {
+		throw Tools::Exception(400, "HttpRequest: Malformed body");
+	}
+	std::string contentLengthStr = headers.substr(posContentLengthStart + 16, posContentLengthStop - (posContentLengthStart + 16));
+	char* endPtr;
+	unsigned long contentLength = strtoul(contentLengthStr.c_str(), &endPtr, 10);
+	if (*endPtr != '\0' && !isspace(*endPtr)) {
+		throw Tools::Exception(400, "HttpRequest: Malformed body");
+	}
+    if (_buffer.length() >= posBodyStart + contentLength - 2) {
+        std::string request = _buffer.substr(0, posBodyStart + contentLength);
+        _buffer.erase(0, posBodyStart + contentLength);
+		setDoneReceiving(true);
+        return request;
+    } else {
+		std::clog << _buffer.length() << " " << posBodyStart << " " << contentLength << std::endl;
+        throw Tools::Exception(400, "HttpRequest: Malformed body");
+    }
 }
