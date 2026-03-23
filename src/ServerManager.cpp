@@ -203,9 +203,10 @@ const ConfigBase& findConfigBase(Server* server, const HttpRequest& request) {
 }
 
 void handleReturnAndAllowMethod(const ConfigBase& base, const std::string& method) {
-	if (base.getReturnDirective().first)
-	//	throw Tools::Exception(base.getReturnDirective().first, base.getReturnDirective().second);
+	if (base.getReturnDirective().first) {
 		std::cout << LIGHT_BLUE << "Found return directive with code " << base.getReturnDirective().first << RESET << std::endl;
+		throw Tools::Exception(base.getReturnDirective().first, base.getReturnDirective().second);
+	}
 
 	std::set<std::string>::const_iterator it = base.getAllowMethods().find(method);
 	if (it == base.getAllowMethods().end())
@@ -218,7 +219,8 @@ void ServerManager::checkRequestValidity(const Client &client, const HttpRequest
 	(void)client;
 	std::map<std::string, std::string>::const_iterator it = request.getHeader().find("Host");
 	if (it == request.getHeader().end()) {
-		throw Tools::Exception(400, "Host header missing");
+		// throw Tools::Exception(400, "Host header missing");
+		std::cout << LIGHT_BLUE << "Host header missing" << RESET << std::endl;
 	}
 	
 	Server *server = findServer(it->second);
@@ -236,47 +238,52 @@ void ServerManager::existingClient(unsigned int i, int eventFD)
 
 	if (tmpClient)
 	{
+		try {
 
-		TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
+			TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
 
-		HttpRequest request;
-		if (request.parse("nonsense")) {
-			tmpClient->setDoneReceiving(true);
-		}
-		
-		if (request.getHeadersParsed() == true) {
-			checkRequestValidity(*tmpClient, request, eventFD);
-		}
-
-		if (tmpClient->doneReceiving())
-		{
-			// Main logic:
-			// 1. HttpRequest
-			// 2. HttpMethod
-			// 		responseToBeSent(true)
-
-//			checkRequestValidity(*tmpClient, eventFD);
-
-			if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
-			{
-				// Set the EPOLLOUT event to be monitored.
-				_polling->setClientEPOLLOUT(tmpClient, true);
+			HttpRequest request;
+			if (request.parse("nonsense")) {
+				tmpClient->setDoneReceiving(true);
 			}
-			if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
-			{
-				// 3. HttpResponse
+			
+			if (request.getHeadersParsed() == true) {
+				checkRequestValidity(*tmpClient, request, eventFD);
 			}
-			if (tmpClient->responseSent())
+
+			if (tmpClient->doneReceiving())
 			{
-				// Remove the EPOLLOUT event
-				_polling->setClientEPOLLOUT(tmpClient, false);
-				tmpClient->refreshFlags();
+				// Main logic:
+				// 1. HttpRequest
+				// 2. HttpMethod
+				// 		responseToBeSent(true)
+
+	//			checkRequestValidity(*tmpClient, eventFD);
+
+				if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
+				{
+					// Set the EPOLLOUT event to be monitored.
+					_polling->setClientEPOLLOUT(tmpClient, true);
+				}
+				if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
+				{
+					// 3. HttpResponse
+				}
+				if (tmpClient->responseSent())
+				{
+					// Remove the EPOLLOUT event
+					_polling->setClientEPOLLOUT(tmpClient, false);
+					tmpClient->refreshFlags();
+				}
 			}
 		}
-		if (tmpClient->toBeClosed())
-		{
-			if (!_polling->deleteCLient(tmpClient))
-				throw Tools::Exception("Error at deleting client");
+		catch (Tools::Exception) {
+			if (tmpClient->toBeClosed())
+			{
+				if (!_polling->deleteCLient(tmpClient))
+					throw Tools::Exception("Error at deleting client");
+			}
+			throw;
 		}
 	}
 	else
@@ -320,6 +327,7 @@ void ServerManager::eventLoop()
 
 void ServerManager::mainLoop()
 {
+	//int i = 0;
 	while (!_sigStop)
 	{
 		try
@@ -328,6 +336,10 @@ void ServerManager::mainLoop()
 		}
 		catch (Tools::Exception &e)
 		{
+//			if (i == 2)
+//				return;
+//			i++;
+			
 			if (e.getReturnCode() == 0)
 				std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
 		}
