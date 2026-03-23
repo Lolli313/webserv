@@ -1,36 +1,29 @@
 #!/usr/bin/env python3
-# Ce script doit être exécutable : chmod +x hello.py
-
-# En-tête HTTP obligatoire pour les CGI
+# En-tête HTTP obligatoire
 print("Content-Type: text/html\n")
 
 # Récupère les variables d'environnement CGI
 import os
-import datetime
+import cgi
+import cgitb
+cgitb.enable()  # Affiche les erreurs dans le navigateur
 
 # Récupère le paramètre "name" de l'URL (ex: ?name=Charles)
-query_string = os.getenv("QUERY_STRING", "")
-params = {}
-if query_string:
-    for pair in query_string.split("&"):
-        key, value = pair.split("=")
-        params[key] = value
-
-name = params.get("name", "Invité")
+form = cgi.FieldStorage()
+name = form.getvalue("name", "Invité")
 
 # Génère la page HTML dynamiquement
-html = f"""
+print(f"""
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Exemple CGI</title>
+    <title>CGI Python</title>
 </head>
 <body>
     <h1>Bonjour, {name} !</h1>
-    <p>Il est actuellement {datetime.datetime.now().strftime("%H:%M:%S")}.</p>
-    <p>Ton adresse IP est : {os.getenv("REMOTE_ADDR", "inconnue")}</p>
-    <p>Méthode HTTP utilisée : {os.getenv("REQUEST_METHOD", "inconnue")}</p>
+    <p>Ce contenu est généré par un script Python CGI.</p>
+    <p>Méthode HTTP : {os.environ.get("REQUEST_METHOD", "inconnue")}</p>
+    <p>Adresse IP : {os.environ.get("REMOTE_ADDR", "inconnue")}</p>
 </body>
 </html>
-"""
-print(html)
+""")
