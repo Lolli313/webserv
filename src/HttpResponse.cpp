@@ -43,7 +43,9 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &obj)
 void HttpResponse::setHttpVersion(const std::string &httpVersion) { _httpVersion = httpVersion; }
 void HttpResponse::setReturnCode(int code) { _returnCode = code; }
 void HttpResponse::setReturnMessage(const std::string &returnMessage) { _returnMessage = returnMessage; }
-void HttpResponse::setResponseHeaders(const std::vector<std::pair<std::string, std::string> > &responseHeaders) { _reponseHeaders = responseHeaders; }
+void HttpResponse::setResponseHeaders(const std::vector<std::pair<std::string, std::string> > &responseHeaders) { 
+	_reponseHeaders.insert(_reponseHeaders.end(), responseHeaders.begin(), responseHeaders.end());
+}
 void HttpResponse::setBody(const std::string &body) { _body = body; }
 
 const std::string &HttpResponse::getHttpVersion() const { return _httpVersion; }
@@ -68,6 +70,32 @@ const std::string &HttpResponse::getFinalResponse()
 ===== METHODS ===================================================
 =================================================================
 */
+
+void HttpResponse::addHeader(const std::pair<std::string, std::string> &header)
+{
+	_reponseHeaders.push_back(header);
+}
+
+void HttpResponse::addHeader(const std::string &key, const std::string &value)
+{
+	_reponseHeaders.push_back(std::make_pair(key, value));
+}
+
+void HttpResponse::addDateHeader()
+{
+    std::time_t now = std::time(NULL);
+
+    // Convert to UTC (GMT)
+    std::tm *gmt = std::gmtime(&now);
+
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer),
+                  "%a, %d %b %Y %H:%M:%S GMT",
+                  gmt);
+
+    std::string finalTime(buffer);
+	addHeader(std::make_pair("Date", finalTime));
+}
 
 /**
  * @brief Add the formated headers to the _finalResponse, and add the CRLF to mark the end of headers
@@ -115,9 +143,10 @@ void HttpResponse::buildFinalResponse()
  * @param message The HTTP Reason-Phrase (return message).
  * @return A const std::string formatted and ready to be sent to the client. With the default HTTP_VERSION, the return code and the return message.
  */
-const std::string quickHttpReponse(int code, const std::string &message)
+const std::string HttpResponse::quickHttpResponse(int code, const std::string &message)
 {
 	HttpResponse obj(code, message);
+	obj.addDateHeader();
 	return obj.getFinalResponse();
 }
 
@@ -126,8 +155,9 @@ const std::string quickHttpReponse(int code, const std::string &message)
  * @param reponse pair<return code, message> : A ReturnPair (can be found in HttpTools{.hpp/.cpp}) of int (return code) and const std::string & (Reason Phrase / return message).
  * @return A const std::string formatted and ready to be sent to the client. With the default HTTP_VERSION, the return code and the return message.
  */
-const std::string quickHttpReponse(const std::pair<int, const std::string &> &response)
+const std::string HttpResponse::quickHttpResponse(const std::pair<int, const std::string &> &response)
 {
 	HttpResponse obj(response.first, response.second);
+	obj.addDateHeader();
 	return obj.getFinalResponse();
 }

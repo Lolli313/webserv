@@ -11,7 +11,7 @@
 #include "HttpRequest.hpp"
 #include "Cookie.hpp"
 #include "Post.hpp"
-// #include "Delete.hpp"
+#include "Delete.hpp"
 
 #include <vector>
 
@@ -57,6 +57,8 @@ public:
 	void eventLoop();
 	void mainLoop();
 	void sendResponse(Client *client);
+	void throwHandler(Client *tmpClient, Tools::Exception &e);
+
 };
 
 #endif

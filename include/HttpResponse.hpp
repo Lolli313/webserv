@@ -4,6 +4,7 @@
 #include <map>
 #include "HttpTools.hpp"
 #include "Tools.hpp"
+#include <ctime>
 
 #define HTTP_VERSION "HTTP/1.1"
 
@@ -47,6 +48,8 @@ public:
 	void setReturnMessage(const std::string &returnMessage);
 	void setResponseHeaders(const std::vector<std::pair<std::string, std::string> > &responseHeaders);
 	void setBody(const std::string &body);
+	void addHeader(const std::pair<std::string, std::string> &header);
+	void addHeader(const std::string &key, const std::string &value);
 
 	const std::string &getHttpVersion() const;
 	int getReturnCode() const;
@@ -54,9 +57,10 @@ public:
 	const std::vector<std::pair<std::string, std::string> > &getResponseHeaders() const;
 	const std::string &getBody() const;
 	const std::string &getFinalResponse(); // This call builds and return the final response.
+	void addDateHeader();
 
 	void buildFinalResponse();
-};
 
-const std::string quickHttpReponse(int code, const std::string &message);
-const std::string quickHttpReponse(const std::pair<int, const std::string &> &response);
+	static const std::string quickHttpResponse(int code, const std::string &message);
+	static const std::string quickHttpResponse(const std::pair<int, const std::string &> &response);
+};
