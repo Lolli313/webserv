@@ -8,8 +8,7 @@
 
 Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(new ServerSocket(port)), _port(port)
 {
-	// std::clog << GREEN << "Server constructor for _servSocketFD = " << _servSocket.getServSockFD() << std::endl;
-	// std::clog << "Server constructor for _port = " << _port << RESET << std::endl;
+	std::clog << "Server constructor for _port = " << _port << RESET << std::endl;
 }
 
 Server::Server(const Server &obj) :
@@ -19,30 +18,19 @@ Server::Server(const Server &obj) :
 	_serverNames(obj.getServerNames()),
 	_locationConfigs(obj.getLocationConfigs())
 {
-	// std::clog << BLUE << "Server copy constructor" << RESET << std::endl;
+	std::clog << BLUE << "Server copy constructor" << RESET << std::endl;
 }
 
 Server::Server(const ServerBlockConfig &config, ServerSocket *socket) : 
 	_servSocket(socket), 
 	_port(config.getPort()), 
 	_serverNames(config.getServerNames()), 
-	_locationConfigs(config.getLocationConfigs())
-	{
-		// std::clog << BLUE << "Server constructor for _serverSocketFD = " << _servSocket.getServSockFD() << ", port = " << _port << RESET << std::endl;
-	}
+	_locationConfigs(config.getLocationConfigs()) {}
 
-
-// Server::Server(const ServerBlockConfig &config, const ServerSocket *servSocket) :
-// 	_servSocket(socket),
-// 	_port(config.getPort()),
-// 	_serverNames(config.getServerNames()),
-// 	_locationConfigs(config.getLocationConfigs()) {
-		// std::clog << "Server constructor when port is a duplicate: _servSocketFD = " << _servSocket.getServSockFD() << ", port = " << _port << RESET << std::endl;
-// 	}
 
 Server::~Server()
 {
-	// std::clog << RED << "Calling Server's destructor" << RESET << std::endl;
+	std::clog << RED << "Calling Server's destructor" << RESET << std::endl;
 }
 
 /*

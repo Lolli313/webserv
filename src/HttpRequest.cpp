@@ -89,7 +89,7 @@ void HttpRequest::parse(const std::string &request) {
 
 	// parse les query params grace a la fonction ET RENVOIE LE PURE-PATH DONC LE PATH SANS LES QUERY PARAMS
 	parseQueryParams();
-	if (_purePath.find("/../") != std::string::npos || _purePath.find("//") != std::string::npos || _purePath.empty()) {
+	if (_purePath.find("..") != std::string::npos || _purePath.find("//") != std::string::npos || _purePath.empty()) {
     	throw Tools::Exception(400, "HttpRequest: Wrong query params");
 	}
 
@@ -142,7 +142,7 @@ void HttpRequest::execute() {
 	} else if (_methodStr == "DELETE") {
 		int fd = open(_path.c_str(), O_RDONLY);
 		if (fd == -1) {
-			throw Tools::Exception(500, "HttpRequest: Wrong query params");
+			throw Tools::Exception(500, "existe pas ou pas accessible");
 		} else {
 			std::remove(_path.c_str());
 		}
