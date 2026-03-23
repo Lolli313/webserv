@@ -124,15 +124,16 @@ std::set<int> ServerManager::setupServSockFDs()
 // Just a test response that directly sends to the client.
 void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
 {
+	(void)path;
 	std::clog << "SENT" << std::endl;
 	HttpResponse response(code, message);
-	std::ifstream file(path.c_str());
-	std::ostringstream body;
-	body << file.rdbuf();
-	response.setBody(body.str());
-	std::vector<std::pair<std::string, std::string> > tmp;
-	tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
-	response.setResponseHeaders(tmp);
+	// std::ifstream file(path.c_str());
+	// std::ostringstream body;
+	// body << file.rdbuf();
+	// response.setBody(body.str());
+	// std::vector<std::pair<std::string, std::string> > tmp;
+	// tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
+	// response.setResponseHeaders(tmp);
 	send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
 }
 
@@ -245,26 +246,35 @@ void ServerManager::sendResponse(Client *client)
 	}
 }
 
-// const std::string execute(const HttpRequest &request)
-// {
-// 	std::string response;
-// 	if (_methodStr == "GET") {
-// 		response = // GET // std::cout << "code pour get" << std::endl;
-// 	} else if (_methodStr == "POST") {
-// 		Post post(*this);
-// 		post.parseBody();
-// 		post.saveInFile();
-// 		response = post.getResponse();
-// 	} else if (_methodStr == "DELETE") {
-// 		int fd = open(_path.c_str(), O_RDONLY);
-// 		if (fd == -1) {
-// 			throw Tools::Exception(500, "existe pas ou pas accessible");
-// 		} else {
-// 			std::remove(_path.c_str());
-// 		}
-// 		close(fd);
-// 	}
-// }
+const std::string execute(const HttpRequest &request)
+{
+	std::string response;
+	if (request.getMethodStr() == "GET") {
+		(void)request;
+//		response = // GET // std::cout << "code pour get" << std::endl;
+	}
+
+	else if (request.getMethodStr() == "POST")
+		response = Post::executePost(request);
+	
+	else if (request.getMethodStr() == "DELETE") {
+		// response = Delete::executeDelete(request);
+		// int fd = open(request.getPath().c_str(), O_RDONLY);
+		// if (fd == -1) {
+		// 	throw Tools::Exception(500, "existe pas ou pas accessible");
+		// } else {
+		// 	std::remove(request.getPath().c_str());
+		// }
+		// close(fd);
+	}
+	return response;
+}
+
+				// std::map<std::string, std::string>::const_iterator itCookie = request.getHeader().find("Cookie");
+				// if (itCookie != request.getHeader().end()) {
+				// 	_cookie.setCookie(itCookie->second);
+				// 	// _cookie.printCookie();
+				// }
 
 void ServerManager::existingClient(int eventFD)
 {
@@ -272,7 +282,7 @@ void ServerManager::existingClient(int eventFD)
 	if (tmpClient)
 	{
 		try {
-			//TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
+			TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
 
 			// pour voir avant apres le buffer manager, il isole les request et set a true le done receiving
 			// std::cout << RED << tmpClient->getBuffer() << RESET << std::endl;
@@ -285,21 +295,11 @@ void ServerManager::existingClient(int eventFD)
 				request.parse(tmpRequest);
 				// Ideally we would call this function after the headers are parsed, for now it is here
 				checkRequestValidity(*tmpClient, request, eventFD);
-				// fait fonction
-				std::map<std::string, std::string>::const_iterator itCookie = request.getHeader().find("Cookie");
-				if (itCookie != request.getHeader().end()) {
-					_cookie.setCookie(itCookie->second);
-					// _cookie.printCookie();
-				}
-				// request.print();
-				request.execute();
-				// execute(request);
-				// tmpClient->setResponseBuff(
+
+				// cookies
+
+			//	request.execute();
 				
-				// Main logic:
-				// 1. HttpRequest
-				// 2. HttpMethod
-				// 		responseToBeSent(true)
 				if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 				{
 					// Set the EPOLLOUT event to be monitored.
@@ -317,12 +317,29 @@ void ServerManager::existingClient(int eventFD)
 				}
 			}
 		}
-		catch (Tools::Exception) {
+		catch (Tools::Exception &e) {
+			if (e.getReturnCode() >= 100)
+			{
+				// HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
+				// response.setBody(e.getReturnCode() + ".http");
+
+				// //tmpClient->setResponseBuff(
+				// sendResponse(tmpClient);
+			}
+
 			if (tmpClient->toBeClosed())
 			{
 				if (!_polling->deleteCLient(tmpClient))
 					throw Tools::Exception("Error at deleting client");
+				tmpClient = NULL;
 			}
+
+			// ============================================================================
+			// NOT SURE IF WE SHOULD REFRECH THE CLIENT HERE
+			if (tmpClient)
+				tmpClient->refreshClient();
+			// ============================================================================
+			
 			throw;
 		}
 	}

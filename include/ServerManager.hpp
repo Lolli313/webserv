@@ -7,9 +7,11 @@
 #include "Polling.hpp"
 #include "Server.hpp"
 #include "HttpResponse.hpp"
-#include "MethodGET.hpp"
+#include "Get.hpp"
 #include "HttpRequest.hpp"
 #include "Cookie.hpp"
+#include "Post.hpp"
+// #include "Delete.hpp"
 
 #include <vector>
 

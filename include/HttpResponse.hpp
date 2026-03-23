@@ -32,11 +32,13 @@ private:
 	// Is setted by the getFinalResponse call
 	std::string _finalResponse;
 	HttpResponse();
+	void addHeadersToResponse();
 
 public:
 	HttpResponse(int code, const std::string &message);
 	HttpResponse(const std::string &httpVersion, int code, const std::string &message);
 	HttpResponse(const HttpResponse &obj);
+	HttpResponse(const std::pair<int, const std::string &> &response);
 	HttpResponse &operator=(const HttpResponse &obj);
 	~HttpResponse();
 
@@ -53,7 +55,6 @@ public:
 	const std::string &getBody() const;
 	const std::string &getFinalResponse(); // This call builds and return the final response.
 
-	void addHeadersToResponse();
 	void buildFinalResponse();
 };
 

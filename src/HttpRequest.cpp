@@ -81,7 +81,7 @@ void HttpRequest::parse(const std::string &request) {
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
 	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty()) {
-		throw Tools::Exception(400, "HttpRequest: Wrong path request");
+		throw Tools::Exception(403, "HttpRequest: Wrong path request");
 	}
 	if (_httpVersion != "HTTP/1.0" && _httpVersion != "HTTP/1.1") {
     	throw Tools::Exception(505, "HttpRequest: Neither http1.0 nor http1.1");

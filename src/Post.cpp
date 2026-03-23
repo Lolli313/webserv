@@ -140,3 +140,17 @@ void Post::saveInFile() const {
         outFile.close();
     }
 }
+
+const std::string Post::executePost(const HttpRequest &request)
+{
+    Post post(request);
+
+    post.parseBody();
+    post.saveInFile();
+
+    HttpResponse response(HttpTools::getReturnPair(201));
+    // ADD THE RESPONSE HEADERS HERE
+    // response.setResponseHeaders();
+
+    return response.getFinalResponse();
+}

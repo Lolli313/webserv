@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 
 #include <vector>
 #include <map>
@@ -26,4 +27,7 @@ class Post {
         void parseBody();
         void print() const;
         void saveInFile() const;
+
+    static const std::string executePost(const HttpRequest &request);
+
 };

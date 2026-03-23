@@ -147,6 +147,8 @@ void Client::refreshClient()
 	_responseToBeSent = 0;
 	_responseSent = false;
 	_readyToReceive = false;
+	_buffer.clear();
+	_responseBuff.clear();
 }
 
 std::string Client::bufferManager() {
