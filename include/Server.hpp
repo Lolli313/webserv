@@ -38,7 +38,7 @@ public:
 	const std::set<std::string> &getServerNames() const;
 	const ServerSocket *getServSocket() const;
 	const std::map<std::string, LocationConfig> &getLocationConfigs() const;
-	const LocationConfig &getPathConfig(const std::string &path);
+	const ConfigBase &getPathConfig(const std::string &path);
 };
 
 #endif

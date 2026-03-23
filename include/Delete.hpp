@@ -12,5 +12,5 @@ public:
 	Delete &operator=(const Delete &obj);
 	~Delete();
 
-	// static const std::string executeDelete(const HttpRequest &request);
+	static const std::string executeDelete(const HttpRequest &request);
 };

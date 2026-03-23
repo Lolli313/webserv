@@ -304,8 +304,10 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e)
 	{
 		// ===============================
 		// HOW TO GET THE ERROR FILES ???
-		// Change return value of checkRequestValidity to ConfigBase and have a temp variable
-		// be assigned to that, and pass the ConfigBase as parameter to the throwHandler()
+		// get value of server.getPathConfig() to a temp variable ConfigBase,
+		// fix the code of that getPathConfig() function (bring the code from checkRequestValidity)
+		// and pass the ConfigBase as parameter to the throwHandler()
+		// and pass the ConfigBase as parameter to POST and GET method handlers
 		// ===============================
 
 		// HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
@@ -327,7 +329,7 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e)
 	if (tmpClient)
 		tmpClient->refreshClient();
 	// ============================================================================
-
+	
 	throw;
 }
 
@@ -353,6 +355,7 @@ void ServerManager::existingClient(int eventFD)
 				checkRequestValidity(*tmpClient, request, eventFD);
 
 				// cookies
+				// /uploads/images/img.png
 
 				//	request.execute();
 
