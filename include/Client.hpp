@@ -10,6 +10,7 @@
 class Client
 {
 private:
+
 	const int _clientFD;
 	std::string _buffer; // Receives the input
 	char _tmpBuff[BUFFERSIZE];
@@ -67,6 +68,8 @@ public:
 	void addBytesSent(std::size_t bytes);
 
 	void refreshClient();
+
+	std::string bufferManager();
 };
 
 #endif

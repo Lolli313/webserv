@@ -32,7 +32,7 @@ public:
 	Server(const Server &obj);
 	Server(const std::string &port);
 	Server(const ServerBlockConfig &config, ServerSocket *socket);
-	Server(const ServerBlockConfig &config, const ServerSocket &servSocket);
+	// Server(const ServerBlockConfig &config, const ServerSocket *servSocket);
 	~Server();
 
 	const std::string &getPort() const;

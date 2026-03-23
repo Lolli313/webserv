@@ -16,10 +16,9 @@ HttpMethod::HttpMethod(const HttpMethod &obj) { *this = obj; }
 ===== OPERATORS =================================================
 =================================================================
 */
-HttpMethod &HttpMethod::operator=(const HttpMethod &obj)
-{
-	if (this != &obj)
-	{
+HttpMethod &HttpMethod::operator=(const HttpMethod &obj) {
+	if (this != &obj) {
+		_type = obj._type;
 	}
 	return (*this);
 }

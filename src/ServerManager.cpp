@@ -2,6 +2,8 @@
 #include "ServerManager.hpp"
 #include "HttpMethod.hpp"
 
+std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
+
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
@@ -10,7 +12,7 @@
 
 ServerManager::~ServerManager()
 {
-	std::cout << RED << "Calling ServerManager's destructor" << RESET << std::endl;
+	// std::clog << RED << "Calling ServerManager's destructor" << RESET << std::endl;
 	for (std::vector<ServerSocket *>::iterator it = _serverSocketArray.begin(); it != _serverSocketArray.end(); it++)
 		delete (*it);
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
@@ -98,11 +100,11 @@ void ServerManager::setupServers(const std::vector<ServerBlockConfig> &serverCon
 		}
 		else
 		{
-			std::cout << "ALREADY EXISTING SOCKET" << std::endl;
+			// std::clog << "ALREADY EXISTING SOCKET" << std::endl;
 			_serverArray.push_back(new Server(*mit, *it));
 		}
 		found = false;
-		// std::cout << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
+		// std::clog << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
 	}
 }
 
@@ -112,7 +114,7 @@ std::set<int> ServerManager::setupServSockFDs()
 	std::vector<Server *>::const_iterator it = _serverArray.begin();
 	for (; it != _serverArray.end(); it++)
 	{
-		std::cout << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
+		// std::clog << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
 		tempServSockFDs.insert((*it)->getServSockFD());
 	}
 
@@ -120,20 +122,19 @@ std::set<int> ServerManager::setupServSockFDs()
 }
 
 // Just a test response that directly sends to the client.
-// void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
-// {
-// 	std::cout << "SENT" << std::endl;
-// 	HttpResponse response(code, message);
-// 	std::ifstream file(path.c_str());
-// 	std::ostringstream body;
-// 	body << file.rdbuf();
-// 	response.setBody(body.str());
-// 	std::vector<std::pair<std::string, std::string> > tmp;
-// 	tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
-// 	response.setResponseHeaders(tmp);
-// 	send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
-// 	// quickHttpReponse(HttpTools::getReturnPair(404));
-// }
+void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
+{
+	// std::clog << "SENT" << std::endl;
+	HttpResponse response(code, message);
+	std::ifstream file(path.c_str());
+	std::ostringstream body;
+	body << file.rdbuf();
+	response.setBody(body.str());
+	std::vector<std::pair<std::string, std::string> > tmp;
+	tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
+	response.setResponseHeaders(tmp);
+	send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
+}
 
 void ServerManager::sendResponse(Client *client)
 {
@@ -154,15 +155,28 @@ void ServerManager::existingClient(int eventFD)
 	if (tmpClient)
 	{
 		// TEST_RESPONSE(tmpClient, 200, "actually", "files/ascii/dog.html");
-		tmpClient->setDoneReceiving(true);
+
+		// pour voir avant apres le buffer manager, il isole les request et set a true le done receiving
+		// std::cout << RED << tmpClient->getBuffer() << RESET << std::endl;
+		std::string tmpRequest = tmpClient->bufferManager();
+		// std::cout << GREEN << tmpClient->getBuffer() << RESET << std::endl;
 
 		if (tmpClient->doneReceiving())
 		{
-			// HARD CODED TO SEND A CLIENT RESPONSE.
-			// THIS SHOULD BE DONE BY THE METHOD (GET / POST / DELETE)
-			tmpClient->setResponseBuff(quickHttpReponse(HttpTools::getReturnPair(200)));
-			tmpClient->setResponseToBeSent(true);
+			HttpRequest request;
+			request.parse(tmpRequest);
+			std::map<std::string, std::string>::const_iterator itCookie = request.getHeader().find("Cookie");
+			if (itCookie != request.getHeader().end()) {
+				_cookie.setCookie(itCookie->second);
+				// _cookie.printCookie();
+			}
+			// request.print();
+			request.execute();
 			
+			// Main logic:
+			// 1. HttpRequest
+			// 2. HttpMethod
+			// 		responseToBeSent(true)
 			if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 			{
 				// Set the EPOLLOUT event to be monitored.
@@ -195,7 +209,7 @@ bool ServerManager::matchServerFD(int eventFD) const
 {
 	if (_servSockFDs.find(eventFD) != _servSockFDs.end())
 	{
-		std::cout << ORANGE << "matchServerFD new client found from FD " << eventFD << RESET << std::endl;
+		// std::clog << ORANGE << "matchServerFD new client found from FD " << eventFD << RESET << std::endl;
 		return true;
 	}
 	return false;
@@ -234,16 +248,16 @@ void ServerManager::mainLoop()
 		}
 		catch (Tools::Exception &e)
 		{
-			if (e.getReturnCode() == 0)
-				std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
+			// if (e.getReturnCode() == 0)
+				// std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
 		}
 		catch (std::exception &e)
 		{
-			std::clog << ORANGE << e.what() << RESET << std::endl;
+			// std::clog << ORANGE << e.what() << RESET << std::endl;
 		}
 		catch (...)
 		{
-			std::clog << ORANGE << "Undefined error" << RESET << std::endl;
+			// std::clog << ORANGE << "Undefined error" << RESET << std::endl;
 		}
 	}
 }
