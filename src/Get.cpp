@@ -5,18 +5,18 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-MethodGET::MethodGET() {}
+Get::Get(const HttpRequest &request) : _request(request) {}
 
-MethodGET::~MethodGET() {}
+Get::~Get() {}
 
-MethodGET::MethodGET(const MethodGET &obj) { *this = obj; }
+Get::Get(const Get &obj) { *this = obj; }
 
 /*
 =================================================================
 ===== OPERATORS =================================================
 =================================================================
 */
-MethodGET &MethodGET::operator=(const MethodGET &obj)
+Get &Get::operator=(const Get &obj)
 {
 	(void)obj;
 	return (*this);
@@ -34,3 +34,17 @@ MethodGET &MethodGET::operator=(const MethodGET &obj)
 =================================================================
 */
 
+void Get::checkRequest()
+{
+	std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("Host")
+	_host = _request.getHeader().find("Host")->second;
+}
+
+void Get::checkAndSetFile(const std::string &path)
+{
+	_file.open(path);
+	if (!_file.is_open())
+	{
+		throw 
+	}
+}
