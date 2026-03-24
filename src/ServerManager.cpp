@@ -264,15 +264,50 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 // 	// _cookie.printCookie();
 // }
 
-// const std::string& generateErrorPage(int code) {
-// 	const char* workingDirectory = std::getenv("PWD");
-// 	std::string errorPagePath = ERROR_PAGE_TEMPLATE_PATH;
-// 	std::string fullPath(std::string(workingDirectory) + errorPagePath);
-// 	std::string fullErrorPath(workingDirectory + )
-// 	std::ifstream infile((workingDirectory + errorPagePath.c_str()));
-// 	std::string fileContent;
-// 	while (std::getline())
-// }
+/**
+ * @brief If using the Config file error page and opening the ERROR_PAGE_TEMPLATE_PATH both fail for whatever reason,
+ * this function generates a hardcoded, very minimal error page.
+ * @returns Minimal HTML code to be used as a body in the HTTP response
+ * @attention Replace the template strings {(CODE)} and {(MSG)} with the HTTP code and message
+ */
+const std::string generateFallBackPage() {
+	return "<html><body><h1>{(CODE)} {(MSG)}</h1></body></html>";
+}
+
+const std::string generateErrorPage(int code);
+
+const std::string readErrorFile(const std::string& errorPath, int code, bool isPredefined) {
+	int fd = open(errorPath.c_str(), O_RDONLY);
+	if (fd == -1) {
+		// If the error page defined in the config file fails while trying to open it,
+		// generate a templated error page by the server
+		if (isPredefined)
+			return generateErrorPage(code);
+
+		// If opening the server defined template file fails, generate a hard coded, minimal
+		else
+			return generateFallBackPage();
+	}
+	std::string finalString;
+	char buffer[BUFFERSIZE];
+	ssize_t bytesRead = 0;
+	while ((bytesRead = read(fd, buffer, BUFFERSIZE)) > 0)
+		finalString.append(buffer, bytesRead);
+	close(fd);
+	if (bytesRead == -1)
+		return "";
+	return finalString;
+}
+
+const std::string generateErrorPage(int code) {
+	const char* workingDirectory = std::getenv("PWD");
+	std::string errorPagePath = ERROR_PAGE_TEMPLATE_PATH;
+	std::string fullPath(std::string(workingDirectory) + errorPagePath);
+	std::string fileContent = readErrorFile(fullPath, code, false);
+	Tools::findAndReplaceAllOccurences(fileContent, TEMPLATE_ERROR_CODE, Tools::intToString(code));
+	Tools::findAndReplaceAllOccurences(fileContent, TEMPLATE_ERROR_MESSAGE, HttpTools::getHttpReturnMessage(code));
+	return fileContent;
+}
 
 void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config)
 {
@@ -286,25 +321,41 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 		// and pass the ConfigBase as parameter to POST and GET method handlers
 		// ===============================
 
-		// HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
-		// std::string fullErrorPath, errorFilePath;
-		// if (!config) {
-		// 	HttpTools::MapType::const_iterator it = config->getErrorPages().find(e.getReturnCode());
-		// 	if (it == config->getErrorPages().end())
-		// 		fullErrorPath = generateErrorPage(e.getReturnCode());
-		// 	errorPath = config->getRoot() + config->getErrorPages().find(e.getReturnCode())
-		// }
-		// response.setBody(e.getReturnCode() + ".http");
-
+		std::string errorBody;
+		if (config) {
+			HttpTools::MapType::const_iterator it = config->getErrorPages().find(e.getReturnCode());
+			if (it == config->getErrorPages().end())
+				errorBody = generateErrorPage(e.getReturnCode());
+			else {
+				errorBody = readErrorFile(config->getRoot() + it->second, e.getReturnCode(), true);
+			}
+		}
+		else
+			errorBody = generateErrorPage(e.getReturnCode());
+		
 		HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
-		response.addHeader("Content-length", "0");
+		response.setBody(errorBody);
+		response.addHeader("Content-Length", Tools::intToString(errorBody.size()));
+		std::cout << LIGHT_BLUE << "Error response body size is: " << errorBody.size() << RESET << std::endl;
+		response.addDateHeader();
+
 		tmpClient->setResponseBuff(response.getFinalResponse());
 		sendResponse(tmpClient);
-		// //tmpClient->setResponseBuff(
-		// sendResponse(tmpClient);
-		std::clog << PINK << e.getMsgLog() << RESET << std::endl;
-
-		(void)config;
+		// if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
+		// {
+		// 	// Set the EPOLLOUT event to be monitored.
+		// 	_polling->setClientEPOLLOUT(tmpClient, true);
+		// }
+		// if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
+		// {
+		// 	sendResponse(tmpClient);
+		// }
+		// if (tmpClient->responseSent())
+		// {
+		// 	// Remove the EPOLLOUT event
+		// 	_polling->setClientEPOLLOUT(tmpClient, false);
+		// 	tmpClient->refreshClient();
+		// }
 	}
 
 	if (tmpClient->toBeClosed())
@@ -347,9 +398,9 @@ void ServerManager::existingClient(int eventFD)
 				HttpRequest request;
 				request.parse(tmpRequest);
 				// Ideally we would call this function after the headers are parsed, for now it is here
-				// checkRequestValidity(*tmpClient, request, eventFD);
 				config = findConfigBase(*tmpClient, request, eventFD);
 				handleReturnAndAllowMethod(config, request.getMethodStr());
+				throw Tools::Exception(407, "File Not Found");
 
 				std::clog << "1 ===================================" << std::endl;
 				tmpClient->setResponseBuff(execute(request, config));

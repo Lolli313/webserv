@@ -55,4 +55,5 @@ public:
 	static bool checkAndRemoveSemicolon(std::string &str);
 	static std::string intToString(int nbr);
 	static bool checkPath(const std::string &path);
+	static void findAndReplaceAllOccurences(std::string& input, const std::string& replaceWord, const std::string& replaceBy);
 };

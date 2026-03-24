@@ -16,8 +16,11 @@
 
 #include <vector>
 #include <fstream>
+#include <sstream>
 
 #define ERROR_PAGE_TEMPLATE_PATH "/files/error_pages/ErrorTemplate.html"
+#define TEMPLATE_ERROR_CODE "{(CODE)}"
+#define TEMPLATE_ERROR_MESSAGE "{(MSG)}"
 
 extern int _sigStop;
 

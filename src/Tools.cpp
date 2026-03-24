@@ -186,3 +186,11 @@ std::string Tools::intToString(int nbr)
 	oss << nbr;
 	return oss.str();
 }
+
+void Tools::findAndReplaceAllOccurences(std::string& input, const std::string& replaceWord, const std::string& replaceBy) {
+	std::size_t pos = input.find(replaceWord);
+	while (pos != std::string::npos) {
+		input.replace(pos, replaceWord.size(), replaceBy);
+		pos = input.find(replaceWord, pos + replaceBy.size());
+	}
+}

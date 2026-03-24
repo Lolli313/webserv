@@ -78,6 +78,7 @@ void HttpRequest::parse(const std::string &request) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
 	if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
+		std::cout << LIGHT_BLUE << "HttpRequest: Unknown method" << RESET << std::endl;
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
 	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty()) {
