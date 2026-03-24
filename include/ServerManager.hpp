@@ -11,6 +11,7 @@
 #include "HttpRequest.hpp"
 #include "Cookie.hpp"
 #include "Post.hpp"
+#include "Get.hpp"
 #include "Delete.hpp"
 
 #include <vector>

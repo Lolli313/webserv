@@ -200,7 +200,7 @@ const ConfigBase *ServerManager::findConfigBase(const Client &client, const Http
 	return &server->getPathConfig(modifiableString);
 }
 
-void handleReturnAndAllowMethod(const ConfigBase* config, const std::string &method)
+void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &method)
 {
 	if (config->getReturnDirective().first)
 	{
@@ -229,17 +229,20 @@ void ServerManager::sendResponse(Client *client)
 	}
 }
 
-const std::string execute(const HttpRequest &request)
+/**
+ * @brief execute the HTTP method and return the formatted HTTP response.
+ * @return the formatted HTTP response in case of success
+ * @throw in case of error
+ */
+const std::string execute(const HttpRequest &request, const ConfigBase *config)
 {
+	std::clog << YELLOW_BRIGHT << "excecute" << RESET << std::endl;
 	std::string response;
 	if (request.getMethodStr() == "GET")
-	{
-		(void)request;
-		//		response = // GET // std::cout << "code pour get" << std::endl;
-	}
+		return response = Get::executeGet(request, config);
 
 	else if (request.getMethodStr() == "POST")
-		response = Post::executePost(request);
+		return response = Post::executePost(request);
 
 	else if (request.getMethodStr() == "DELETE")
 	{
@@ -293,8 +296,13 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 		// }
 		// response.setBody(e.getReturnCode() + ".http");
 
+		HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
+		response.addHeader("Content-length", "0");
+		tmpClient->setResponseBuff(response.getFinalResponse());
+		sendResponse(tmpClient);
 		// //tmpClient->setResponseBuff(
 		// sendResponse(tmpClient);
+		std::clog << PINK << e.getMsgLog() << RESET << std::endl;
 
 		(void)config;
 	}
@@ -311,7 +319,7 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 	if (tmpClient)
 		tmpClient->refreshClient();
 	// ============================================================================
-	
+
 	throw;
 }
 
@@ -323,13 +331,17 @@ void ServerManager::existingClient(int eventFD)
 	{
 		try
 		{
-			TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
+			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
 
 			// pour voir avant apres le buffer manager, il isole les request et set a true le done receiving
 			// std::cout << RED << tmpClient->getBuffer() << RESET << std::endl;
-			std::string tmpRequest = tmpClient->bufferManager();
+			// std::string tmpRequest = tmpClient->bufferManager();
 			// std::cout << GREEN << tmpClient->getBuffer() << RESET << std::endl;
-
+			std::string tmpRequest =
+				"GET /ascii/body.txt HTTP/1.1\r\n"
+				"Host: localhost:8080\r\n"
+				"\r\n";
+			tmpClient->setDoneReceiving(true);
 			if (tmpClient->doneReceiving())
 			{
 				HttpRequest request;
@@ -339,6 +351,9 @@ void ServerManager::existingClient(int eventFD)
 				config = findConfigBase(*tmpClient, request, eventFD);
 				handleReturnAndAllowMethod(config, request.getMethodStr());
 
+				std::clog << "1 ===================================" << std::endl;
+				tmpClient->setResponseBuff(execute(request, config));
+				tmpClient->setResponseToBeSent(true);
 				// cookies
 				// /uploads/images/img.png
 
@@ -346,11 +361,13 @@ void ServerManager::existingClient(int eventFD)
 
 				if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 				{
+				std::clog << "2 ===================================" << std::endl;
 					// Set the EPOLLOUT event to be monitored.
 					_polling->setClientEPOLLOUT(tmpClient, true);
 				}
 				if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
 				{
+				std::clog << "3 ===================================" << std::endl;
 					sendResponse(tmpClient);
 				}
 				if (tmpClient->responseSent())
