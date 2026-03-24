@@ -341,21 +341,6 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 
 		tmpClient->setResponseBuff(response.getFinalResponse());
 		sendResponse(tmpClient);
-		// if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
-		// {
-		// 	// Set the EPOLLOUT event to be monitored.
-		// 	_polling->setClientEPOLLOUT(tmpClient, true);
-		// }
-		// if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
-		// {
-		// 	sendResponse(tmpClient);
-		// }
-		// if (tmpClient->responseSent())
-		// {
-		// 	// Remove the EPOLLOUT event
-		// 	_polling->setClientEPOLLOUT(tmpClient, false);
-		// 	tmpClient->refreshClient();
-		// }
 	}
 
 	if (tmpClient->toBeClosed())
@@ -386,12 +371,12 @@ void ServerManager::existingClient(int eventFD)
 
 			// pour voir avant apres le buffer manager, il isole les request et set a true le done receiving
 			// std::cout << RED << tmpClient->getBuffer() << RESET << std::endl;
-			// std::string tmpRequest = tmpClient->bufferManager();
+			std::string tmpRequest = tmpClient->bufferManager();
 			// std::cout << GREEN << tmpClient->getBuffer() << RESET << std::endl;
-			std::string tmpRequest =
-				"GET /ascii/body.txt HTTP/1.1\r\n"
-				"Host: localhost:8080\r\n"
-				"\r\n";
+			// std::string tmpRequest =
+			// 	"GET /ascii/body.txt HTTP/1.1\r\n"
+			// 	"Host: localhost:8080\r\n"
+			// 	"\r\n";
 			tmpClient->setDoneReceiving(true);
 			if (tmpClient->doneReceiving())
 			{
@@ -400,7 +385,6 @@ void ServerManager::existingClient(int eventFD)
 				// Ideally we would call this function after the headers are parsed, for now it is here
 				config = findConfigBase(*tmpClient, request, eventFD);
 				handleReturnAndAllowMethod(config, request.getMethodStr());
-				throw Tools::Exception(407, "File Not Found");
 
 				std::clog << "1 ===================================" << std::endl;
 				tmpClient->setResponseBuff(execute(request, config));
