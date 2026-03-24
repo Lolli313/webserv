@@ -6,46 +6,31 @@
 =================================================================
 */
 
-// Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(port), _port(port)
-// {
-// 	std::cout << GREEN << "Server constructor for _servSocketFD = " << _servSocket.getServSockFD() << std::endl;
-// 	std::cout << "Server constructor for _port = " << _port << RESET << std::endl;
-// }
+Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(new ServerSocket(port)), _port(port)
+{
+	std::clog << "Server constructor for _port = " << _port << RESET << std::endl;
+}
 
-// Server::Server(const Server &obj) :
-// 	ConfigBase(*this),
-// 	_servSocket(obj.getServSocket()),
-// 	_port(obj.getPort()),
-// 	_serverNames(obj.getServerNames()),
-// 	_locationConfigs(obj.getLocationConfigs())
-// {
-// 	std::cout << BLUE << "Server copy constructor" << RESET << std::endl;
-// }
+Server::Server(const Server &obj) :
+	ConfigBase(*this),
+	_servSocket(new ServerSocket(*obj._servSocket)),
+	_port(obj.getPort()),
+	_serverNames(obj.getServerNames()),
+	_locationConfigs(obj.getLocationConfigs())
+{
+	std::clog << BLUE << "Server copy constructor" << RESET << std::endl;
+}
 
 Server::Server(const ServerBlockConfig &config, ServerSocket *socket) : 
 	_servSocket(socket), 
 	_port(config.getPort()), 
 	_serverNames(config.getServerNames()), 
-	_locationConfigs(config.getLocationConfigs())
-	{
-		std::cout << BLUE << "Server constructor for _serverSocketFD = " << _servSocket->getServSockFD() <<
-			", port = " << _port << RESET << std::endl;
-	}
+	_locationConfigs(config.getLocationConfigs()) {}
 
-
-// Server::Server(const ServerBlockConfig &config, const ServerSocket &servSocket) :
-// 	_servSocket(servSocket),
-// 	_port(config.getPort()),
-// 	_serverNames(config.getServerNames()),
-// 	_locationConfigs(config.getLocationConfigs()) {
-// 		std::cout << "Server constructor when port is a duplicate: _servSocketFD = " << _servSocket.getServSockFD() <<
-// 			", port = " << _port << RESET << std::endl;
-// 	}
 
 Server::~Server()
 {
-	// delete _servSocket;
-	std::cout << RED << "Calling Server's destructor" << RESET << std::endl;
+	std::clog << RED << "Calling Server's destructor" << RESET << std::endl;
 }
 
 /*
@@ -60,15 +45,40 @@ const std::set<std::string> &Server::getServerNames() const { return _serverName
 const ServerSocket *Server::getServSocket() const { return _servSocket; }
 const std::map<std::string, LocationConfig> &Server::getLocationConfigs() const { return _locationConfigs; }
 
+bool locationMatchesPath(std::string &path, const std::string &location)
+{
+	if (path == location)
+		return true;
+
+	// check if a path with a trailing / matches a location path
+	if (!path.empty() && path.size() - 1 == location.size() && Tools::getLastCharacter(path) == '/')
+		return path.compare(0, location.size(), location) == 0;
+
+	return false;
+}
+
 /** @brief Access directly to the path's config, abstracting all the different locationConfigs and the Server's.
  * @return A LocationConfig reference, so all the methods and data are directly accessible. */
-const LocationConfig &Server::getPathConfig(const std::string &path)
+const ConfigBase &Server::getPathConfig(std::string &path)
 {
-	std::map<std::string, LocationConfig>::const_iterator it = _locationConfigs.find(path);
-	if (it != _locationConfigs.end())
-		return it->second;
-	_serversLocationConfigBaseWorkaroundBecauseOfArttu = static_cast<const ConfigBase &>(*this);
-	return (_serversLocationConfigBaseWorkaroundBecauseOfArttu);
+	std::cout << LIGHT_BLUE << "Path to look for is: " << path << RESET << std::endl;
+	while (!path.empty())
+	{
+		std::map<std::string, LocationConfig>::const_iterator it = _locationConfigs.begin();
+		for (; it != _locationConfigs.end(); it++)
+		{
+			if (locationMatchesPath(path, it->first))
+			{
+				std::cout << LIGHT_BLUE << "Found a match for the location: " << it->first << RESET << std::endl;
+				return it->second;
+			}
+		}
+		if (Tools::getLastCharacter(path) == '/')
+			Tools::removeLastCharacter(path);
+
+		Tools::eraseAfterLastCharacter(path, '/');
+	}
+	return *this;
 }
 
 /*

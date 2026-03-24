@@ -7,16 +7,25 @@
 #include "Polling.hpp"
 #include "Server.hpp"
 #include "HttpResponse.hpp"
-#include "MethodGET.hpp"
+#include "Get.hpp"
 #include "HttpRequest.hpp"
+#include "Cookie.hpp"
+#include "Post.hpp"
+#include "Delete.hpp"
 
 #include <vector>
+#include <fstream>
+
+#define ERROR_PAGE_TEMPLATE_PATH "/files/error_pages/ErrorTemplate.html"
 
 extern int _sigStop;
 
 class ServerManager
 {
 private:
+
+	Cookie _cookie;
+
 	std::vector<Server *> _serverArray; // To store the servers, that will be retrieved throw the following map
 
 	std::vector<ServerSocket *> _serverSocketArray;
@@ -46,10 +55,14 @@ public:
 	const std::string& findPort(int eventFD);
 	Server* findServer(const std::string& host);
 	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
-	void existingClient(unsigned int i, int eventFD);
+	const ConfigBase *findConfigBase(const Client &client, const HttpRequest &request, int eventFD);
+	void existingClient(int eventFD);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();
 	void mainLoop();
+	void sendResponse(Client *client);
+	void throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config);
+
 };
 
 #endif

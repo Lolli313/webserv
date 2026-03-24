@@ -11,11 +11,8 @@ ServerBlockConfig::~ServerBlockConfig() {}
 /**
  * @throws handleDirectiveName() throws Tools::Exception on parsing error
  */
-ServerBlockConfig::ServerBlockConfig(std::ifstream *infile) :
-	_infile(infile)
-	{
+ServerBlockConfig::ServerBlockConfig(std::ifstream *infile) : _infile(infile) {
 	std::string line;
-
 	while (std::getline(*_infile, line)) {
 		if (line[0] == '#' || line.empty())
 			continue;
@@ -31,10 +28,13 @@ ServerBlockConfig::ServerBlockConfig(std::ifstream *infile) :
 ===== OPERATORS =================================================
 =================================================================
 */
-ServerBlockConfig &ServerBlockConfig::operator=(const ServerBlockConfig &obj)
-{
-	if (this != &obj)
-	{
+
+ServerBlockConfig &ServerBlockConfig::operator=(const ServerBlockConfig &obj) {
+	if (this != &obj) {
+		_port = obj._port;
+		_serverNames = obj._serverNames;
+		_locationConfigs = obj._locationConfigs;
+		_infile = obj._infile;
 	}
 	return (*this);
 }
@@ -94,11 +94,9 @@ bool ServerBlockConfig::parseListen(std::vector<std::string>& tokens) {
 		return false;
 
 	int portStr = std::atoi(port.c_str());
-
 	// unsigned short max is 65535
 	if (portStr <= 0 || portStr > std::numeric_limits<unsigned short>::max())
 		return false;
-
 	_port = Tools::intToString(portStr);
 	return true;
 }
@@ -224,26 +222,26 @@ void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 }
 
 void ServerBlockConfig::printData() const {
-	std::cout << "port: " << _port << std::endl;
+	std::clog << "port: " << _port << std::endl;
 
-	std::cout << "server names: ";
+	std::clog << "server names: ";
 	std::set<std::string>::const_iterator it = _serverNames.begin();
 	for (; it != _serverNames.end(); it++) {
-		std::cout << *it << ", ";
+		std::clog << *it << ", ";
 	}
-	std::cout << std::endl;
+	std::clog << std::endl;
 
 	ConfigBase::printData();
-	std::cout << std::endl;
+	std::clog << std::endl;
 
 	std::map<std::string, LocationConfig>::const_iterator mit = _locationConfigs.begin();
-	std::cout << "LocationCondig data" << std::endl;
+	std::clog << "LocationCondig data" << std::endl;
 	for (; mit != _locationConfigs.end(); mit++) {
-		std::cout << "location path: " << mit->first << std::endl;
+		std::clog << "location path: " << mit->first << std::endl;
 		mit->second.printData();
-		std::cout << std::endl;
+		std::clog << std::endl;
 	}
-	std::cout << std::endl;
+	std::clog << std::endl;
 	
 }
 

@@ -30,7 +30,7 @@ public:
 	Server(const Server &obj);
 	Server(const std::string &port);
 	Server(const ServerBlockConfig &config, ServerSocket *socket);
-	Server(const ServerBlockConfig &config, const ServerSocket &servSocket);
+	// Server(const ServerBlockConfig &config, const ServerSocket *servSocket);
 	~Server();
 
 	const std::string &getPort() const;
@@ -38,7 +38,7 @@ public:
 	const std::set<std::string> &getServerNames() const;
 	const ServerSocket *getServSocket() const;
 	const std::map<std::string, LocationConfig> &getLocationConfigs() const;
-	const LocationConfig &getPathConfig(const std::string &path);
+	const ConfigBase &getPathConfig(std::string &path);
 };
 
 #endif

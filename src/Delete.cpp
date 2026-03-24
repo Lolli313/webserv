@@ -1,22 +1,22 @@
-#include "MethodGET.hpp"
+#include "Delete.hpp"
 
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-MethodGET::MethodGET() {}
+Delete::Delete() {}
 
-MethodGET::~MethodGET() {}
+Delete::~Delete() {}
 
-MethodGET::MethodGET(const MethodGET &obj) { *this = obj; }
+Delete::Delete(const Delete &obj) { *this = obj; }
 
 /*
 =================================================================
 ===== OPERATORS =================================================
 =================================================================
 */
-MethodGET &MethodGET::operator=(const MethodGET &obj)
+Delete &Delete::operator=(const Delete &obj)
 {
 	if (this != &obj)
 	{
@@ -35,3 +35,14 @@ MethodGET &MethodGET::operator=(const MethodGET &obj)
 ===== METHODS ===================================================
 =================================================================
 */
+
+const std::string Delete::executeDelete(const HttpRequest &request) {
+	std::ifstream infile(request.getPath().c_str());
+	if (!infile.is_open())
+		throw Tools::Exception(404, "File doesn't exist");
+	infile.close();
+	if (std::remove(request.getPath().c_str()) != 0)
+		throw Tools::Exception(500, "Error deleting file");
+
+	return HttpResponse::quickHttpResponse(HttpTools::getReturnPair(204));
+}

@@ -4,6 +4,7 @@
 #include <map>
 #include "HttpTools.hpp"
 #include "Tools.hpp"
+#include <ctime>
 
 #define HTTP_VERSION "HTTP/1.1"
 
@@ -32,11 +33,13 @@ private:
 	// Is setted by the getFinalResponse call
 	std::string _finalResponse;
 	HttpResponse();
+	void addHeadersToResponse();
 
 public:
 	HttpResponse(int code, const std::string &message);
 	HttpResponse(const std::string &httpVersion, int code, const std::string &message);
 	HttpResponse(const HttpResponse &obj);
+	HttpResponse(const std::pair<int, const std::string &> &response);
 	HttpResponse &operator=(const HttpResponse &obj);
 	~HttpResponse();
 
@@ -45,6 +48,8 @@ public:
 	void setReturnMessage(const std::string &returnMessage);
 	void setResponseHeaders(const std::vector<std::pair<std::string, std::string> > &responseHeaders);
 	void setBody(const std::string &body);
+	void addHeader(const std::pair<std::string, std::string> &header);
+	void addHeader(const std::string &key, const std::string &value);
 
 	const std::string &getHttpVersion() const;
 	int getReturnCode() const;
@@ -52,10 +57,10 @@ public:
 	const std::vector<std::pair<std::string, std::string> > &getResponseHeaders() const;
 	const std::string &getBody() const;
 	const std::string &getFinalResponse(); // This call builds and return the final response.
+	void addDateHeader();
 
-	void addHeadersToResponse();
 	void buildFinalResponse();
-};
 
-const std::string quickHttpReponse(int code, const std::string &message);
-const std::string quickHttpReponse(std::pair<int, const std::string &> &response);
+	static const std::string quickHttpResponse(int code, const std::string &message);
+	static const std::string quickHttpResponse(const std::pair<int, const std::string &> &response);
+};

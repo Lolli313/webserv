@@ -24,7 +24,7 @@ std::atomic<int> failedConnections(0);
 std::mutex printMutex;
 
 // FIX 1: Signal handler must only use async-signal-safe operations.
-// std::cout is NOT async-signal-safe. Just set the flag.
+std::clog is NOT async-signal-safe. Just set the flag.
 void handle_sigint(int) {
     stopRequested.store(true, std::memory_order_relaxed);
 }
@@ -32,8 +32,7 @@ void handle_sigint(int) {
 void raise_fd_limit(int newLimit) {
     struct rlimit rl;
     if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
-        std::cout << "Current RLIMIT_NOFILE: soft=" << rl.rlim_cur 
-                  << " hard=" << rl.rlim_max << std::endl;
+        std::clog << "Current RLIMIT_NOFILE: soft=" << rl.rlim_cur << " hard=" << rl.rlim_max << std::endl;
         
         rlim_t requested = static_cast<rlim_t>(newLimit);
         
@@ -51,15 +50,15 @@ void raise_fd_limit(int newLimit) {
             if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
                 rl.rlim_cur = rl.rlim_max;
                 if (setrlimit(RLIMIT_NOFILE, &rl) == 0) {
-                    std::cout << "Set RLIMIT_NOFILE to hard limit: " << rl.rlim_max << std::endl;
+                    std::clog << "Set RLIMIT_NOFILE to hard limit: " << rl.rlim_max << std::endl;
                 }
             }
         } else {
-            std::cout << "Successfully raised RLIMIT_NOFILE to " << newLimit << std::endl;
+            std::clog << "Successfully raised RLIMIT_NOFILE to " << newLimit << std::endl;
         }
         
         if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
-            std::cout << "New RLIMIT_NOFILE: soft=" << rl.rlim_cur 
+            std::clog << "New RLIMIT_NOFILE: soft=" << rl.rlim_cur 
                       << " hard=" << rl.rlim_max << std::endl;
         }
     } else {
@@ -68,31 +67,31 @@ void raise_fd_limit(int newLimit) {
 }
 
 void print_system_limits() {
-    std::cout << "\n=== System Resource Limits ===" << std::endl;
+    std::clog << "\n=== System Resource Limits ===" << std::endl;
     
     struct rlimit rl;
     
     if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
-        std::cout << "RLIMIT_NOFILE (open files): soft=" << rl.rlim_cur 
+        std::clog << "RLIMIT_NOFILE (open files): soft=" << rl.rlim_cur 
                   << " hard=" << rl.rlim_max << std::endl;
     }
     
     if (getrlimit(RLIMIT_NPROC, &rl) == 0) {
-        std::cout << "RLIMIT_NPROC (threads/processes): soft=" << rl.rlim_cur 
+        std::clog << "RLIMIT_NPROC (threads/processes): soft=" << rl.rlim_cur 
                   << " hard=" << rl.rlim_max << std::endl;
     }
     
     if (getrlimit(RLIMIT_STACK, &rl) == 0) {
-        std::cout << "RLIMIT_STACK (thread stack): soft=" << rl.rlim_cur 
+        std::clog << "RLIMIT_STACK (thread stack): soft=" << rl.rlim_cur 
                   << " hard=" << rl.rlim_max << std::endl;
     }
     
-    std::cout << "==============================\n" << std::endl;
+    std::clog << "==============================\n" << std::endl;
 }
 
 void print_connection_status() {
     std::lock_guard<std::mutex> lock(printMutex);
-    std::cout << "\rConnected clients: " << currentConnections.load() << std::flush;
+    std::clog << "\rConnected clients: " << currentConnections.load() << std::flush;
 }
 
 void clientLoop(int clientId)
@@ -225,9 +224,9 @@ int main(int argc, char* argv[])
         }
     }
     
-    std::cout << "=== Web Server Load Test Tool ===" << std::endl;
-    std::cout << "Target: 127.0.0.1:" << PORT << std::endl;
-    std::cout << "Number of clients: " << numClients << std::endl;
+    std::clog << "=== Web Server Load Test Tool ===" << std::endl;
+    std::clog << "Target: 127.0.0.1:" << PORT << std::endl;
+    std::clog << "Number of clients: " << numClients << std::endl;
     
     print_system_limits();
     
@@ -238,8 +237,8 @@ int main(int argc, char* argv[])
     std::signal(SIGINT, handle_sigint);
     std::signal(SIGTERM, handle_sigint);
     
-    std::cout << "\nStarting " << numClients << " client threads..." << std::endl;
-    std::cout << "Press Ctrl+C to stop all clients gracefully.\n" << std::endl;
+    std::clog << "\nStarting " << numClients << " client threads..." << std::endl;
+    std::clog << "Press Ctrl+C to stop all clients gracefully.\n" << std::endl;
     
     auto startTime = std::chrono::steady_clock::now();
     
@@ -249,7 +248,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < numClients; i++) {
         // FIX 7: Check stopRequested before launching more threads
         if (stopRequested.load(std::memory_order_relaxed)) {
-            std::cout << "\nStop requested during thread creation at thread " << i << std::endl;
+            std::clog << "\nStop requested during thread creation at thread " << i << std::endl;
             break;
         }
 
@@ -264,7 +263,7 @@ int main(int argc, char* argv[])
     }
     
     int threadsCreated = static_cast<int>(threads.size());
-    std::cout << "Successfully created " << threadsCreated << " client threads.\n" << std::endl;
+    std::clog << "Successfully created " << threadsCreated << " client threads.\n" << std::endl;
     
     for (auto& thread : threads) {
         if (thread.joinable()) {
@@ -277,15 +276,15 @@ int main(int argc, char* argv[])
     
     // FIX 1 (cont.): Print the interrupt message here instead of in the signal handler
     if (stopRequested.load()) {
-        std::cout << "\nReceived interrupt signal. All clients stopped." << std::endl;
+        std::clog << "\nReceived interrupt signal. All clients stopped." << std::endl;
     }
 
-    std::cout << "\n=== Test Results ===" << std::endl;
-    std::cout << "Threads created: " << threadsCreated << std::endl;
-    std::cout << "Successful connections: " << successfulConnections.load() << std::endl;
-    std::cout << "Failed connections: " << failedConnections.load() << std::endl;
-    std::cout << "Duration: " << duration.count() << " seconds" << std::endl;
-    std::cout << "====================" << std::endl;
+    std::clog << "\n=== Test Results ===" << std::endl;
+    std::clog << "Threads created: " << threadsCreated << std::endl;
+    std::clog << "Successful connections: " << successfulConnections.load() << std::endl;
+    std::clog << "Failed connections: " << failedConnections.load() << std::endl;
+    std::clog << "Duration: " << duration.count() << " seconds" << std::endl;
+    std::clog << "====================" << std::endl;
     
     return 0;
 }

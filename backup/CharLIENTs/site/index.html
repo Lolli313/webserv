@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testeur HTTP pour Webserv</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Testeur HTTP pour Webserv</h1>
+        <p>Serveur : <code>127.0.0.1:8080</code></p>
+
+        <div class="request-form">
+            <h2>Envoyer une requête</h2>
+            <form id="form">
+                <div class="form-group">
+                    <label for="method">Méthode :</label>
+                    <select id="method" required>
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="path">Chemin :</label>
+                    <input type="text" id="path" placeholder="/fichier.txt" required>
+                </div>
+
+                <div class="form-group" id="post-body-group">
+                    <label for="body">Corps (JSON) :</label>
+                    <textarea id="body" rows="4" placeholder='{"clé": "valeur"}'></textarea>
+                </div>
+
+                <div class="form-group" id="post-file-group" style="display: none;">
+                    <label for="file">Fichier à envoyer :</label>
+                    <input type="file" id="file">
+                </div>
+
+                <button type="submit">Envoyer</button>
+            </form>
+        </div>
+
+        <div class="response">
+            <h2>Réponse du serveur</h2>
+            <pre id="response-text">Prêt à envoyer une requête...</pre>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
