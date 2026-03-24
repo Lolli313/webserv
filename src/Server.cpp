@@ -8,7 +8,7 @@
 
 Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(new ServerSocket(port)), _port(port)
 {
-	std::clog << "Server constructor for _port = " << _port << RESET << std::endl;
+	// std::clog << "Server constructor for _port = " << _port << RESET << std::endl;
 }
 
 Server::Server(const Server &obj) :
@@ -18,7 +18,7 @@ Server::Server(const Server &obj) :
 	_serverNames(obj.getServerNames()),
 	_locationConfigs(obj.getLocationConfigs())
 {
-	std::clog << BLUE << "Server copy constructor" << RESET << std::endl;
+	// std::clog << BLUE << "Server copy constructor" << RESET << std::endl;
 }
 
 Server::Server(const ServerBlockConfig &config, ServerSocket *socket) : 
@@ -30,7 +30,7 @@ Server::Server(const ServerBlockConfig &config, ServerSocket *socket) :
 
 Server::~Server()
 {
-	std::clog << RED << "Calling Server's destructor" << RESET << std::endl;
+	// std::clog << RED << "Calling Server's destructor" << RESET << std::endl;
 }
 
 /*

@@ -1,6 +1,7 @@
 #include "HttpRequest.hpp"
 #include "Post.hpp"
 #include "Cookie.hpp"
+#include <sys/wait.h>
 
 /*
 ================================================================================
@@ -132,7 +133,14 @@ void HttpRequest::parse(const std::string &request) {
 	_body = bodyStream.str();
 }
 
-void HttpRequest::execute() {
+void HttpRequest::cookie(Cookie &cookie) {
+	std::map<std::string, std::string>::const_iterator itCookie = _header.find("Cookie");
+	if (itCookie != _header.end()) {
+		cookie.setCookie(itCookie->second);
+	}
+}
+
+void HttpRequest::executeMethod() {
 	if (_methodStr == "GET") {
 		// std::cout << "code pour get" << std::endl;
 	} else if (_methodStr == "POST") {
@@ -150,20 +158,68 @@ void HttpRequest::execute() {
 	}
 }
 
+void HttpRequest::executeScript() {
+	if (_purePath != "cgi-bin/hello.py" && _purePath != "cgi-bin/info.php") {
+		// std::cout << "marche pas" << std::endl;
+		return;
+	}
+
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+		std::cout << "NULL1" << std::endl; 
+        // throw std::runtime_error("Failed to create pipe");
+    }
+    pid_t pid = fork();
+    if (pid == -1) {
+		std::cout << "NULL2" << std::endl; 
+        // throw std::runtime_error("Failed to fork");
+    } else if (pid == 0) {
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+
+        // for (const auto &[key, value] : env) {
+        //     setenv(key.c_str(), value.c_str(), 1);
+        // }
+
+        execl(_purePath.c_str(), _purePath.c_str(), NULL);
+		std::cout << "NULL3" << std::endl; 
+        exit(1);
+    } else { 
+        close(pipefd[1]);
+
+        char buffer[4096];
+        std::string output;
+        ssize_t bytesRead;
+        while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+            output.append(buffer, bytesRead);
+        }
+        close(pipefd[0]);
+
+        // int status;
+        // waitpid(pid, &status, 0);
+        // if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
+		// 	std::cout << "NULL4" << std::endl; 
+        //     // throw std::runtime_error("CGI script execution failed");
+        // }
+		std::cout << YELLOW << "CGI Output: " << output << RESET << std::endl;
+    }
+}
+
 void HttpRequest::print() const {
-	std::clog << YELLOW << "Method : " << RESET << _methodStr << std::endl;
-	std::clog << YELLOW << "Path : " << RESET << _path << std::endl;
-	std::clog << YELLOW << "Pure Path : " << RESET << _purePath << std::endl;
-	std::clog << YELLOW << "Query Params : " << RESET << std::endl;
+	// std::clog << YELLOW << "Method : " << RESET << _methodStr << std::endl;
+	// std::clog << YELLOW << "Path : " << RESET << _path << std::endl;
+	// std::clog << YELLOW << "Pure Path : " << RESET << _purePath << std::endl;
+	// std::clog << YELLOW << "Query Params : " << RESET << std::endl;
 	for (std::map<std::string, std::string>::const_iterator it = _queryParams.begin();
 		it != _queryParams.end(); ++it) {
-		std::clog << " " << it->first << " : " << it->second << std::endl;
+		// std::clog << " " << it->first << " : " << it->second << std::endl;
 	}
-	std::clog << YELLOW << "HTTP Version : " << RESET << _httpVersion << std::endl;
-	std::clog << YELLOW << "Headers : " << RESET << std::endl; 
+	// std::clog << YELLOW << "HTTP Version : " << RESET << _httpVersion << std::endl;
+	// std::clog << YELLOW << "Headers : " << RESET << std::endl; 
 	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); ++it) {
-		std::clog << " " << it->first << " : " << it->second << std::endl;
+		// std::clog << " " << it->first << " : " << it->second << std::endl;
 	}
-	std::clog << YELLOW << "Boundary : " << RESET << _boundary << std::endl;
-	std::clog << YELLOW << "Body : " << std::endl << RESET << _body;
+	// std::clog << YELLOW << "Boundary : " << RESET << _boundary << std::endl;
+	// std::clog << YELLOW << "Body : " << std::endl << RESET << _body;
 }

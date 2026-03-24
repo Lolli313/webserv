@@ -12,7 +12,7 @@ std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverC
 
 ServerManager::~ServerManager()
 {
-	std::clog << RED << "Calling ServerManager's destructor" << RESET << std::endl;
+	// std::clog << RED << "Calling ServerManager's destructor" << RESET << std::endl;
 	for (std::vector<ServerSocket *>::iterator it = _serverSocketArray.begin(); it != _serverSocketArray.end(); it++)
 		delete (*it);
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
@@ -100,11 +100,11 @@ void ServerManager::setupServers(const std::vector<ServerBlockConfig> &serverCon
 		}
 		else
 		{
-			std::clog << "ALREADY EXISTING SOCKET" << std::endl;
+			// std::clog << "ALREADY EXISTING SOCKET" << std::endl;
 			_serverArray.push_back(new Server(*mit, *it));
 		}
 		found = false;
-		// std::clog << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
+		// // std::clog << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
 	}
 }
 
@@ -114,7 +114,7 @@ std::set<int> ServerManager::setupServSockFDs()
 	std::vector<Server *>::const_iterator it = _serverArray.begin();
 	for (; it != _serverArray.end(); it++)
 	{
-		std::clog << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
+		// std::clog << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
 		tempServSockFDs.insert((*it)->getServSockFD());
 	}
 
@@ -124,7 +124,7 @@ std::set<int> ServerManager::setupServSockFDs()
 // Just a test response that directly sends to the client.
 void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
 {
-	std::clog << "SENT" << std::endl;
+	// std::clog << "SENT" << std::endl;
 	HttpResponse response(code, message);
 	std::ifstream file(path.c_str());
 	std::ostringstream body;
@@ -186,14 +186,11 @@ void ServerManager::existingClient(int eventFD)
 		{
 			HttpRequest request;
 			request.parse(tmpRequest);
-			// fait fonction
-			std::map<std::string, std::string>::const_iterator itCookie = request.getHeader().find("Cookie");
-			if (itCookie != request.getHeader().end()) {
-				_cookie.setCookie(itCookie->second);
-				// _cookie.printCookie();
-			}
 			// request.print();
-			request.execute();
+			request.cookie(_cookie);
+			// _cookie.printCookie();
+			request.executeMethod();
+			request.executeScript();
 			// execute(request);
 			// tmpClient->setResponseBuff(
 			
@@ -233,7 +230,7 @@ bool ServerManager::matchServerFD(int eventFD) const
 {
 	if (_servSockFDs.find(eventFD) != _servSockFDs.end())
 	{
-		std::clog << ORANGE << "matchServerFD new client found from FD " << eventFD << RESET << std::endl;
+		// std::clog << ORANGE << "matchServerFD new client found from FD " << eventFD << RESET << std::endl;
 		return true;
 	}
 	return false;
@@ -273,15 +270,15 @@ void ServerManager::mainLoop()
 		catch (Tools::Exception &e)
 		{
 			// if (e.getReturnCode() == 0)
-				std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
+				// std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
 		}
 		catch (std::exception &e)
 		{
-			std::clog << ORANGE << e.what() << RESET << std::endl;
+			// std::clog << ORANGE << e.what() << RESET << std::endl;
 		}
 		catch (...)
 		{
-			std::clog << ORANGE << "Undefined error" << RESET << std::endl;
+			// std::clog << ORANGE << "Undefined error" << RESET << std::endl;
 		}
 	}
 }
