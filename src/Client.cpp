@@ -92,7 +92,7 @@ bool Client::responseSent() const { return _responseSent; }
  * @param status 
  * { 1 = toBeSent, 
  *   0 = not toBeSent, 
- *   -1 = no respopnse should be sent, and the value cannot be changed. It means the end of the connection, for EPOLLHUP}
+ *   -1 = no response should be sent, and the value cannot be changed. It means the end of the connection, for EPOLLHUP}
  */
 void Client::setResponseToBeSent(int status) { 
 	if (_responseToBeSent != -1)

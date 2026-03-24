@@ -229,17 +229,19 @@ void ServerManager::sendResponse(Client *client)
 	}
 }
 
-const std::string execute(const HttpRequest &request)
+/**
+ * @brief execute the HTTP method and return the formatted HTTP response.
+ * @return the formatted HTTP response in case of success
+ * @throw in case of error
+ */
+const std::string execute(const HttpRequest &request, const ConfigBase *config)
 {
 	std::string response;
 	if (request.getMethodStr() == "GET")
-	{
-		(void)request;
-		//		response = // GET // std::cout << "code pour get" << std::endl;
-	}
+		return response = Get::executeGet(request, config);
 
 	else if (request.getMethodStr() == "POST")
-		response = Post::executePost(request);
+		return response = Post::executePost(request);
 
 	else if (request.getMethodStr() == "DELETE")
 	{
@@ -323,7 +325,7 @@ void ServerManager::existingClient(int eventFD)
 	{
 		try
 		{
-			TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
+			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
 
 			// pour voir avant apres le buffer manager, il isole les request et set a true le done receiving
 			// std::cout << RED << tmpClient->getBuffer() << RESET << std::endl;
@@ -339,6 +341,8 @@ void ServerManager::existingClient(int eventFD)
 				config = findConfigBase(*tmpClient, request, eventFD);
 				handleReturnAndAllowMethod(config, request.getMethodStr());
 
+				tmpClient->setResponseBuff(execute(request, config));
+				tmpClient->setResponseToBeSent(true);
 				// cookies
 				// /uploads/images/img.png
 
