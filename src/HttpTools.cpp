@@ -1,4 +1,6 @@
 #include "HttpTools.hpp"
+#include <ctime>
+#include <cstdio>
 
 /*
 =================================================================
@@ -244,6 +246,28 @@ void HttpTools::initHttpRequestHeaders(std::set<std::string> &httpRequestHeaders
     httpRequestHeaders.insert("Sec-Fetch-Mode");
     httpRequestHeaders.insert("Sec-Fetch-Site");
     httpRequestHeaders.insert("Sec-Fetch-User");
+}
+
+std::string HttpTools::getCurrentRFCDate() {
+    time_t now;
+    time(&now);
+    struct tm *tm = gmtime(&now);
+
+    const char *days[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    char buffer[100];
+    std::sprintf(buffer, "%s, %02d %s %04d %02d:%02d:%02d GMT",
+            days[tm->tm_wday],
+            tm->tm_mday,
+            months[tm->tm_mon],
+            tm->tm_year + 1900,
+            tm->tm_hour,
+            tm->tm_min,
+            tm->tm_sec);
+
+    return std::string(buffer);
 }
 
 /*

@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <iostream>
 #include <string>
+#include <vector>
 
 /*
 =================================================================
@@ -154,13 +155,15 @@ void Client::refreshClient()
 std::string Client::bufferManager() {
 	
 	// Check la position dela request dans le buffer pour pouvoir isoler la request
-	size_t posGet = _buffer.find("GET ");
-	size_t posPost = _buffer.find("POST ");
-	size_t posDelete = _buffer.find("DELETE ");
-	
-	// Isole le debut de la request pour analyser la suite
-	size_t pos = std::min(posGet, posPost);
-	size_t minPos = std::min(posDelete, pos);
+	const char* methods[] = {"GET ", "HEAD ", "POST ", "PUT ", "DELETE ", "OPTIONS ", "TRACE ", "CONNECT "};
+	std::vector<std::string> request(methods, methods + sizeof(methods)/sizeof(methods[0]));
+	size_t minPos = std::string::npos;
+	for (std::vector<std::string>::const_iterator it = request.begin(); it != request.end(); ++it) {
+		size_t pos = _buffer.find(*it);
+		if (pos != std::string::npos && (minPos == std::string::npos || pos < minPos)) {
+			minPos = pos;
+		}
+	}
 	if (minPos == std::string::npos) {
 		_buffer.erase();
 		return "";

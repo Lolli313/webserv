@@ -62,5 +62,6 @@ class HttpRequest {
     void cookie(Cookie &cookie);
     void executeMethod();
     void executeScript();
+    void executeResponse();
     void print() const;
 };

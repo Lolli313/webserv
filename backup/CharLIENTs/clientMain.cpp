@@ -20,21 +20,19 @@ int main() {
     //     + boundary + "--\r\n";
     // client.clientSend(request);
 
-    // std::string test =
-    // "POST /api/utilisateurs HTTP/1.1\r\n"
-    // "Host: exemple.com\r\n"
-    // "Content-Type: application/json\r\n"
-    // "Content-Length: 71\r\n"
-    // "Authorization: Bearer token123\r\n"
-    // "User-Agent: MonClient/1.0\r\n";
-
-    // std::string test2 =
-    // "\r\n"
-    // "{\n"
-    // "  \"nom\": \"Charles\",\n"
-    // "  \"age\": 30,\n"
-    // "  \"email\": \"charles@example.com\"\n"
-    // "}";
+    std::string test =
+    "POST /api/utilisateurs HTTP/1.1\r\n"
+    "Host: exemple.com\r\n"
+    "Content-Type: application/json\r\n"
+    "Content-Length: 71\r\n"
+    "Authorization: Bearer token123\r\n"
+    "User-Agent: MonClient/1.0\r\n"
+    "\r\n"
+    "{\n"
+    "  \"nom\": \"Charles\",\n"
+    "  \"age\": 30,\n"
+    "  \"email\": \"charles@example.com\"\n"
+    "}";
 
     // std::string test3 = "DELETE files/post.json HTTP/1.1\r\n\r\n";
 
@@ -57,19 +55,19 @@ int main() {
     // "Connection: keep-alive\r\n"
     // "\r\n";
 
-    std::string cgi =
-    "GET cgi-bin/info.php?name=Alice&age=30 HTTP/1.1\r\n"
-    "Host: localhost:8080\r\n"
-    "User-Agent: curl/7.68.0\r\n"
-    "Accept: */*\r\n"
-    "Connection: close\r\n"
-    "\r\n";
+    // std::string cgi =
+    // "GET cgi-bin/hello.py?name=Alice&age=30 HTTP/1.1\r\n"
+    // "Host: localhost:8080\r\n"
+    // "User-Agent: curl/7.68.0\r\n"
+    // "Accept: */*\r\n"
+    // "Connection: close\r\n"
+    // "\r\n";
 
     
     std::string message;
 
     std::getline(std::cin, message);
-    client.clientSend(cgi);
+    client.clientSend(test);
     // std::getline(std::cin, message);
     // client.clientSend(test2);
     // std::getline(std::cin, message);

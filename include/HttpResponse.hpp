@@ -32,10 +32,11 @@ private:
 	// FINAL RESPONSE TO BE STRANSFERED TO THE CLIENT
 	// Is setted by the getFinalResponse call
 	std::string _finalResponse;
-	HttpResponse();
+	
 	void addHeadersToResponse();
 
 public:
+	HttpResponse() {};
 	HttpResponse(int code, const std::string &message);
 	HttpResponse(const std::string &httpVersion, int code, const std::string &message);
 	HttpResponse(const HttpResponse &obj);

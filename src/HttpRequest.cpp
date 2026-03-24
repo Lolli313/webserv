@@ -1,7 +1,11 @@
 #include "HttpRequest.hpp"
 #include "Post.hpp"
 #include "Cookie.hpp"
+#include "HttpResponse.hpp"
 #include <sys/wait.h>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 /*
 ================================================================================
@@ -206,20 +210,48 @@ void HttpRequest::executeScript() {
     }
 }
 
+void HttpRequest::executeResponse() {
+	HttpResponse response;
+	if (_methodStr == "GET") {
+		response.setReturnCode(200);
+		response.setReturnMessage("Ok");
+	} else if (_methodStr == "POST") {
+		response.setReturnCode(201);
+		response.setReturnMessage("Created");
+	} else if (_methodStr == "DELETE") {
+		response.setReturnCode(204);
+		response.setReturnMessage("No Content");
+	}
+	response.setHttpVersion(_httpVersion);
+	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); ++it) {
+		if (it->first == "Content-Length" || it->first == "Content-Type" || it->first == "Connection"
+			|| it->first == "Server" || it->first == "Cache-Control" || it->first == "Cookie") {
+				if (it->first == "Cookie") {
+					response.addHeader("Set-Cookie", it->second);
+				} else {
+					response.addHeader(it->first, it->second);
+				}
+			}
+	}
+	response.addHeader("Date", HttpTools::getCurrentRFCDate());
+	response.setBody(_body);
+	std::cout << RED << response.getFinalResponse() << RESET << std::endl;
+}
+
 void HttpRequest::print() const {
-	// std::clog << YELLOW << "Method : " << RESET << _methodStr << std::endl;
-	// std::clog << YELLOW << "Path : " << RESET << _path << std::endl;
-	// std::clog << YELLOW << "Pure Path : " << RESET << _purePath << std::endl;
-	// std::clog << YELLOW << "Query Params : " << RESET << std::endl;
+	std::clog << YELLOW << "Method : " << RESET << _methodStr << std::endl;
+	std::clog << YELLOW << "Path : " << RESET << _path << std::endl;
+	std::clog << YELLOW << "Pure Path : " << RESET << _purePath << std::endl;
+	std::clog << YELLOW << "Query Params : " << RESET << std::endl;
 	for (std::map<std::string, std::string>::const_iterator it = _queryParams.begin();
 		it != _queryParams.end(); ++it) {
-		// std::clog << " " << it->first << " : " << it->second << std::endl;
+		std::clog << " " << it->first << " : " << it->second << std::endl;
 	}
-	// std::clog << YELLOW << "HTTP Version : " << RESET << _httpVersion << std::endl;
-	// std::clog << YELLOW << "Headers : " << RESET << std::endl; 
+	std::clog << YELLOW << "HTTP Version : " << RESET << _httpVersion << std::endl;
+	std::clog << YELLOW << "Headers : " << RESET << std::endl; 
 	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); ++it) {
-		// std::clog << " " << it->first << " : " << it->second << std::endl;
+		std::clog << " " << it->first << " : " << it->second << std::endl;
 	}
-	// std::clog << YELLOW << "Boundary : " << RESET << _boundary << std::endl;
-	// std::clog << YELLOW << "Body : " << std::endl << RESET << _body;
+	std::clog << YELLOW << "Boundary : " << RESET << _boundary << std::endl;
+	std::clog << YELLOW << "Body : " << std::endl << RESET << _body;
 }

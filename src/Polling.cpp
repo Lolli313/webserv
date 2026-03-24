@@ -250,7 +250,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	if (currEvent & EPOLLHUP)
 	{
 		// std::clog << "EPOLLHUP" << std::endl;
-		handleClientInput(*itClient->second);
+		readClientInput(*itClient->second);
 		itClient->second->setDoneReceiving(true);
 		itClient->second->setToBeClosed(true);
 		itClient->second->setResponseToBeSent(-1); // No response should be sent
@@ -268,9 +268,8 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	// CLIENT INPUT
 	if (currEvent & EPOLLIN)
 	{
+		
 		// std::clog << "EPOLLIN" << std::endl;
-		handleClientInput(*itClient->second);
-		std::clog << "EPOLLIN" << std::endl;
 		readClientInput(*itClient->second);
 	}
 
@@ -280,7 +279,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		// std::clog << PINK << "EPOLLOUT" << RESET << std::endl;
 		itClient->second->setReadyToReceive(true);
 	}
-
 	return itClient->second;
 }
 

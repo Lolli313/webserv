@@ -126,7 +126,7 @@ void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, cons
 {
 	(void)message;
 	(void)path;
-	std::clog << "SENT" << std::endl;
+	// std::clog << "SENT" << std::endl;
 	HttpResponse response(HttpTools::getReturnPair(code));
 	// std::ifstream file(path.c_str());
 	// std::ostringstream body;
@@ -341,11 +341,7 @@ void ServerManager::existingClient(int eventFD)
 		try
 		{
 			TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
-
-			// pour voir avant apres le buffer manager, il isole les request et set a true le done receiving
-			// std::cout << RED << tmpClient->getBuffer() << RESET << std::endl;
 			std::string tmpRequest = tmpClient->bufferManager();
-			// std::cout << GREEN << tmpClient->getBuffer() << RESET << std::endl;
 
 		if (tmpClient->doneReceiving())
 		{
@@ -355,14 +351,9 @@ void ServerManager::existingClient(int eventFD)
 			request.cookie(_cookie);
 			// _cookie.printCookie();
 			request.executeMethod();
-			request.executeScript();
-			// execute(request);
-			// tmpClient->setResponseBuff(
-			
-			// Main logic:
-			// 1. HttpRequest
-			// 2. HttpMethod
-			// 		responseToBeSent(true)
+			// request.executeScript();
+			request.executeResponse();
+
 			if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 			{
 				// Set the EPOLLOUT event to be monitored.
@@ -464,8 +455,9 @@ void ServerManager::mainLoop()
 		}
 		catch (Tools::Exception &e)
 		{
-			if (e.getReturnCode() == 0)
-				std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
+			if (e.getReturnCode() == 0) {
+				// std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
+			}
 		}
 		catch (std::exception &e)
 		{
