@@ -72,7 +72,7 @@ char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
 
 bool Client::doneReceiving() const { 
-	std::clog << "Done receiving :)" << std::endl;
+	std::clog << "Done receiving = " << _doneReceiving << std::endl;
 	return _doneReceiving;
 }
 
