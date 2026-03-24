@@ -14,6 +14,9 @@
 #include "Delete.hpp"
 
 #include <vector>
+#include <fstream>
+
+#define ERROR_PAGE_TEMPLATE_PATH "/files/error_pages/ErrorTemplate.html"
 
 extern int _sigStop;
 
@@ -52,12 +55,13 @@ public:
 	const std::string& findPort(int eventFD);
 	Server* findServer(const std::string& host);
 	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
+	const ConfigBase *findConfigBase(const Client &client, const HttpRequest &request, int eventFD);
 	void existingClient(int eventFD);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();
 	void mainLoop();
 	void sendResponse(Client *client);
-	void throwHandler(Client *tmpClient, Tools::Exception &e);
+	void throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config);
 
 };
 

@@ -45,15 +45,40 @@ const std::set<std::string> &Server::getServerNames() const { return _serverName
 const ServerSocket *Server::getServSocket() const { return _servSocket; }
 const std::map<std::string, LocationConfig> &Server::getLocationConfigs() const { return _locationConfigs; }
 
+bool locationMatchesPath(std::string &path, const std::string &location)
+{
+	if (path == location)
+		return true;
+
+	// check if a path with a trailing / matches a location path
+	if (!path.empty() && path.size() - 1 == location.size() && Tools::getLastCharacter(path) == '/')
+		return path.compare(0, location.size(), location) == 0;
+
+	return false;
+}
+
 /** @brief Access directly to the path's config, abstracting all the different locationConfigs and the Server's.
  * @return A LocationConfig reference, so all the methods and data are directly accessible. */
-const ConfigBase &Server::getPathConfig(const std::string &path)
+const ConfigBase &Server::getPathConfig(std::string &path)
 {
-	std::map<std::string, LocationConfig>::const_iterator it = _locationConfigs.find(path);
-	if (it != _locationConfigs.end())
-		return it->second;
-	_serversLocationConfigBaseWorkaroundBecauseOfArttu = static_cast<const ConfigBase &>(*this);
-	return (_serversLocationConfigBaseWorkaroundBecauseOfArttu);
+	std::cout << LIGHT_BLUE << "Path to look for is: " << path << RESET << std::endl;
+	while (!path.empty())
+	{
+		std::map<std::string, LocationConfig>::const_iterator it = _locationConfigs.begin();
+		for (; it != _locationConfigs.end(); it++)
+		{
+			if (locationMatchesPath(path, it->first))
+			{
+				std::cout << LIGHT_BLUE << "Found a match for the location: " << it->first << RESET << std::endl;
+				return it->second;
+			}
+		}
+		if (Tools::getLastCharacter(path) == '/')
+			Tools::removeLastCharacter(path);
+
+		Tools::eraseAfterLastCharacter(path, '/');
+	}
+	return *this;
 }
 
 /*

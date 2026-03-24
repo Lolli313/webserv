@@ -176,66 +176,15 @@ Server *ServerManager::findServer(const std::string &host)
 	it = _serversMap.lower_bound(defaultKey); // Find the first match for targetPort regardless of the Server Name
 	if (it != _serversMap.end())
 	{
-		std::cout << LIGHT_BLUE << "Found match for default port " << RESET << it->first.first
-				  << " with server name: " << it->first.second << std::endl;
+		std::cout << LIGHT_BLUE << "Found match for default port " << it->first.first
+				  << " with server name: " << it->first.second << RESET << std::endl;
 		return it->second;
 	}
 
 	throw Tools::Exception(500, "Error finding server");
 }
 
-bool locationMatchesPath(std::string &path, const std::string &location)
-{
-	if (path == location)
-		return true;
-
-	// check if a path with a trailing / matches a location path
-	if (!path.empty() && path.size() - 1 == location.size() && Tools::getLastCharacter(path) == '/')
-		return path.compare(0, location.size(), location) == 0;
-
-	return false;
-}
-
-const ConfigBase &findConfigBase(Server *server, const HttpRequest &request)
-{
-	std::string path = request.getPath();
-	std::cout << LIGHT_BLUE << "Path to look for is: " << path << RESET << std::endl;
-	while (!path.empty())
-	{
-		std::map<std::string, LocationConfig>::const_iterator it = server->getLocationConfigs().begin();
-		for (; it != server->getLocationConfigs().end(); it++)
-		{
-			if (locationMatchesPath(path, it->first))
-			{
-				std::cout << LIGHT_BLUE << "Found a match for the location: " << it->first << RESET << std::endl;
-				return it->second;
-			}
-		}
-		if (Tools::getLastCharacter(path) == '/')
-			Tools::removeLastCharacter(path);
-
-		Tools::eraseAfterLastCharacter(path, '/');
-	}
-	return *server;
-}
-
-void handleReturnAndAllowMethod(const ConfigBase &base, const std::string &method)
-{
-	if (base.getReturnDirective().first)
-	{
-		std::cout << LIGHT_BLUE << "Found return directive with code " << base.getReturnDirective().first << RESET << std::endl;
-		throw Tools::Exception(base.getReturnDirective().first, base.getReturnDirective().second);
-	}
-
-	std::set<std::string>::const_iterator it = base.getAllowMethods().find(method);
-	if (it == base.getAllowMethods().end())
-	{
-		throw Tools::Exception(405, "Method not allowed");
-		std::cout << LIGHT_BLUE << method << " method not allowed" << RESET << std::endl;
-	}
-}
-
-void ServerManager::checkRequestValidity(const Client &client, const HttpRequest &request, int eventFD)
+const ConfigBase *ServerManager::findConfigBase(const Client &client, const HttpRequest &request, int eventFD)
 {
 	std::string port = findPort(eventFD);
 	(void)client;
@@ -247,10 +196,24 @@ void ServerManager::checkRequestValidity(const Client &client, const HttpRequest
 	}
 
 	Server *server = findServer(it->second);
-	const ConfigBase &base = findConfigBase(server, request);
-	handleReturnAndAllowMethod(base, request.getMethodStr());
-	(void)base;
-	(void)server;
+	std::string modifiableString(request.getPath());
+	return &server->getPathConfig(modifiableString);
+}
+
+void handleReturnAndAllowMethod(const ConfigBase* config, const std::string &method)
+{
+	if (config->getReturnDirective().first)
+	{
+		std::cout << LIGHT_BLUE << "Found return directive with code " << config->getReturnDirective().first << RESET << std::endl;
+		throw Tools::Exception(config->getReturnDirective().first, config->getReturnDirective().second);
+	}
+
+	std::set<std::string>::const_iterator it = config->getAllowMethods().find(method);
+	if (it == config->getAllowMethods().end())
+	{
+		throw Tools::Exception(405, "Method not allowed");
+		std::cout << LIGHT_BLUE << method << " method not allowed" << RESET << std::endl;
+	}
 }
 
 void ServerManager::sendResponse(Client *client)
@@ -298,7 +261,17 @@ const std::string execute(const HttpRequest &request)
 // 	// _cookie.printCookie();
 // }
 
-void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e)
+// const std::string& generateErrorPage(int code) {
+// 	const char* workingDirectory = std::getenv("PWD");
+// 	std::string errorPagePath = ERROR_PAGE_TEMPLATE_PATH;
+// 	std::string fullPath(std::string(workingDirectory) + errorPagePath);
+// 	std::string fullErrorPath(workingDirectory + )
+// 	std::ifstream infile((workingDirectory + errorPagePath.c_str()));
+// 	std::string fileContent;
+// 	while (std::getline())
+// }
+
+void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config)
 {
 	if (e.getReturnCode() >= 100)
 	{
@@ -311,10 +284,19 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e)
 		// ===============================
 
 		// HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
+		// std::string fullErrorPath, errorFilePath;
+		// if (!config) {
+		// 	HttpTools::MapType::const_iterator it = config->getErrorPages().find(e.getReturnCode());
+		// 	if (it == config->getErrorPages().end())
+		// 		fullErrorPath = generateErrorPage(e.getReturnCode());
+		// 	errorPath = config->getRoot() + config->getErrorPages().find(e.getReturnCode())
+		// }
 		// response.setBody(e.getReturnCode() + ".http");
 
 		// //tmpClient->setResponseBuff(
 		// sendResponse(tmpClient);
+
+		(void)config;
 	}
 
 	if (tmpClient->toBeClosed())
@@ -336,6 +318,7 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e)
 void ServerManager::existingClient(int eventFD)
 {
 	Client *tmpClient = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
+	const ConfigBase *config = NULL;
 	if (tmpClient)
 	{
 		try
@@ -352,7 +335,9 @@ void ServerManager::existingClient(int eventFD)
 				HttpRequest request;
 				request.parse(tmpRequest);
 				// Ideally we would call this function after the headers are parsed, for now it is here
-				checkRequestValidity(*tmpClient, request, eventFD);
+				// checkRequestValidity(*tmpClient, request, eventFD);
+				config = findConfigBase(*tmpClient, request, eventFD);
+				handleReturnAndAllowMethod(config, request.getMethodStr());
 
 				// cookies
 				// /uploads/images/img.png
@@ -378,7 +363,7 @@ void ServerManager::existingClient(int eventFD)
 		}
 		catch (Tools::Exception &e)
 		{
-			throwHandler(tmpClient, e);
+			throwHandler(tmpClient, e, config);
 		}
 	}
 	else
