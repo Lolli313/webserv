@@ -61,7 +61,7 @@ std::vector<std::string> Tools::splitString(const std::string &input, const std:
 	std::string::size_type start = 0;
 	std::string::size_type pos;
 
-	while ((pos = input.find(separator, start) != std::string::npos))
+	while ((pos = input.find(separator, start)) != std::string::npos)
 	{
 		returnVector.push_back(input.substr(start, pos - start));
 		start = pos + separator.size();
@@ -75,6 +75,19 @@ const char &Tools::getLastCharacter(const std::string &str)
 {
 	return *str.rbegin();
 }
+
+void Tools::removeLastCharacter(std::string& str) {
+	if (!str.empty())
+		str.resize(str.size() - 1);
+}
+
+void Tools::eraseAfterLastCharacter(std::string& str, char c) {
+	std::string::size_type pos = str.find_last_of(c);
+	if (pos != std::string::npos) {
+		str.erase(pos + 1);
+	}
+}
+
 
 const std::string::const_iterator Tools::getLastIterator(const std::string &str)
 {

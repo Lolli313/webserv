@@ -63,7 +63,7 @@ Client &Client::operator=(const Client &obj)
 =================================================================
 */
 
-int Client::getFD() { return _clientFD; }
+int Client::getFD() const { return _clientFD; }
 
 std::string &Client::getBuffer() { return _buffer; }
 void Client::setBuffer(const std::string &input) { _buffer = input; }
@@ -147,6 +147,8 @@ void Client::refreshClient()
 	_responseToBeSent = 0;
 	_responseSent = false;
 	_readyToReceive = false;
+	_buffer.clear();
+	_responseBuff.clear();
 }
 
 std::string Client::bufferManager() {

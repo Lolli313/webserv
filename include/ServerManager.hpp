@@ -7,9 +7,11 @@
 #include "Polling.hpp"
 #include "Server.hpp"
 #include "HttpResponse.hpp"
-#include "MethodGET.hpp"
+#include "Get.hpp"
 #include "HttpRequest.hpp"
 #include "Cookie.hpp"
+#include "Post.hpp"
+#include "Delete.hpp"
 
 #include <vector>
 
@@ -47,11 +49,16 @@ public:
 	void setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 	std::map<std::pair<int, std::string>, Server*> setupServersMap();
 	std::set<int> setupServSockFDs();
+	const std::string& findPort(int eventFD);
+	Server* findServer(const std::string& host);
+	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
 	void existingClient(int eventFD);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();
 	void mainLoop();
 	void sendResponse(Client *client);
+	void throwHandler(Client *tmpClient, Tools::Exception &e);
+
 };
 
 #endif

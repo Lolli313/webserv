@@ -47,7 +47,7 @@ const std::map<std::string, LocationConfig> &Server::getLocationConfigs() const 
 
 /** @brief Access directly to the path's config, abstracting all the different locationConfigs and the Server's.
  * @return A LocationConfig reference, so all the methods and data are directly accessible. */
-const LocationConfig &Server::getPathConfig(const std::string &path)
+const ConfigBase &Server::getPathConfig(const std::string &path)
 {
 	std::map<std::string, LocationConfig>::const_iterator it = _locationConfigs.find(path);
 	if (it != _locationConfigs.end())

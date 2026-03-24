@@ -184,7 +184,7 @@ void Polling::registerNewClient(int serverSocketFD)
 }
 
 // Exception on failure
-void Polling::handleClientInput(Client &client)
+void Polling::readClientInput(Client &client)
 {
 	// std::clog << GREEN_BRIGHT << "HandleClientInput for fd = " << _currEventFD << RESET << std::endl;
 	int readSize = recv(_currEventFD, client.getTmpBufferPtr(), BUFFERSIZE, 0);
@@ -233,9 +233,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	if (itClient == _clientMap.end())
 		throw Tools::Exception("Client not found");
 
-
-	// ================================================================================================
-	// ================================================================================================
 	// ERROR
 	if (currEvent & EPOLLERR)
 	{
@@ -266,7 +263,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		// std::clog << "EPOLLRDHUP" << std::endl;
 		itClient->second->setDoneReceiving(true);
 		itClient->second->setToBeClosed(true);
-		handleClientInput(*itClient->second);
 	}
 
 	// CLIENT INPUT
@@ -274,6 +270,8 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	{
 		// std::clog << "EPOLLIN" << std::endl;
 		handleClientInput(*itClient->second);
+		std::clog << "EPOLLIN" << std::endl;
+		readClientInput(*itClient->second);
 	}
 
 	// CLIENT READY TO RECEIVE

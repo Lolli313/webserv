@@ -46,10 +46,13 @@ public:
 	static std::vector<std::string> splitString(const std::string &str);
 	static std::vector<std::string> splitString(const std::string &str, const std::string &separator);
 	static const char &getLastCharacter(const std::string &str);
+	static void removeLastCharacter(std::string& str);
+	static void eraseAfterLastCharacter(std::string& str, char c);
 	static const std::string::const_iterator getLastIterator(const std::string &str);
 	static std::string::iterator getLastIterator(std::string &str);
 	static bool isNumber(const std::string &str);
 	static bool isValidBraceFormat(const std::string &targetToken, const std::vector<std::string> &tokens, std::ifstream *infile);
 	static bool checkAndRemoveSemicolon(std::string &str);
 	static std::string intToString(int nbr);
+	static bool checkPath(const std::string &path);
 };

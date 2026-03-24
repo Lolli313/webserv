@@ -1,20 +1,18 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "ServerSocket.hpp"
-#include "Polling.hpp"
-#include "terminalColors.hpp"
-#include "ConfigBase.hpp"
-#include "LocationConfig.hpp"
 #include "parsing/ServerBlockConfig.hpp"
+#include "terminalColors.hpp"
+#include "LocationConfig.hpp"
+#include "ServerSocket.hpp"
+#include "ConfigBase.hpp"
+#include "Polling.hpp"
 
 #include <csignal>
-#include <cerrno>
 #include <cstdlib>
+#include <cerrno>
 #include <set>
 #include <map>
-
-// class LocationConfig;
 
 class Server : public ConfigBase
 {
@@ -40,7 +38,7 @@ public:
 	const std::set<std::string> &getServerNames() const;
 	const ServerSocket *getServSocket() const;
 	const std::map<std::string, LocationConfig> &getLocationConfigs() const;
-	const LocationConfig &getPathConfig(const std::string &path);
+	const ConfigBase &getPathConfig(const std::string &path);
 };
 
 #endif
