@@ -233,7 +233,7 @@ void HttpRequest::executeResponse() {
 				}
 			}
 	}
-	response.addHeader("Date", HttpTools::getCurrentRFCDate());
+	response.addDateHeader();
 	response.setBody(_body);
 	std::cout << RED << response.getFinalResponse() << RESET << std::endl;
 }

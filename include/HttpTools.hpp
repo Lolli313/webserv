@@ -44,7 +44,6 @@ public:
 
     static const std::set<std::string> &getHttpRequestHeaders();
     static bool isValidHttpRequestHeader(const std::string &header);
-    static std::string getCurrentRFCDate();
 
 private:
     static void initHttpCodes(HttpTools::MapType &httpCodes);
