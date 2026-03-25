@@ -14,7 +14,7 @@ ServerBlockConfig::~ServerBlockConfig() {}
 ServerBlockConfig::ServerBlockConfig(std::ifstream *infile) : _infile(infile) {
 	std::string line;
 	while (std::getline(*_infile, line)) {
-		if (line[0] == '#' || line.empty())
+		if (Tools::lineIsEmptyOrComment(line))
 			continue;
 		else if (line[0] == '}')
 			return;
@@ -209,7 +209,7 @@ bool ServerBlockConfig::parseCgi(std::vector<std::string>& tokens) {
 	std::string line;
 	while (std::getline(*_infile, line)) {
 		std::clog << LIGHT_BLUE << "line is: " << line << RESET << std::endl;
-		if (line.empty() || line[0] == '#')
+		if (Tools::lineIsEmptyOrComment(line))
 			continue;
 
 		tokens = Tools::splitString(line);

@@ -26,7 +26,7 @@ ParseConfig::ParseConfig(const std::string& filePath) : _fileName(filePath) {
 	}
 	std::string line;
 	while (std::getline(infile, line)) {
-		if (line.empty() || line[0] == '#') {
+		if (Tools::lineIsEmptyOrComment(line)) {
 			continue;
 		}
 		else if (!checkServerKeyword(line, &infile)) {

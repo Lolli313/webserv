@@ -288,7 +288,7 @@ bool ConfigBase::handleErrorMultiLiner(std::vector<std::string> &tokens, std::if
 	std::string line;
 	while (std::getline(*infile, line))
 	{
-		if (line.empty() || line[0] == '#')
+		if (Tools::lineIsEmptyOrComment(line))
 			continue;
 
 		tokens = Tools::splitString(line);

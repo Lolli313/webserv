@@ -200,3 +200,16 @@ void Tools::findAndReplaceAllOccurences(std::string& input, const std::string& r
 		pos = input.find(replaceWord, pos + replaceBy.size());
 	}
 }
+
+/**
+ * @brief Checks if a string is empty or is a # comment
+ * @attention Ignores whitespace
+ */
+bool Tools::lineIsEmptyOrComment(std::string& str) {
+	std::string::size_type pos = str.find_first_not_of(" \t\n\r\f\v");
+	if (pos == std::string::npos)
+		return true;
+	
+	return (str[pos] == '#');
+}
+
