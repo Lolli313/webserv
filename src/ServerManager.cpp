@@ -104,7 +104,6 @@ void ServerManager::setupServers(const std::vector<ServerBlockConfig> &serverCon
 			_serverArray.push_back(new Server(*mit, *it));
 		}
 		found = false;
-		// // std::clog << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
 	}
 }
 
@@ -175,8 +174,7 @@ Server *ServerManager::findServer(const std::string &host)
 	it = _serversMap.lower_bound(defaultKey); // Find the first match for targetPort regardless of the Server Name
 	if (it != _serversMap.end())
 	{
-		std::cout << LIGHT_BLUE << "Found match for default port " << it->first.first
-				  << " with server name: " << it->first.second << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Found match for default port " << it->first.first << " with server name: " << it->first.second << RESET << std::endl;
 		return it->second;
 	}
 
@@ -193,7 +191,6 @@ const ConfigBase *ServerManager::findConfigBase(const Client &client, const Http
 		throw Tools::Exception(400, "Host header missing");
 		// std::clog << LIGHT_BLUE << "Host header missing" << RESET << std::endl;
 	}
-
 	Server *server = findServer(it->second);
 	std::string modifiableString(request.getPath());
 	return &server->getPathConfig(modifiableString);
@@ -203,7 +200,7 @@ void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &met
 {
 	if (config->getReturnDirective().first)
 	{
-		std::cout << LIGHT_BLUE << "Found return directive with code " << config->getReturnDirective().first << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Found return directive with code " << config->getReturnDirective().first << RESET << std::endl;
 		throw Tools::Exception(config->getReturnDirective().first, config->getReturnDirective().second);
 	}
 
@@ -211,7 +208,7 @@ void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &met
 	if (it == config->getAllowMethods().end())
 	{
 		throw Tools::Exception(405, "Method not allowed");
-		std::cout << LIGHT_BLUE << method << " method not allowed" << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << method << " method not allowed" << RESET << std::endl;
 	}
 }
 
@@ -235,7 +232,7 @@ void ServerManager::sendResponse(Client *client)
  */
 const std::string execute(const HttpRequest &request, const ConfigBase *config)
 {
-	std::clog << YELLOW_BRIGHT << "excecute" << RESET << std::endl;
+	// std::clog << YELLOW_BRIGHT << "excecute" << RESET << std::endl;
 	std::string response;
 	if (request.getMethodStr() == "GET")
 		return response = Get::executeGet(request, config);
@@ -245,14 +242,7 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 
 	else if (request.getMethodStr() == "DELETE")
 	{
-		// response = Delete::executeDelete(request);
-		// int fd = open(request.getPath().c_str(), O_RDONLY);
-		// if (fd == -1) {
-		// 	throw Tools::Exception(500, "existe pas ou pas accessible");
-		// } else {
-		// 	std::remove(request.getPath().c_str());
-		// }
-		// close(fd);
+		return response = Delete::executeDelete(request, config);
 	}
 	return response;
 }
@@ -312,6 +302,7 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 {
 	if (e.getReturnCode() >= 100)
 	{
+		// std::clog << LIGHT_BLUE << e.getMsgLog() << RESET << std::endl;
 		// ===============================
 		// HOW TO GET THE ERROR FILES ???
 		// get value of server.getPathConfig() to a temp variable ConfigBase,
@@ -335,7 +326,7 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 		HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
 		response.setBody(errorBody);
 		response.addHeader("Content-Length", Tools::intToString(errorBody.size()));
-		std::cout << LIGHT_BLUE << "Error response body size is: " << errorBody.size() << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Error response body size is: " << errorBody.size() << RESET << std::endl;
 		response.addDateHeader();
 
 		tmpClient->setResponseBuff(response.getFinalResponse());
@@ -358,30 +349,6 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 	throw;
 }
 
-const std::string executeMethod(const HttpRequest &request)
-{
-	std::string response;
-	if (request.getMethodStr() == "GET")
-	{
-		(void)request;
-		//		response = // GET // std::clog << "code pour get" << std::endl;
-	}
-
-	else if (request.getMethodStr() == "POST")
-		response = Post::executePost(request);
-
-	else if (request.getMethodStr() == "DELETE") {
-		int fd = open(request.getPurePath().c_str(), O_RDONLY);
-		if (fd == -1) {
-			throw Tools::Exception(500, "existe pas ou pas accessible");
-		} else {
-			std::remove(request.getPurePath().c_str());
-		}
-		close(fd);
-	}
-	return response;
-}
-
 void ServerManager::existingClient(int eventFD)
 {
 	Client *tmpClient = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
@@ -390,17 +357,15 @@ void ServerManager::existingClient(int eventFD)
 	{
 		try
 		{
-			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
-
-			// pour voir avant apres le buffer manager, il isole les request et set a true le done receiving
-			// std::cout << RED << tmpClient->getBuffer() << RESET << std::endl;
+			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");			
+			// std::clog << RED << tmpClient->getBuffer() << RESET << std::endl;
 			std::string tmpRequest = tmpClient->bufferManager();
-			// std::cout << GREEN << tmpClient->getBuffer() << RESET << std::endl;
+			// std::clog << GREEN << tmpClient->getBuffer() << RESET << std::endl;
 			// std::string tmpRequest =
 			// 	"GET /ascii/body.txt HTTP/1.1\r\n"
 			// 	"Host: localhost:8080\r\n"
 			// 	"\r\n";
-			tmpClient->setDoneReceiving(true);
+			// tmpClient->setDoneReceiving(true);
 			if (tmpClient->doneReceiving())
 			{
 				HttpRequest request;
@@ -409,7 +374,7 @@ void ServerManager::existingClient(int eventFD)
 				config = findConfigBase(*tmpClient, request, eventFD);
 				handleReturnAndAllowMethod(config, request.getMethodStr());
 
-				std::clog << "1 ===================================" << std::endl;
+				// std::clog << "1 ===================================" << std::endl;
 				tmpClient->setResponseBuff(execute(request, config));
 				tmpClient->setResponseToBeSent(true);
 				// cookies
@@ -419,13 +384,15 @@ void ServerManager::existingClient(int eventFD)
 
 				if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 				{
-				std::clog << "2 ===================================" << std::endl;
+				// std::clog << "2 ===================================" << std::endl;
 					// Set the EPOLLOUT event to be monitored.
 					_polling->setClientEPOLLOUT(tmpClient, true);
+					tmpClient->setReadyToReceive(true);
 				}
+				// std::clog << RED << "toReceive : " << tmpClient->readyToReceive() << " toBeSent : " << tmpClient->responseToBeSent() << RESET << std::endl;
 				if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
 				{
-				std::clog << "3 ===================================" << std::endl;
+				// std::clog << "3 ===================================" << std::endl;
 					sendResponse(tmpClient);
 				}
 				if (tmpClient->responseSent())
@@ -435,6 +402,7 @@ void ServerManager::existingClient(int eventFD)
 					tmpClient->refreshClient();
 				}
 			}
+			// exit(1);
 		}
 		catch (Tools::Exception &e)
 		{
@@ -445,6 +413,8 @@ void ServerManager::existingClient(int eventFD)
 	{
 		// Keep going boi
 	}
+	// std::clog << tmpClient->getResponseBuff() << std::endl;
+	exit(1);
 }
 
 bool ServerManager::matchServerFD(int eventFD) const

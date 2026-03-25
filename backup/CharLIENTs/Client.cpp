@@ -155,7 +155,7 @@ std::string Client::clientReceive() {
         // std::clog << GRN << "[client] connection closed by server" << RST << std::endl;
         return "";
     } else if (bytesReceived < 0) {
-        std::cerr << RED << "CLIENT RECV ERROR" << RST << std::endl;
+        // std::cerr << RED << "CLIENT RECV ERROR" << RST << std::endl;
         return "";
     }
 

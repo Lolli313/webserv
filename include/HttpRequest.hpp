@@ -60,8 +60,7 @@ class HttpRequest {
     void parseQueryParams();
     void parse(const std::string &request);
     void cookie(Cookie &cookie);
-    void executeMethod();
     void executeScript();
-    void executeResponse();
+    // void executeResponse();
     void print() const;
 };

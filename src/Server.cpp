@@ -61,7 +61,7 @@ bool locationMatchesPath(std::string &path, const std::string &location)
  * @return A LocationConfig reference, so all the methods and data are directly accessible. */
 const ConfigBase &Server::getPathConfig(std::string &path)
 {
-	std::cout << LIGHT_BLUE << "Path to look for is: " << path << RESET << std::endl;
+	// std::clog << LIGHT_BLUE << "Path to look for is: " << path << RESET << std::endl;
 	while (!path.empty())
 	{
 		std::map<std::string, LocationConfig>::const_iterator it = _locationConfigs.begin();
@@ -69,7 +69,7 @@ const ConfigBase &Server::getPathConfig(std::string &path)
 		{
 			if (locationMatchesPath(path, it->first))
 			{
-				std::cout << LIGHT_BLUE << "Found a match for the location: " << it->first << RESET << std::endl;
+				// std::clog << LIGHT_BLUE << "Found a match for the location: " << it->first << RESET << std::endl;
 				return it->second;
 			}
 		}

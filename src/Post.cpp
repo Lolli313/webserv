@@ -144,13 +144,21 @@ void Post::saveInFile() const {
 const std::string Post::executePost(const HttpRequest &request)
 {
     Post post(request);
-
     post.parseBody();
     post.saveInFile();
 
     HttpResponse response(HttpTools::getReturnPair(201));
-    // ADD THE RESPONSE HEADERS HERE
-    // response.setResponseHeaders();
-
+	for (std::map<std::string, std::string>::const_iterator it = request.getHeader().begin(); it != request.getHeader().end(); ++it) {
+		if (it->first == "Content-Length" || it->first == "Content-Type" || it->first == "Connection"
+			|| it->first == "Server" || it->first == "Cache-Control" || it->first == "Cookie") {
+				if (it->first == "Cookie") {
+					response.addHeader("Set-Cookie", it->second);
+				} else {
+					response.addHeader(it->first, it->second);
+				}
+			}
+	}
+	response.addDateHeader();
+	response.setBody(request.getBody());
     return response.getFinalResponse();
 }

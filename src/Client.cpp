@@ -73,7 +73,7 @@ char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
 
 bool Client::doneReceiving() const { 
-	std::clog << "Done receiving = " << _doneReceiving << std::endl;
+	// std::clog << "Done receiving = " << _doneReceiving << std::endl;
 	// std::clog << "Done receiving :)" << std::endl;
 	return _doneReceiving;
 }
@@ -154,14 +154,13 @@ void Client::refreshClient()
 }
 
 std::string Client::bufferManager() {
-	
 	// Check la position dela request dans le buffer pour pouvoir isoler la request
 	const char* methods[] = {"GET ", "HEAD ", "POST ", "PUT ", "DELETE ", "OPTIONS ", "TRACE ", "CONNECT "};
 	std::vector<std::string> request(methods, methods + sizeof(methods)/sizeof(methods[0]));
 	size_t minPos = std::string::npos;
 	for (std::vector<std::string>::const_iterator it = request.begin(); it != request.end(); ++it) {
 		size_t pos = _buffer.find(*it);
-		if (pos != std::string::npos && (minPos == std::string::npos || pos < minPos)) {
+		if (pos != std::string::npos && minPos > pos) {
 			minPos = pos;
 		}
 	}
@@ -191,7 +190,8 @@ std::string Client::bufferManager() {
 	// si il y a un content length on verifie qu'il soit remplit
 	size_t posContentLengthStop = headers.find("\r\n", posContentLengthStart);
 	if (posContentLengthStop == std::string::npos) {
-		throw Tools::Exception(400, "HttpRequest: Malformed body");
+		posContentLengthStop = posHeaderEnd;
+		// throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
 	std::string contentLengthStr = headers.substr(posContentLengthStart + 16, posContentLengthStop - (posContentLengthStart + 16));
 	char* endPtr;
