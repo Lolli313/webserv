@@ -87,14 +87,14 @@ void Post::parseBody() {
 
 void Post::print() const {
     for (size_t i = 0; i < _header.size(); ++i) {
-        std::clog << BLUE << "PART : " << i + 1 << RESET << std::endl;
+        // std::clog << BLUE << "PART : " << i + 1 << RESET << std::endl;
         for (std::map<std::string, std::string>::const_iterator it = _header[i].begin();
             it != _header[i].end(); ++it) {
-            std::clog << YELLOW << it->first << " : " << RESET;
+            // std::clog << YELLOW << it->first << " : " << RESET;
             if (it->first == "Body") {
-                std::clog << std::endl;
+                // std::clog << std::endl;
             }
-            std::clog << it->second << std::endl;
+            // std::clog << it->second << std::endl;
         }
     }
 	

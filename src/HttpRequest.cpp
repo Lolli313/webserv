@@ -1,6 +1,11 @@
 #include "HttpRequest.hpp"
 #include "Post.hpp"
 #include "Cookie.hpp"
+#include "HttpResponse.hpp"
+#include <sys/wait.h>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 /*
 ================================================================================
@@ -133,7 +138,14 @@ void HttpRequest::parse(const std::string &request) {
 	_body = bodyStream.str();
 }
 
-void HttpRequest::execute() {
+void HttpRequest::cookie(Cookie &cookie) {
+	std::map<std::string, std::string>::const_iterator itCookie = _header.find("Cookie");
+	if (itCookie != _header.end()) {
+		cookie.setCookie(itCookie->second);
+	}
+}
+
+void HttpRequest::executeMethod() {
 	if (_methodStr == "GET") {
 		// std::cout << "code pour get" << std::endl;
 	} else if (_methodStr == "POST") {
@@ -149,6 +161,82 @@ void HttpRequest::execute() {
 		}
 		close(fd);
 	}
+}
+
+void HttpRequest::executeScript() {
+	if (_purePath != "cgi-bin/hello.py" && _purePath != "cgi-bin/info.php") {
+		// std::cout << "marche pas" << std::endl;
+		return;
+	}
+
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+		std::cout << "NULL1" << std::endl; 
+        // throw std::runtime_error("Failed to create pipe");
+    }
+    pid_t pid = fork();
+    if (pid == -1) {
+		std::cout << "NULL2" << std::endl; 
+        // throw std::runtime_error("Failed to fork");
+    } else if (pid == 0) {
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+
+        // for (const auto &[key, value] : env) {
+        //     setenv(key.c_str(), value.c_str(), 1);
+        // }
+
+        execl(_purePath.c_str(), _purePath.c_str(), NULL);
+		std::cout << "NULL3" << std::endl; 
+        exit(1);
+    } else { 
+        close(pipefd[1]);
+
+        char buffer[4096];
+        std::string output;
+        ssize_t bytesRead;
+        while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+            output.append(buffer, bytesRead);
+        }
+        close(pipefd[0]);
+
+        // int status;
+        // waitpid(pid, &status, 0);
+        // if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
+		// 	std::cout << "NULL4" << std::endl; 
+        //     // throw std::runtime_error("CGI script execution failed");
+        // }
+		std::cout << YELLOW << "CGI Output: " << output << RESET << std::endl;
+    }
+}
+
+void HttpRequest::executeResponse() {
+	HttpResponse response;
+	if (_methodStr == "GET") {
+		response.setReturnCode(200);
+		response.setReturnMessage("Ok");
+	} else if (_methodStr == "POST") {
+		response.setReturnCode(201);
+		response.setReturnMessage("Created");
+	} else if (_methodStr == "DELETE") {
+		response.setReturnCode(204);
+		response.setReturnMessage("No Content");
+	}
+	response.setHttpVersion(_httpVersion);
+	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); ++it) {
+		if (it->first == "Content-Length" || it->first == "Content-Type" || it->first == "Connection"
+			|| it->first == "Server" || it->first == "Cache-Control" || it->first == "Cookie") {
+				if (it->first == "Cookie") {
+					response.addHeader("Set-Cookie", it->second);
+				} else {
+					response.addHeader(it->first, it->second);
+				}
+			}
+	}
+	response.addDateHeader();
+	response.setBody(_body);
+	std::cout << RED << response.getFinalResponse() << RESET << std::endl;
 }
 
 void HttpRequest::print() const {

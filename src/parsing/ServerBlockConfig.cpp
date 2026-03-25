@@ -75,6 +75,11 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 	temp.insert(std::make_pair("error_page", &ServerBlockConfig::parseErrorPage));
 	temp.insert(std::make_pair("allow_methods", &ServerBlockConfig::parseAllowMethods));
 	temp.insert(std::make_pair("return", &ServerBlockConfig::parseReturn));
+	// test pour les cgi
+	// temp.insert(std::make_pair("cgi", &ServerBlockConfig::parseCgi));
+	// temp.insert(std::make_pair("path", &ServerBlockConfig::parseCgiPath));
+	// temp.insert(std::make_pair("python", &ServerBlockConfig::parseCgiPython));
+	// temp.insert(std::make_pair("php", &ServerBlockConfig::parseCgiPhp));
 
 	return temp;
 }
@@ -173,6 +178,35 @@ bool ServerBlockConfig::parseReturn(std::vector<std::string>& tokens) {
 	return false;
 }
 
+// test pour les cgi
+
+// bool ServerBlockConfig::parseCgi(const std::vector<std::string>& tokens) {
+//     // Logique pour activer le CGI dans le bloc courant
+//     // Exemple : _currentBlock.cgiEnabled = true;
+// }
+
+// bool ServerBlockConfig::parseCgiPath(const std::vector<std::string>& tokens) {
+//     if (tokens.size() < 2) {
+// 		return false;
+// 	}
+//     _currentBlock.cgiPath = tokens[1];
+// }
+
+// bool ServerBlockConfig::parseCgiPython(const std::vector<std::string>& tokens) {
+//     if (tokens.size() < 2) {
+// 		return false
+// 	}
+//     _currentBlock.cgiPythonInterpreter = tokens[1];
+// }
+
+// bool ServerBlockConfig::parseCgiPhp(const std::vector<std::string>& tokens) {
+//     if (tokens.size() < 2) {
+// 		return false
+// 	}
+//     _currentBlock.cgiPhpInterpreter = tokens[1];
+// }
+
+
 /*
 =================================================================
 ===== METHODS ===================================================
@@ -208,40 +242,41 @@ bool ServerBlockConfig::handleStartingBrace(bool startingBraceIncluded) {
  */
 void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 	std::vector<std::string> tokens(Tools::splitString(line));
-	if (tokens.size() < 2)
+	if (tokens.size() < 2) {
 		throw Tools::Exception("Parsing error");
-	
+	}
 	std::map<std::string, ServerBlockConfig::DirectiveHandler>::const_iterator it;
 	it = _serverHandlers.find(tokens[0]);
-	if (it == _serverHandlers.end())
+	if (it == _serverHandlers.end()) {
 		throw Tools::Exception("Unknown directive name " + tokens[0]);
-	
+	}
 	DirectiveHandler handler = it->second;
-	if (!(this->*handler)(tokens))
+	if (!(this->*handler)(tokens)) {
 		throw Tools::Exception(tokens[0] + " directive not valid");
+	}
 }
 
 void ServerBlockConfig::printData() const {
-	std::clog << "port: " << _port << std::endl;
+	// std::clog << "port: " << _port << std::endl;
 
-	std::clog << "server names: ";
+	// std::clog << "server names: ";
 	std::set<std::string>::const_iterator it = _serverNames.begin();
 	for (; it != _serverNames.end(); it++) {
-		std::clog << *it << ", ";
+		// std::clog << *it << ", ";
 	}
-	std::clog << std::endl;
+	// std::clog << std::endl;
 
 	ConfigBase::printData();
-	std::clog << std::endl;
+	// std::clog << std::endl;
 
 	std::map<std::string, LocationConfig>::const_iterator mit = _locationConfigs.begin();
-	std::clog << "LocationCondig data" << std::endl;
+	// std::clog << "LocationCondig data" << std::endl;
 	for (; mit != _locationConfigs.end(); mit++) {
-		std::clog << "location path: " << mit->first << std::endl;
+		// std::clog << "location path: " << mit->first << std::endl;
 		mit->second.printData();
-		std::clog << std::endl;
+		// std::clog << std::endl;
 	}
-	std::clog << std::endl;
+	// std::clog << std::endl;
 	
 }
 

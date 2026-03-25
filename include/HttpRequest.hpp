@@ -3,6 +3,7 @@
 #include "terminalColors.hpp"
 #include "Tools.hpp"
 #include "HttpTools.hpp"
+#include "Cookie.hpp"
 
 #include <set>
 #include <string>
@@ -58,6 +59,9 @@ class HttpRequest {
 
     void parseQueryParams();
     void parse(const std::string &request);
-    void execute();
+    void cookie(Cookie &cookie);
+    void executeMethod();
+    void executeScript();
+    void executeResponse();
     void print() const;
 };

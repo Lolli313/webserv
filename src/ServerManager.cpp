@@ -12,7 +12,7 @@ std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverC
 
 ServerManager::~ServerManager()
 {
-	std::clog << RED << "Calling ServerManager's destructor" << RESET << std::endl;
+	// std::clog << RED << "Calling ServerManager's destructor" << RESET << std::endl;
 	for (std::vector<ServerSocket *>::iterator it = _serverSocketArray.begin(); it != _serverSocketArray.end(); it++)
 		delete (*it);
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
@@ -100,11 +100,11 @@ void ServerManager::setupServers(const std::vector<ServerBlockConfig> &serverCon
 		}
 		else
 		{
-			std::clog << "ALREADY EXISTING SOCKET" << std::endl;
+			// std::clog << "ALREADY EXISTING SOCKET" << std::endl;
 			_serverArray.push_back(new Server(*mit, *it));
 		}
 		found = false;
-		// std::clog << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
+		// // std::clog << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
 	}
 }
 
@@ -114,7 +114,7 @@ std::set<int> ServerManager::setupServSockFDs()
 	std::vector<Server *>::const_iterator it = _serverArray.begin();
 	for (; it != _serverArray.end(); it++)
 	{
-		std::clog << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
+		// std::clog << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
 		tempServSockFDs.insert((*it)->getServSockFD());
 	}
 
@@ -126,7 +126,7 @@ void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, cons
 {
 	(void)message;
 	(void)path;
-	std::clog << "SENT" << std::endl;
+	// std::clog << "SENT" << std::endl;
 	HttpResponse response(HttpTools::getReturnPair(code));
 	// std::ifstream file(path.c_str());
 	// std::ostringstream body;
@@ -428,7 +428,7 @@ bool ServerManager::matchServerFD(int eventFD) const
 {
 	if (_servSockFDs.find(eventFD) != _servSockFDs.end())
 	{
-		std::clog << ORANGE << "matchServerFD new client found from FD " << eventFD << RESET << std::endl;
+		// std::clog << ORANGE << "matchServerFD new client found from FD " << eventFD << RESET << std::endl;
 		return true;
 	}
 	return false;
@@ -468,16 +468,17 @@ void ServerManager::mainLoop()
 		}
 		catch (Tools::Exception &e)
 		{
-			if (e.getReturnCode() == 0)
-				std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
+			if (e.getReturnCode() == 0) {
+				// std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
+			}
 		}
 		catch (std::exception &e)
 		{
-			std::clog << ORANGE << e.what() << RESET << std::endl;
+			// std::clog << ORANGE << e.what() << RESET << std::endl;
 		}
 		catch (...)
 		{
-			std::clog << ORANGE << "Undefined error" << RESET << std::endl;
+			// std::clog << ORANGE << "Undefined error" << RESET << std::endl;
 		}
 	}
 }

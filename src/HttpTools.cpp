@@ -1,4 +1,6 @@
 #include "HttpTools.hpp"
+#include <ctime>
+#include <cstdio>
 
 /*
 =================================================================
