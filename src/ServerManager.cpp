@@ -313,6 +313,8 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 {
 	if (!tmpClient)
 		throw;
+	std::clog << PINK << "THROW ";
+	std::clog << PINK << e.getMsgLog() << RESET << std::endl;
 	if (e.getReturnCode() >= 100)
 	{
 		// ===============================
@@ -477,7 +479,7 @@ void ServerManager::mainLoop()
 		catch (Tools::Exception &e)
 		{
 			if (e.getReturnCode() == 0) {
-				std::clog << GREEN << e.getMsgLog() << RESET << std::endl;
+				std::clog << PINK << e.getMsgLog() << RESET << std::endl;
 			}
 		}
 		catch (std::exception &e)
