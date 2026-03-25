@@ -11,9 +11,16 @@
 #include "HttpRequest.hpp"
 #include "Cookie.hpp"
 #include "Post.hpp"
+#include "Get.hpp"
 #include "Delete.hpp"
 
 #include <vector>
+#include <fstream>
+#include <sstream>
+
+#define ERROR_PAGE_TEMPLATE_PATH "/files/error_pages/ErrorTemplate.html"
+#define TEMPLATE_ERROR_CODE "{(CODE)}"
+#define TEMPLATE_ERROR_MESSAGE "{(MSG)}"
 
 extern int _sigStop;
 
@@ -52,12 +59,13 @@ public:
 	const std::string& findPort(int eventFD);
 	Server* findServer(const std::string& host);
 	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
+	const ConfigBase *findConfigBase(const Client &client, const HttpRequest &request, int eventFD);
 	void existingClient(int eventFD);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();
 	void mainLoop();
 	void sendResponse(Client *client);
-	void throwHandler(Client *tmpClient, Tools::Exception &e);
+	void throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config);
 
 };
 

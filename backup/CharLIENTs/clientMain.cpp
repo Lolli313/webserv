@@ -20,30 +20,32 @@ int main() {
     //     + boundary + "--\r\n";
     // client.clientSend(request);
 
-    std::string test =
-    "POST /api/utilisateurs HTTP/1.1\r\n"
-    "Host: exemple.com\r\n"
-    "Content-Type: application/json\r\n"
-    "Content-Length: 71\r\n"
-    "Authorization: Bearer token123\r\n"
-    "User-Agent: MonClient/1.0\r\n"
-    "\r\n"
-    "{\n"
-    "  \"nom\": \"Charles\",\n"
-    "  \"age\": 30,\n"
-    "  \"email\": \"charles@example.com\"\n"
-    "}";
+    // std::string test =
+    // "POST /api/utilisateurs HTTP/1.1\r\n"
+    // "Host: exemple.com\r\n"
+    // "Content-Type: application/json\r\n"
+    // "Content-Length: 71\r\n"
+    // "Authorization: Bearer token123\r\n"
+    // "User-Agent: MonClient/1.0\r\n";
+
+    // std::string test2 =
+    // "\r\n"
+    // "{\n"
+    // "  \"nom\": \"Charles\",\n"
+    // "  \"age\": 30,\n"
+    // "  \"email\": \"charles@example.com\"\n"
+    // "}";
 
     // std::string test3 = "DELETE files/post.json HTTP/1.1\r\n\r\n";
 
-    // std::string cookies =
-    // "GET /dashboard HTTP/1.1\r\n"
-    // "Host: cgi.com\r\n"
-    // "User-Agent: Mozilla/5.0 (X11; Linux x86_64)\r\n"
-    // "Accept: text/html\r\n"
-    // "Cookie: session_id=abc123; theme=dark; lang=fr\r\n"
-    // "Connection: keep-alive\r\n"
-    // "\r\n";
+    std::string cookies =
+    "GET /hello.txt HTTP/1.1\r\n"
+    "Host: cgi.com\r\n"
+    "User-Agent: Mozilla/5.0 (X11; Linux x86_64)\r\n"
+    "Accept: text/html\r\n"
+    "Cookie: session_id=abc123; theme=dark; lang=fr\r\n"
+    "Connection: keep-alive\r\n"
+    "\r\n";
 
 
     // std::string boulangerie =
@@ -68,6 +70,10 @@ int main() {
 
     std::getline(std::cin, message);
     client.clientSend(test);
+    std::getline(std::cin, message);
+    client.clientSend(test2);
+    std::getline(std::cin, message);
+    client.clientSend(test3);
     // std::getline(std::cin, message);
     // client.clientSend(test2);
     // std::getline(std::cin, message);

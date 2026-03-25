@@ -1,0 +1,2 @@
+GET /ascii/body.txt HTTP/1.1
+Host: localhost

@@ -5,6 +5,7 @@
 #include "HttpTools.hpp"
 #include "Tools.hpp"
 #include <ctime>
+#include "terminalColors.hpp"
 
 #define HTTP_VERSION "HTTP/1.1"
 

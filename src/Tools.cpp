@@ -5,8 +5,39 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
+
+/**
+ * @brief A custom exception for the webserver.
+ * @param returnCode 
+ * If not set, the base value is 0, and do not send a response to the client.   
+ * If set, it can have several purposes:
+ * 1. from 100 to 599, it is used as a HTTP returnCode and send a response to the client with the corresponding reason phrase (the message that comes with the return code).  
+ * 2. other codes can be used for custom logics.  
+ *
+ * @param msgLog is a log used for internal purpose / debugging only and won't be send to the client.
+ */
 Tools::Exception::Exception() {};
+/**
+ * @brief A custom exception for the webserver.
+ * @param returnCode 
+ * If not set, the base value is 0, and do not send a response to the client.   
+ * If set, it can have several purposes:
+ * 1. from 100 to 599, it is used as a HTTP returnCode and send a response to the client with the corresponding reason phrase (the message that comes with the return code).  
+ * 2. other codes can be used for custom logics.  
+ *
+ * @param msgLog is a log used for internal purpose / debugging only and won't be send to the client.
+ */
 Tools::Exception::Exception(int returnCode, const std::string &msgLog) : _returnCode(returnCode), _msgLog(msgLog) {}
+/**
+ * @brief A custom exception for the webserver.
+ * @param returnCode 
+ * If not set, the base value is 0, and do not send a response to the client.   
+ * If set, it can have several purposes:
+ * 1. from 100 to 599, it is used as a HTTP returnCode and send a response to the client with the corresponding reason phrase (the message that comes with the return code).  
+ * 2. other codes can be used for custom logics.  
+ *
+ * @param msgLog is a log used for internal purpose / debugging only and won't be send to the client.
+ */
 Tools::Exception::Exception(const std::string &msgLog) : _returnCode(0), _msgLog(msgLog) {}
 Tools::Exception::~Exception() throw() {}
 
@@ -154,4 +185,12 @@ std::string Tools::intToString(int nbr)
 	std::ostringstream oss;
 	oss << nbr;
 	return oss.str();
+}
+
+void Tools::findAndReplaceAllOccurences(std::string& input, const std::string& replaceWord, const std::string& replaceBy) {
+	std::size_t pos = input.find(replaceWord);
+	while (pos != std::string::npos) {
+		input.replace(pos, replaceWord.size(), replaceBy);
+		pos = input.find(replaceWord, pos + replaceBy.size());
+	}
 }
