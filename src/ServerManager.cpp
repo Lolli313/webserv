@@ -167,8 +167,7 @@ Server *ServerManager::findServer(const std::string &host)
 	std::map<std::pair<int, std::string>, Server *>::const_iterator it = _serversMap.find(exactKey);
 	if (it != _serversMap.end())
 	{ // found exact match for Port + Server Name
-		std::cout << LIGHT_BLUE << "Found exact match for " << exactKey.first
-				  << ":" << exactKey.second << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Found exact match for " << exactKey.first << ":" << exactKey.second << RESET << std::endl;
 		return it->second;
 	}
 
@@ -176,8 +175,7 @@ Server *ServerManager::findServer(const std::string &host)
 	it = _serversMap.lower_bound(defaultKey); // Find the first match for targetPort regardless of the Server Name
 	if (it != _serversMap.end())
 	{
-		std::cout << LIGHT_BLUE << "Found match for default port " << RESET << it->first.first
-				  << " with server name: " << it->first.second << std::endl;
+		// std::clog << LIGHT_BLUE << "Found match for default port " << RESET << it->first.first << " with server name: " << it->first.second << std::endl;
 		return it->second;
 	}
 
@@ -199,7 +197,7 @@ bool locationMatchesPath(std::string &path, const std::string &location)
 const ConfigBase &findConfigBase(Server *server, const HttpRequest &request)
 {
 	std::string path = request.getPath();
-	std::cout << LIGHT_BLUE << "Path to look for is: " << path << RESET << std::endl;
+	// std::clog << LIGHT_BLUE << "Path to look for is: " << path << RESET << std::endl;
 	while (!path.empty())
 	{
 		std::map<std::string, LocationConfig>::const_iterator it = server->getLocationConfigs().begin();
@@ -207,7 +205,7 @@ const ConfigBase &findConfigBase(Server *server, const HttpRequest &request)
 		{
 			if (locationMatchesPath(path, it->first))
 			{
-				std::cout << LIGHT_BLUE << "Found a match for the location: " << it->first << RESET << std::endl;
+				// std::clog << LIGHT_BLUE << "Found a match for the location: " << it->first << RESET << std::endl;
 				return it->second;
 			}
 		}
@@ -223,7 +221,7 @@ void handleReturnAndAllowMethod(const ConfigBase &base, const std::string &metho
 {
 	if (base.getReturnDirective().first)
 	{
-		std::cout << LIGHT_BLUE << "Found return directive with code " << base.getReturnDirective().first << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Found return directive with code " << base.getReturnDirective().first << RESET << std::endl;
 		throw Tools::Exception(base.getReturnDirective().first, base.getReturnDirective().second);
 	}
 
@@ -231,7 +229,7 @@ void handleReturnAndAllowMethod(const ConfigBase &base, const std::string &metho
 	if (it == base.getAllowMethods().end())
 	{
 		throw Tools::Exception(405, "Method not allowed");
-		std::cout << LIGHT_BLUE << method << " method not allowed" << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << method << " method not allowed" << RESET << std::endl;
 	}
 }
 
@@ -243,7 +241,7 @@ void ServerManager::checkRequestValidity(const Client &client, const HttpRequest
 	if (it == request.getHeader().end())
 	{
 		throw Tools::Exception(400, "Host header missing");
-		std::cout << LIGHT_BLUE << "Host header missing" << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Host header missing" << RESET << std::endl;
 	}
 
 	Server *server = findServer(it->second);
@@ -266,31 +264,7 @@ void ServerManager::sendResponse(Client *client)
 	}
 }
 
-const std::string execute(const HttpRequest &request)
-{
-	std::string response;
-	if (request.getMethodStr() == "GET")
-	{
-		(void)request;
-		//		response = // GET // std::cout << "code pour get" << std::endl;
-	}
 
-	else if (request.getMethodStr() == "POST")
-		response = Post::executePost(request);
-
-	else if (request.getMethodStr() == "DELETE")
-	{
-		// response = Delete::executeDelete(request);
-		// int fd = open(request.getPath().c_str(), O_RDONLY);
-		// if (fd == -1) {
-		// 	throw Tools::Exception(500, "existe pas ou pas accessible");
-		// } else {
-		// 	std::remove(request.getPath().c_str());
-		// }
-		// close(fd);
-	}
-	return response;
-}
 
 // std::map<std::string, std::string>::const_iterator itCookie = request.getHeader().find("Cookie");
 // if (itCookie != request.getHeader().end()) {
@@ -333,6 +307,30 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e)
 	throw;
 }
 
+const std::string executeMethod(const HttpRequest &request)
+{
+	std::string response;
+	if (request.getMethodStr() == "GET")
+	{
+		(void)request;
+		//		response = // GET // std::clog << "code pour get" << std::endl;
+	}
+
+	else if (request.getMethodStr() == "POST")
+		response = Post::executePost(request);
+
+	else if (request.getMethodStr() == "DELETE") {
+		int fd = open(request.getPurePath().c_str(), O_RDONLY);
+		if (fd == -1) {
+			throw Tools::Exception(500, "existe pas ou pas accessible");
+		} else {
+			std::remove(request.getPurePath().c_str());
+		}
+		close(fd);
+	}
+	return response;
+}
+
 void ServerManager::existingClient(int eventFD)
 {
 	Client *tmpClient = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
@@ -350,7 +348,8 @@ void ServerManager::existingClient(int eventFD)
 			// request.print();
 			request.cookie(_cookie);
 			// _cookie.printCookie();
-			request.executeMethod();
+			executeMethod(request);
+			// request.executeMethod();
 			// request.executeScript();
 			request.executeResponse();
 
