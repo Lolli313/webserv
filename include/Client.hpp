@@ -70,6 +70,8 @@ public:
 	void refreshClient();
 
 	std::string bufferManager();
+
+	void printStatus() const;
 };
 
 #endif
