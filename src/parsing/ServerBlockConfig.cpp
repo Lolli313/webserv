@@ -75,13 +75,23 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 	temp.insert(std::make_pair("error_page", &ServerBlockConfig::parseErrorPage));
 	temp.insert(std::make_pair("allow_methods", &ServerBlockConfig::parseAllowMethods));
 	temp.insert(std::make_pair("return", &ServerBlockConfig::parseReturn));
-	// test pour les cgi
-	// temp.insert(std::make_pair("cgi", &ServerBlockConfig::parseCgi));
-	// temp.insert(std::make_pair("path", &ServerBlockConfig::parseCgiPath));
-	// temp.insert(std::make_pair("python", &ServerBlockConfig::parseCgiPython));
-	// temp.insert(std::make_pair("php", &ServerBlockConfig::parseCgiPhp));
+	temp.insert(std::make_pair("cgi", &ServerBlockConfig::parseCgi));
 
 	return temp;
+}
+
+const std::vector<std::string>& ServerBlockConfig::_getCgiDirectives() {
+	static std::vector<std::string> cgiDirectives;
+	if (cgiDirectives.empty())
+		_initCgiDirectives(cgiDirectives);
+
+	return cgiDirectives;
+}
+
+void ServerBlockConfig::_initCgiDirectives(std::vector<std::string>& cgiDirectives) {
+	cgiDirectives.push_back("path");
+	cgiDirectives.push_back("python");
+	cgiDirectives.push_back("php");
 }
 
 /*
@@ -178,34 +188,52 @@ bool ServerBlockConfig::parseReturn(std::vector<std::string>& tokens) {
 	return false;
 }
 
-// test pour les cgi
+bool checkCgiDirectiveValidity(std::vector<std::string>& tokens) {
+	if (tokens.size() != 2)
+		return false;
+	
+	if (!Tools::checkAndRemoveSemicolon(tokens[1]) || tokens[1].empty())
+		return false;
 
-// bool ServerBlockConfig::parseCgi(const std::vector<std::string>& tokens) {
-//     // Logique pour activer le CGI dans le bloc courant
-//     // Exemple : _currentBlock.cgiEnabled = true;
-// }
+	return true;
+}
 
-// bool ServerBlockConfig::parseCgiPath(const std::vector<std::string>& tokens) {
-//     if (tokens.size() < 2) {
-// 		return false;
-// 	}
-//     _currentBlock.cgiPath = tokens[1];
-// }
+bool ServerBlockConfig::parseCgi(std::vector<std::string>& tokens) {
+	std::clog << LIGHT_BLUE << "Starting CGI parsing" << RESET << std::endl;
+	if (tokens.size() < 2 || tokens.size() > 3)
+		return false;
 
-// bool ServerBlockConfig::parseCgiPython(const std::vector<std::string>& tokens) {
-//     if (tokens.size() < 2) {
-// 		return false
-// 	}
-//     _currentBlock.cgiPythonInterpreter = tokens[1];
-// }
+	if (!Tools::isValidBraceFormat("cgi", tokens, _infile))
+		return false;
 
-// bool ServerBlockConfig::parseCgiPhp(const std::vector<std::string>& tokens) {
-//     if (tokens.size() < 2) {
-// 		return false
-// 	}
-//     _currentBlock.cgiPhpInterpreter = tokens[1];
-// }
+	std::string line;
+	while (std::getline(*_infile, line)) {
+		std::clog << LIGHT_BLUE << "line is: " << line << RESET << std::endl;
+		if (line.empty() || line[0] == '#')
+			continue;
 
+		tokens = Tools::splitString(line);
+		if (tokens[0] == "}")
+			return true;
+		
+		const std::vector<std::string> cgiDirectives = _getCgiDirectives();
+		if (std::find(cgiDirectives.begin(), cgiDirectives.end(), tokens[0]) == cgiDirectives.end())
+			return false;
+		
+		if (!checkCgiDirectiveValidity(tokens))
+			return false;
+		else {
+			if (tokens[0] == "path")
+				_cgi.setPath(tokens[1]);
+			else if (tokens[0] == "python")
+				_cgi.setPythonPath(tokens[1]);
+			else if (tokens[0] == "php")
+				_cgi.setPhpPath(tokens[1]);
+		}
+	}
+	_cgi.setHasCGI(true);
+	return true;
+}
 
 /*
 =================================================================
@@ -257,26 +285,26 @@ void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 }
 
 void ServerBlockConfig::printData() const {
-	// std::clog << "port: " << _port << std::endl;
+	std::clog << "port: " << _port << std::endl;
 
-	// std::clog << "server names: ";
+	std::clog << "server names: ";
 	std::set<std::string>::const_iterator it = _serverNames.begin();
 	for (; it != _serverNames.end(); it++) {
-		// std::clog << *it << ", ";
+		std::clog << *it << ", ";
 	}
-	// std::clog << std::endl;
+	std::clog << std::endl;
 
 	ConfigBase::printData();
-	// std::clog << std::endl;
+	std::clog << std::endl;
 
 	std::map<std::string, LocationConfig>::const_iterator mit = _locationConfigs.begin();
-	// std::clog << "LocationCondig data" << std::endl;
+	std::clog << "LocationCondig data" << std::endl;
 	for (; mit != _locationConfigs.end(); mit++) {
-		// std::clog << "location path: " << mit->first << std::endl;
+		std::clog << "location path: " << mit->first << std::endl;
 		mit->second.printData();
-		// std::clog << std::endl;
+		std::clog << std::endl;
 	}
-	// std::clog << std::endl;
+	std::clog << std::endl;
 	
 }
 

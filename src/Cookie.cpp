@@ -1,5 +1,5 @@
 #include "Cookie.hpp"
-#include "terminalColors.hpp"
+#include "TerminalColors.hpp"
 
 #include <sstream>
 

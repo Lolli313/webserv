@@ -17,37 +17,37 @@ int main(int ac, char **av)
 	(void)av;
 	if (ac != 2)
 	{
-		// std::clog << "Please include one config file" << std::endl;
+		std::clog << "Please include one config file" << std::endl;
 		return 1;
 	}
 	std::signal(SIGINT, &handle_signals);
 
-	std::vector<std::string> temp;
-	temp.push_back("8080");
-	temp.push_back("4443");
+	// std::vector<std::string> temp;
+	// temp.push_back("8080");
+	// temp.push_back("4443");
 	try {
 		ParseConfig pc((std::string(av[1])));
 		// pc.printData();
 		// ServerManager serverManager(temp);
-		ServerManager sm(pc.getServerConfig());
-		sm.mainLoop();
+	//	ServerManager sm(pc.getServerConfig());
+	//	sm.mainLoop();
 	}
 	catch (Tools::Exception &e) {
 		if (e.getReturnCode() == 0) {
-			// std::clog << "Custom exception: " << PINK << e.getMsgLog() << RESET << std::endl;
+			std::clog << "Custom exception: " << PINK << e.getMsgLog() << RESET << std::endl;
 		}
 		else if (e.getReturnCode() == 1) {
-			// std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+			std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
 		}
 		else {
-			// std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+			std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
 		}
 	}
 	catch (std::exception &e) {
-		// std::clog << "Builtin exception: " << ORANGE << e.what() << RESET << std::endl;
+		std::clog << "Builtin exception: " << ORANGE << e.what() << RESET << std::endl;
 	}
 	catch (...) {
-		// std::clog << ORANGE << "Undefined error" << RESET << std::endl;
+		std::clog << ORANGE << "Undefined error" << RESET << std::endl;
 	}
 	return 0;
 }

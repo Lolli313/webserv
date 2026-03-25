@@ -33,6 +33,7 @@ ParseConfig::ParseConfig(const std::string& filePath) : _fileName(filePath) {
 			throw Tools::Exception("Parsing error");
 		}
 	}
+	std::clog << LIGHT_BLUE << "Config parsing done!" << RESET << std::endl;
 }
 
 /*

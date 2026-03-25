@@ -144,7 +144,7 @@ bool Tools::isNumber(const std::string &str)
 }
 
 /**
- * Checks whether the tokens vector has one the following formats:
+ * @brief Checks whether the tokens vector has one the following formats:
  *
  * targetToken
  * {
@@ -152,6 +152,12 @@ bool Tools::isNumber(const std::string &str)
  * OR
  *
  * targetToken {
+ * 
+ * @param targetToken Name of the directive to look for (for ex "listen")
+ * @param tokens Vector of whitespace-split words from the current input line
+ * @param infile Pointer to the opened config file
+ * 
+ * @returns Whether tokens have a valid brace format
  */
 bool Tools::isValidBraceFormat(const std::string &targetToken, const std::vector<std::string> &tokens, std::ifstream *infile)
 {
