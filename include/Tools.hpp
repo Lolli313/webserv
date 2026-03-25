@@ -57,4 +57,5 @@ public:
 	static bool checkPath(const std::string &path);
 	static void findAndReplaceAllOccurences(std::string& input, const std::string& replaceWord, const std::string& replaceBy);
 	static bool lineIsEmptyOrComment(std::string& str);
+	static void transformStringToLowecase(std::string& str);
 };

@@ -213,3 +213,9 @@ bool Tools::lineIsEmptyOrComment(std::string& str) {
 	return (str[pos] == '#');
 }
 
+void Tools::transformStringToLowecase(std::string& str) {
+	for (std::size_t i = 0; i < str.size(); i++)
+		str[i] = std::tolower(str[i]);
+}
+
+

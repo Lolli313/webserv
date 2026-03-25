@@ -123,7 +123,10 @@ bool ServerBlockConfig::parseServerName(std::vector<std::string>& tokens) {
 	if (!Tools::checkAndRemoveSemicolon(tokens.back()))
 		return false;
 
-	tokens.erase(tokens.begin());
+	tokens.erase(tokens.begin());	
+	for (std::vector<std::string>::iterator cit = tokens.begin(); cit != tokens.end(); cit++)
+		Tools::transformStringToLowecase(*cit);
+
 	_serverNames = std::set<std::string>(tokens.begin(), tokens.end());
 	return true;
 }
