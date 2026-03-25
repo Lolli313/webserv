@@ -311,7 +311,9 @@ const std::string generateErrorPage(int code) {
 
 void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config)
 {
-	if (tmpClient && e.getReturnCode() >= 100)
+	if (!tmpClient)
+		throw;
+	if (e.getReturnCode() >= 100)
 	{
 		// ===============================
 		// HOW TO GET THE ERROR FILES ???
@@ -343,7 +345,7 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 		sendResponse(tmpClient);
 	}
 
-	if (tmpClient && tmpClient->toBeClosed())
+	if (tmpClient->toBeClosed())
 	{
 		if (!_polling->deleteCLient(tmpClient))
 			throw Tools::Exception("Error at deleting client");
