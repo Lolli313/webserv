@@ -38,8 +38,6 @@ private:
 
 	static const std::map<std::string, DirectiveHandler> _serverHandlers;
 	static const std::map<std::string, DirectiveHandler> _initHandlers();
-	static const std::vector<std::string>& _getCgiDirectives();
-	static void _initCgiDirectives(std::vector<std::string>& cgiDirectives);
 	
 public:
 	ServerBlockConfig(std::ifstream *infile);

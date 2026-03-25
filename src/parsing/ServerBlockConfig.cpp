@@ -80,20 +80,6 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 	return temp;
 }
 
-const std::vector<std::string>& ServerBlockConfig::_getCgiDirectives() {
-	static std::vector<std::string> cgiDirectives;
-	if (cgiDirectives.empty())
-		_initCgiDirectives(cgiDirectives);
-
-	return cgiDirectives;
-}
-
-void ServerBlockConfig::_initCgiDirectives(std::vector<std::string>& cgiDirectives) {
-	cgiDirectives.push_back("path");
-	cgiDirectives.push_back("python");
-	cgiDirectives.push_back("php");
-}
-
 /*
 =================================================================
 ===== DIRECTIVE HANDLERS ========================================
@@ -202,7 +188,6 @@ bool checkCgiDirectiveValidity(std::vector<std::string>& tokens) {
 }
 
 bool ServerBlockConfig::parseCgi(std::vector<std::string>& tokens) {
-	std::clog << LIGHT_BLUE << "Starting CGI parsing" << RESET << std::endl;
 	if (tokens.size() < 2 || tokens.size() > 3)
 		return false;
 
@@ -211,7 +196,6 @@ bool ServerBlockConfig::parseCgi(std::vector<std::string>& tokens) {
 
 	std::string line;
 	while (std::getline(*_infile, line)) {
-		std::clog << LIGHT_BLUE << "line is: " << line << RESET << std::endl;
 		if (Tools::lineIsEmptyOrComment(line))
 			continue;
 
@@ -219,20 +203,20 @@ bool ServerBlockConfig::parseCgi(std::vector<std::string>& tokens) {
 		if (tokens[0] == "}")
 			return true;
 		
-		const std::vector<std::string> cgiDirectives = _getCgiDirectives();
-		if (std::find(cgiDirectives.begin(), cgiDirectives.end(), tokens[0]) == cgiDirectives.end())
-			return false;
-		
 		if (!checkCgiDirectiveValidity(tokens))
 			return false;
-		else {
-			if (tokens[0] == "path")
-				_cgi.setPath(tokens[1]);
-			else if (tokens[0] == "python")
-				_cgi.setPythonPath(tokens[1]);
-			else if (tokens[0] == "php")
-				_cgi.setPhpPath(tokens[1]);
-		}
+
+		const std::string& key = tokens[0];
+		const std::string& value = tokens[1];
+
+		if (key == "path")
+			_cgi.setPath(value);
+		else if (key == "python")
+			_cgi.setPythonPath(value);
+		else if (key == "php")
+			_cgi.setPhpPath(value);
+		else
+			return false;
 	}
 	_cgi.setHasCGI(true);
 	return true;
