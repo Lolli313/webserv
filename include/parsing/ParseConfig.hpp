@@ -2,6 +2,7 @@
 #define PARSECONFIG_HPP
 
 #include "ServerBlockConfig.hpp"
+#include "TerminalColors.hpp"
 #include "ConfigBase.hpp"
 #include "Tools.hpp"
 

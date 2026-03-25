@@ -7,7 +7,7 @@
 #include <netdb.h>
 #include <iostream>
 #include <string>
-#include "terminalColors.hpp"
+#include "TerminalColors.hpp"
 
 #define DEFAULT_LOCAL_IP "0.0.0.0"
 #define DEFAULT_LOCAL_PORT "8080"
