@@ -41,7 +41,7 @@ public:
 	HttpResponse(int code, const std::string &message);
 	HttpResponse(const std::string &httpVersion, int code, const std::string &message);
 	HttpResponse(const HttpResponse &obj);
-	HttpResponse(const std::pair<int, const std::string &> &response);
+	HttpResponse(const std::pair<int, const std::string> &response);
 	HttpResponse &operator=(const HttpResponse &obj);
 	~HttpResponse();
 
@@ -64,5 +64,5 @@ public:
 	void buildFinalResponse();
 
 	static const std::string quickHttpResponse(int code, const std::string &message);
-	static const std::string quickHttpResponse(const std::pair<int, const std::string &> &response);
+	static const std::string quickHttpResponse(const std::pair<int, const std::string> &response);
 };
