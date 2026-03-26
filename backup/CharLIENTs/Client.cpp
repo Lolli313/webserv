@@ -107,7 +107,7 @@ bool Client::clientConnect() {
         return false;
     }
     
-    std::clog << GRN << "client connected" << RST << std::endl;
+    // std::clog << GRN << "client connected" << RST << std::endl;
     return true;
 }
 
@@ -125,7 +125,7 @@ bool Client::clientSend(const std::string& message) {
         return false;
     }
 
-    std::clog << GRN << "client sent message" << RST << std::endl;
+    // std::clog << GRN << "client sent message" << RST << std::endl;
     return true;
 }
 
@@ -152,14 +152,14 @@ std::string Client::clientReceive() {
     }
 
     if (bytesReceived == 0) {
-        std::clog << GRN << "[client] connection closed by server" << RST << std::endl;
+        // std::clog << GRN << "[client] connection closed by server" << RST << std::endl;
         return "";
     } else if (bytesReceived < 0) {
         // std::cerr << RED << "CLIENT RECV ERROR" << RST << std::endl;
         return "";
     }
 
-    std::clog << GRN << "client received message" RST << std::endl;
+    // std::clog << GRN << "client received message" RST << std::endl;
     return message;
 }
 
@@ -169,7 +169,7 @@ void Client::clientDisconnect() {
         if (close(_clientSocket) == -1) {
             std::cerr << RED << "CLIENT CLOSE SOCKET ERROR" << RST << std::endl;
         } else {
-            std::clog << GRN << "client socket closed" << RST << std::endl;
+            // std::clog << GRN << "client socket closed" << RST << std::endl;
         }
         _clientSocket = -1;
     }
@@ -177,8 +177,8 @@ void Client::clientDisconnect() {
     if (_clientInfo != NULL) {
         freeaddrinfo(_clientInfo);
         _clientInfo = NULL;
-        std::clog << GRN << "client info freed" << RST << std::endl;
+        // std::clog << GRN << "client info freed" << RST << std::endl;
     }
 
-    std::clog << GRN << "client disconnected" << RST << std::endl;
+    // std::clog << GRN << "client disconnected" << RST << std::endl;
 }

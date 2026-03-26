@@ -7,6 +7,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <cctype>
 
 /*
 =================================================================
@@ -22,11 +24,11 @@ Client::Client(int fd) : _clientFD(fd),
 						_readyToReceive(false), 
 						_toBeClosed(false)
 						{
-	std::clog << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
+	// std::clog << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
 }
 
 Client::~Client() {
-	std::clog << RED << "Client destructor" << RESET << std::endl;
+	// std::clog << RED << "Client destructor" << RESET << std::endl;
 	// close(_clientFD); 
 }
 
@@ -39,7 +41,7 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD),
 								_readyToReceive(obj._readyToReceive), 
 								_toBeClosed(obj._toBeClosed)
 								{ 
-	std::clog << PINK << "Client copy constructor" << RESET << std::endl;
+	// std::clog << PINK << "Client copy constructor" << RESET << std::endl;
 	std::memcpy(_tmpBuff, obj._tmpBuff, BUFFERSIZE);
 	_buffer = obj._buffer;
 };
@@ -53,7 +55,7 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD),
 // Undefined behavior / deprecated
 Client &Client::operator=(const Client &obj)
 {
-	std::clog << PINK << "Client = operator" << RESET << std::endl;
+	// std::clog << PINK << "Client = operator" << RESET << std::endl;
 	(void)obj;
 	return (*this);
 };
@@ -73,14 +75,14 @@ char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
 
 bool Client::doneReceiving() const { 
-	std::clog << "Done receiving = " << _doneReceiving << std::endl;
-	std::clog << "Done receiving :)" << std::endl;
+	// std::clog << "Done receiving = " << _doneReceiving << std::endl;
+	// std::clog << "Done receiving :)" << std::endl;
 	return _doneReceiving;
 }
 
 void Client::setDoneReceiving(bool status) {
 	_doneReceiving = status;
-	std::clog << "Done receiving status is: " << status << std::endl;
+	// std::clog << "Done receiving status is: " << status << std::endl;
 }
 
 void Client::setKeepAlive(bool status) { _keepAlive = status; }
@@ -176,7 +178,16 @@ std::string Client::bufferManager() {
         return "";
     }
 	std::string headers = _buffer.substr(0, posHeaderEnd);
-	Tools::transformStringToLowecase(headers);
+	// size_t fstReturn = _buffer.find_first_of("\r\n");
+	// Tools::transformStringToLowecase(headers + fstReturn);
+	size_t fstReturn = _buffer.find_first_of("\r\n");
+	if (fstReturn != std::string::npos) {
+		for (size_t i = fstReturn; i < headers.size(); ++i) {
+			headers[i] = std::tolower(headers[i]);
+		}
+	}
+	// test
+	std::cout << headers << std::endl;
 	size_t posBodyStart = posHeaderEnd + 4;
 
 	// la il faut trouver Content-Length pour savoir si le body est finit si il y en a un
@@ -206,7 +217,7 @@ std::string Client::bufferManager() {
 		setDoneReceiving(true);
         return request;
     } else {
-		std::clog << _buffer.length() << " " << posBodyStart << " " << contentLength << std::endl;
+		// std::clog << _buffer.length() << " " << posBodyStart << " " << contentLength << std::endl;
         throw Tools::Exception(413, "HttpRequest: Malformed body");
     }
 }

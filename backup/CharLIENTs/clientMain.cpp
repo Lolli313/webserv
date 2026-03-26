@@ -20,19 +20,23 @@ int main() {
     //     + boundary + "--\r\n";
     // client.clientSend(request);
 
-    std::string test =
-    "GET /api/utilisateurs HTTP/1.1\r\n"
+std::string test =
+    "POST /api/utilisateurs HTTP/1.1\r\n"
     "Host: 127.0.0.1:8080\r\n"
-    "Content-Type: application/json\r\n"
-    "Content-Length: 71\r\n"
+    "Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
     "Authorization: Bearer token123\r\n"
     "User-Agent: MonClient/1.0\r\n"
+    "Content-Length: 250\r\n"  // À ajuster selon la taille réelle
+    "\r\n"
+    "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
+    "Content-Disposition: form-data; name=\"utilisateur\"\r\n"
     "\r\n"
     "{\n"
     "  \"nom\": \"Charles\",\n"
     "  \"age\": 30,\n"
     "  \"email\": \"charles@example.com\"\n"
-    "}";
+    "}\r\n"
+    "------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n";
 
     // std::string test3 = "DELETE /post.json HTTP/1.1\r\n"
     // "Host: 127.0.0.1:8080\r\n\r\n";

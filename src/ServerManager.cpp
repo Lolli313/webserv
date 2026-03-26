@@ -12,7 +12,7 @@ std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverC
 
 ServerManager::~ServerManager()
 {
-	std::clog << RED << "Calling ServerManager's destructor" << RESET << std::endl;
+	// std::clog << RED << "Calling ServerManager's destructor" << RESET << std::endl;
 	for (std::vector<ServerSocket *>::iterator it = _serverSocketArray.begin(); it != _serverSocketArray.end(); it++)
 		delete (*it);
 	for (std::vector<Server *>::iterator it = _serverArray.begin(); it != _serverArray.end(); it++)
@@ -100,11 +100,11 @@ void ServerManager::setupServers(const std::vector<ServerBlockConfig> &serverCon
 		}
 		else
 		{
-			std::clog << "ALREADY EXISTING SOCKET" << std::endl;
+			// std::clog << "ALREADY EXISTING SOCKET" << std::endl;
 			_serverArray.push_back(new Server(*mit, *it));
 		}
 		found = false;
-		// std::clog << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
+		// // std::clog << CYAN_BRIGHT << "setupServers for fd = " << mit->getServSockFD() << RESET << std::endl;
 	}
 }
 
@@ -114,7 +114,7 @@ std::set<int> ServerManager::setupServSockFDs()
 	std::vector<Server *>::const_iterator it = _serverArray.begin();
 	for (; it != _serverArray.end(); it++)
 	{
-		std::clog << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
+		// std::clog << YELLOW_BRIGHT << "setupServSockFDs for fd = " << (*it)->getServSockFD() << RESET << std::endl;
 		tempServSockFDs.insert((*it)->getServSockFD());
 	}
 
@@ -126,7 +126,7 @@ void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, cons
 {
 	(void)message;
 	(void)path;
-	std::clog << "SENT" << std::endl;
+	// std::clog << "SENT" << std::endl;
 	HttpResponse response(HttpTools::getReturnPair(code));
 	// std::ifstream file(path.c_str());
 	// std::ostringstream body;
@@ -167,7 +167,7 @@ Server *ServerManager::findServer(const std::string &host)
 	std::map<std::pair<int, std::string>, Server *>::const_iterator it = _serversMap.find(exactKey);
 	if (it != _serversMap.end())
 	{ // found exact match for Port + Server Name
-		std::clog << LIGHT_BLUE << "Found exact match for " << exactKey.first << ":" << exactKey.second << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Found exact match for " << exactKey.first << ":" << exactKey.second << RESET << std::endl;
 		return it->second;
 	}
 
@@ -175,7 +175,7 @@ Server *ServerManager::findServer(const std::string &host)
 	it = _serversMap.lower_bound(defaultKey); // Find the first match for targetPort regardless of the Server Name
 	if (it != _serversMap.end())
 	{
-		std::clog << LIGHT_BLUE << "Found match for default port " << it->first.first << " with server name: " << it->first.second << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Found match for default port " << it->first.first << " with server name: " << it->first.second << RESET << std::endl;
 		return it->second;
 	}
 
@@ -190,7 +190,7 @@ const ConfigBase *ServerManager::findConfigBase(const Client &client, const Http
 	if (it == request.getHeader().end())
 	{
 		throw Tools::Exception(400, "Host header missing");
-		std::clog << LIGHT_BLUE << "Host header missing" << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Host header missing" << RESET << std::endl;
 	}
 	Server *server = findServer(it->second);
 	std::string modifiableString(request.getPath());
@@ -201,7 +201,7 @@ void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &met
 {
 	if (config->getReturnDirective().first)
 	{
-		std::clog << LIGHT_BLUE << "Found return directive with code " << config->getReturnDirective().first << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Found return directive with code " << config->getReturnDirective().first << RESET << std::endl;
 		throw Tools::Exception(config->getReturnDirective().first, config->getReturnDirective().second);
 	}
 
@@ -209,7 +209,7 @@ void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &met
 	if (it == config->getAllowMethods().end())
 	{
 		throw Tools::Exception(405, "Method not allowed");
-		std::clog << LIGHT_BLUE << method << " method not allowed" << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << method << " method not allowed" << RESET << std::endl;
 	}
 }
 
@@ -233,7 +233,7 @@ void ServerManager::sendResponse(Client *client)
  */
 const std::string execute(const HttpRequest &request, const ConfigBase *config)
 {
-	std::clog << YELLOW_BRIGHT << "execute" << RESET << std::endl;
+	// std::clog << YELLOW_BRIGHT << "execute" << RESET << std::endl;
 	std::string response;
 	if (request.getMethodStr() == "GET")
 		return response = Get::executeGet(request, config);
@@ -303,11 +303,11 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 {
 	if (!tmpClient)
 		throw;
-	std::clog << PINK << "THROW ";
-	std::clog << PINK << e.getMsgLog() << RESET << std::endl;
+	// std::clog << PINK << "THROW ";
+	// std::clog << PINK << e.getMsgLog() << RESET << std::endl;
 	if (e.getReturnCode() >= 100)
 	{
-		std::clog << LIGHT_BLUE << e.getMsgLog() << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << e.getMsgLog() << RESET << std::endl;
 		// ===============================
 		// HOW TO GET THE ERROR FILES ???
 		// get value of server.getPathConfig() to a temp variable ConfigBase,
@@ -331,7 +331,7 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 		HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
 		response.setBody(errorBody);
 		response.addHeader("Content-Length", Tools::intToString(errorBody.size()));
-		std::clog << LIGHT_BLUE << "Error response body size is: " << errorBody.size() << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "Error response body size is: " << errorBody.size() << RESET << std::endl;
 		response.addDateHeader();
 
 		tmpClient->setResponseBuff(response.getFinalResponse());
@@ -366,9 +366,9 @@ void ServerManager::existingClient(int eventFD)
 		try
 		{
 			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");			
-			// std::clog << RED << tmpClient->getBuffer() << RESET << std::endl;
+			// // std::clog << RED << tmpClient->getBuffer() << RESET << std::endl;
 			std::string tmpRequest = tmpClient->bufferManager();
-			// std::clog << GREEN << tmpClient->getBuffer() << RESET << std::endl;
+			// // std::clog << GREEN << tmpClient->getBuffer() << RESET << std::endl;
 			// std::string tmpRequest =
 			// 	"GET /ascii/body.txt HTTP/1.1\r\n"
 			// 	"Host: localhost:8080\r\n"
@@ -396,7 +396,7 @@ void ServerManager::existingClient(int eventFD)
 					_polling->setClientEPOLLOUT(tmpClient, true);
 					tmpClient->setReadyToReceive(true);
 				}
-				std::clog << RED << "toReceive : " << tmpClient->readyToReceive() << " toBeSent : " << tmpClient->responseToBeSent() << RESET << std::endl;
+				// std::clog << RED << "toReceive : " << tmpClient->readyToReceive() << " toBeSent : " << tmpClient->responseToBeSent() << RESET << std::endl;
 				if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
 				{
 					sendResponse(tmpClient);
@@ -424,7 +424,7 @@ void ServerManager::existingClient(int eventFD)
 	{
 		// Keep going boi
 	}
-	std::clog << tmpClient->getResponseBuff() << std::endl;
+	// std::clog << tmpClient->getResponseBuff() << std::endl;
 	// exit(1);
 }
 
@@ -432,7 +432,7 @@ bool ServerManager::matchServerFD(int eventFD) const
 {
 	if (_servSockFDs.find(eventFD) != _servSockFDs.end())
 	{
-		std::clog << ORANGE << "matchServerFD new client found from FD " << eventFD << RESET << std::endl;
+		// std::clog << ORANGE << "matchServerFD new client found from FD " << eventFD << RESET << std::endl;
 		return true;
 	}
 	return false;
@@ -473,16 +473,16 @@ void ServerManager::mainLoop()
 		catch (Tools::Exception &e)
 		{
 			if (e.getReturnCode() == 0) {
-				std::clog << PINK << e.getMsgLog() << RESET << std::endl;
+				// std::clog << PINK << e.getMsgLog() << RESET << std::endl;
 			}
 		}
 		catch (std::exception &e)
 		{
-			std::clog << ORANGE << e.what() << RESET << std::endl;
+			// std::clog << ORANGE << e.what() << RESET << std::endl;
 		}
 		catch (...)
 		{
-			std::clog << ORANGE << "Undefined error" << RESET << std::endl;
+			// std::clog << ORANGE << "Undefined error" << RESET << std::endl;
 		}
 	}
 }

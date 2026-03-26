@@ -156,7 +156,7 @@ bool ConfigBase::handleMaxSizeConversion(std::string &maxSize)
 		std::size_t pos = maxSize.find_first_not_of(digits);
 		if (pos == std::string::npos)
 		{
-			std::clog << "Unknown error" << std::endl;
+			// std::clog << "Unknown error" << std::endl;
 			return false;
 		}
 		bitmask_t foundBit = charToBit(maxSize[pos]);
@@ -377,38 +377,38 @@ bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *i
 }
 
 void ConfigBase::printData() const {
-	std::clog << "Root: " << getRoot() << std::endl;
+	// std::clog << "Root: " << getRoot() << std::endl;
 
-	std::clog << "Indexes: ";
+	// std::clog << "Indexes: ";
 	std::vector<std::string>::const_iterator indexit = getIndex().begin();
 	for (;indexit != getIndex().end(); indexit++) {
-		std::clog << *indexit << ", ";
+		// std::clog << *indexit << ", ";
 	}
-	std::clog << std::endl;
+	// std::clog << std::endl;
 	
-	std::clog << "autoindex: " << getAutoIndex() << std::endl;
+	// std::clog << "autoindex: " << getAutoIndex() << std::endl;
 
-	std::clog << "clientMaxBodySize: " << getClientMaxBodySize() << std::endl;
+	// std::clog << "clientMaxBodySize: " << getClientMaxBodySize() << std::endl;
 
-	std::clog << "error pages: ";
-	if (getErrorPages().empty())
-		std::clog << std::endl;
+	// std::clog << "error pages: ";
+	if (getErrorPages().empty()) {}
+		// std::clog << std::endl;
 	std::map<int, std::string>::const_iterator errorit = getErrorPages().begin();
 	for (;errorit != getErrorPages().end(); errorit++) {
-		std::clog << errorit->first << ", " << errorit->second << std::endl;
+		// std::clog << errorit->first << ", " << errorit->second << std::endl;
 	}
 
-	std::clog << "allow methods: ";
+	// std::clog << "allow methods: ";
 	std::set<std::string>::const_iterator allowMethodit = getAllowMethods().begin();
 	for (;allowMethodit != getAllowMethods().end(); allowMethodit++) {
-		std::clog << *allowMethodit << ", ";
+		// std::clog << *allowMethodit << ", ";
 	}
-	std::clog << std::endl;
+	// std::clog << std::endl;
 
-	std::clog << "return directive: ";
-	std::clog << getReturnDirective().first << ", ";
-	std::clog << ((getReturnDirective().second.empty()) ? "\"\"" : getReturnDirective().second);
-	std::clog << std::endl;
+	// std::clog << "return directive: ";
+	// std::clog << getReturnDirective().first << ", ";
+	// std::clog << ((getReturnDirective().second.empty()) ? "\"\"" : getReturnDirective().second);
+	// std::clog << std::endl;
 }
 
 /**

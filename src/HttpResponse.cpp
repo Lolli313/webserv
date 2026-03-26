@@ -60,7 +60,7 @@ const std::string &HttpResponse::getBody() const { return _body; }
  */
 const std::string &HttpResponse::getFinalResponse()
 {
-	std::clog << YELLOW_BRIGHT << "getFinalResponse" << RESET << std::endl;
+	// std::clog << YELLOW_BRIGHT << "getFinalResponse" << RESET << std::endl;
 	if (_finalResponse.empty())
 		buildFinalResponse();
 	return _finalResponse;
