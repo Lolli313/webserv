@@ -249,7 +249,8 @@ bool ConfigBase::handleErrorPage(std::vector<std::string> &tokens, std::ifstream
 bool ConfigBase::handleErrorOneLiner(std::vector<std::string> &tokens)
 {
 	std::string errorPagePath(tokens.back());
-	if (!Tools::checkAndRemoveSemicolon(errorPagePath))
+	if (!Tools::checkAndRemoveSemicolon(errorPagePath) || errorPagePath.empty()
+		|| !Tools::stringStartsWithCharacter(errorPagePath, '/'))
 		return false;
 
 	// erase first ("error_page") and last elements (errorPagePath)
@@ -307,7 +308,8 @@ bool ConfigBase::handleErrorMultiLiner(std::vector<std::string> &tokens, std::if
 			return false;
 
 		std::string errorPagePath(tokens[1]);
-		if (!Tools::checkAndRemoveSemicolon(errorPagePath))
+		if (!Tools::checkAndRemoveSemicolon(errorPagePath) || errorPagePath.empty()
+		|| !Tools::stringStartsWithCharacter(errorPagePath, '/'))
 			return false;
 
 		addOrReplaceErrorPage(httpCode, errorPagePath);
