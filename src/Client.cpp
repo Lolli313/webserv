@@ -74,6 +74,7 @@ char *Client::getTmpBufferPtr() { return _tmpBuff; }
 
 bool Client::doneReceiving() const { 
 	std::clog << "Done receiving = " << _doneReceiving << std::endl;
+	std::clog << "Done receiving :)" << std::endl;
 	return _doneReceiving;
 }
 
@@ -175,10 +176,11 @@ std::string Client::bufferManager() {
         return "";
     }
 	std::string headers = _buffer.substr(0, posHeaderEnd);
+	Tools::transformStringToLowecase(headers);
 	size_t posBodyStart = posHeaderEnd + 4;
 
 	// la il faut trouver Content-Length pour savoir si le body est finit si il y en a un
-	size_t posContentLengthStart = headers.find("Content-Length: ");
+	size_t posContentLengthStart = headers.find("content-length: ");
 	if (posContentLengthStart == std::string::npos) {
 		std::string request = _buffer.substr(0, posBodyStart);
         _buffer.erase(0, posBodyStart);
@@ -207,14 +209,4 @@ std::string Client::bufferManager() {
 		std::clog << _buffer.length() << " " << posBodyStart << " " << contentLength << std::endl;
         throw Tools::Exception(413, "HttpRequest: Malformed body");
     }
-}
-
-void Client::printStatus() const
-{
-	std::clog << "clientFD = " << _clientFD << std::endl;
-	std::clog << "doneReceiving = " << _doneReceiving << std::endl;
-	std::clog << "responseToBeSent = " << _responseToBeSent << std::endl;
-	std::clog << "responseSent = " << _responseSent << std::endl;
-	std::clog << "readyToReceive = " << _readyToReceive << std::endl;
-	std::clog << "toBeClosed = " << _toBeClosed << std::endl;
 }
