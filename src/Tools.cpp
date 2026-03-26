@@ -218,4 +218,9 @@ void Tools::transformStringToLowecase(std::string& str) {
 		str[i] = std::tolower(str[i]);
 }
 
+bool Tools::stringStartsWithCharacter(const std::string& str, char c) {
+	return (!str.empty() && str[0] == c);
+}
+
+
 

@@ -93,7 +93,10 @@ bool ConfigBase::handleRoot(std::vector<std::string> &tokens, std::ifstream *inf
 		return false;
 
 	tokens.erase(tokens.begin());
-	setRoot(tokens[0]);
+	std::string& path = tokens[0];
+	if (!Tools::stringStartsWithCharacter(path, '/'))
+		return false;
+	setRoot(path);
 	return true;
 }
 

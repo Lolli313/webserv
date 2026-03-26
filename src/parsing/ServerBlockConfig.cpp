@@ -154,6 +154,10 @@ bool ServerBlockConfig::parseLocation(std::vector<std::string>& tokens) {
 	std::string locationPath = tokens[1];
 	if (_locationConfigs.find(locationPath) != _locationConfigs.end())
 		throw Tools::Exception("Duplicate location path found");
+
+	if (!Tools::stringStartsWithCharacter(locationPath, '/'))
+		return false;
+
 	std::vector<std::string>::iterator it = tokens.begin();
 	std::advance(it, 1);
 	tokens.erase(it);
@@ -181,7 +185,8 @@ bool checkCgiDirectiveValidity(std::vector<std::string>& tokens) {
 	if (tokens.size() != 2)
 		return false;
 	
-	if (!Tools::checkAndRemoveSemicolon(tokens[1]) || tokens[1].empty())
+	std::string& path = tokens[1];
+	if (!Tools::checkAndRemoveSemicolon(path) || path.empty() || !Tools::stringStartsWithCharacter(path, '/'))
 		return false;
 
 	return true;
