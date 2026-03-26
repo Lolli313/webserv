@@ -36,7 +36,7 @@ Get::~Get() {}
 
 void Get::checkRequest()
 {
-	// std::clog << YELLOW_BRIGHT << "checkRequest" << RESET << std::endl;
+	std::clog << YELLOW_BRIGHT << "checkRequest" << RESET << std::endl;
 	std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("Host");
 	if (it == _request.getHeader().end())
 		throw Tools::Exception(400, "GET: host not found.");
@@ -45,9 +45,9 @@ void Get::checkRequest()
 
 void Get::checkAndSetFile(const std::string &path)
 {
-	// std::clog << YELLOW_BRIGHT << "checkAndSetFile" << RESET << std::endl;
+	std::clog << YELLOW_BRIGHT << "checkAndSetFile" << RESET << std::endl;
 	std::string fullPath = _config->getRoot() + path;
-	// std::clog << YELLOW_BRIGHT << "fullpath = " << fullPath << RESET << std::endl;
+	std::clog << YELLOW_BRIGHT << "fullpath = " << fullPath << RESET << std::endl;
 	int fd = open(fullPath.c_str(), O_RDONLY);
 	if (fd < 0)
 	{
@@ -58,7 +58,7 @@ void Get::checkAndSetFile(const std::string &path)
 		else
 			throw Tools::Exception(500, "GET: unknown error, cannot open the file");
 	}
-	// std::clog << YELLOW_BRIGHT << "Before reading file"<< RESET << std::endl;
+	std::clog << YELLOW_BRIGHT << "Before reading file"<< RESET << std::endl;
 	char buffer[BUFFERSIZE];
 	ssize_t bytesRead = 0;
 	while ((bytesRead = read(fd, buffer, BUFFERSIZE)) > 0)
@@ -66,13 +66,13 @@ void Get::checkAndSetFile(const std::string &path)
 	close(fd);
 	if (bytesRead < 0)
 			throw Tools::Exception(500, "GET: read error");
-	// std::clog << YELLOW_BRIGHT << "File = " << _file << RESET << std::endl;
+	std::clog << YELLOW_BRIGHT << "File = " << _file << RESET << std::endl;
 }
 
 
 const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *config)
 {
-	// std::clog << YELLOW_BRIGHT << "executeGET" << RESET << std::endl;
+	std::clog << YELLOW_BRIGHT << "executeGET" << RESET << std::endl;
 	Get get(request, config);
 	get.checkRequest();
 	get.checkAndSetFile(request.getPurePath());

@@ -21,7 +21,7 @@ int main() {
     // client.clientSend(request);
 
     std::string test =
-    "POST /api/utilisateurs HTTP/1.1\r\n"
+    "GET /api/utilisateurs HTTP/1.1\r\n"
     "Host: 127.0.0.1:8080\r\n"
     "Content-Type: application/json\r\n"
     "Content-Length: 71\r\n"

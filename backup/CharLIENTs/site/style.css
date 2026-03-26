@@ -1,84 +1,88 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f5f5;
+    background-color: green;
     margin: 0;
-    padding: 20px;
+    padding: 30px;
     color: #333;
 }
 
 .container {
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
+    background-color: greenyellow;
+    padding: 30px;
+    border: 3px solid lightseagreen;
+    border-radius: 30px;
+}
+
+h1, h2, h3 {
+    color: green;
+}
+
+.head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%; 
+}
+
+.uploads {
+    border: 3px solid green;
+    border-radius: 30px;
     background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-h1, h2 {
-    color: #2c3e50;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    padding: 50px;
 }
 
 input[type="text"],
 select,
 textarea {
     width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 10px;
+    border: 3px solid green;
+    border-radius: 10px;
     box-sizing: border-box;
 }
 
 textarea {
     resize: vertical;
-    min-height: 100px;
+    min-height: 80px;
+}
+
+.method-button.active {
+    background-color: green;
+    color: lightseagreen;
+    border: 3px solid lightseagreen;
+}
+
+.button {
+    display: flex;
+    justify-content: center;
+    gap: 30px; 
 }
 
 button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
+    background-color: lightseagreen;
+    color: green;
+    border: 3px solid green;
+    border-radius: 10px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: 1000;
 }
 
-button:hover {
-    background-color: #2980b9;
+.send {
+    display: flex;
+    justify-content: center;
 }
 
 .response {
+    display: flex;
+    justify-content: center;
     margin-top: 20px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
-
-.response pre {
-    margin: 0;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
-
-#post-file-group input[type="file"] {
-    padding: 5px;
-}
-
-.code {
-    font-family: monospace;
-    background-color: #f0f0f0;
-    padding: 2px 5px;
-    border-radius: 3px;
+    padding: 30px;
+    background-color: white;
+    border-radius: 10px;
+    border: 3px solid green;
 }

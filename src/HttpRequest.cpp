@@ -79,12 +79,12 @@ void HttpRequest::parse(const std::string &request) {
 
 	// parse la methode, le path et la version du http
 	std::istringstream iss(request);
-	// std::cout << request << std::endl;
+	std::clog << request << std::endl;
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
 	if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
-		// std::clog << LIGHT_BLUE << "HttpRequest: Unknown method" << RESET << std::endl;
+		std::clog << LIGHT_BLUE << "HttpRequest: Unknown method" << RESET << std::endl;
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
 	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty()) {
@@ -148,7 +148,7 @@ void HttpRequest::cookie(Cookie &cookie) {
 
 // void HttpRequest::executeMethod() {
 // 	if (_methodStr == "GET") {
-// 		// std::clog << "code pour get" << std::endl;
+// 		std::clog << "code pour get" << std::endl;
 // 	} else if (_methodStr == "POST") {
 // 		Post post(*this);
 // 		post.parseBody();
@@ -166,18 +166,18 @@ void HttpRequest::cookie(Cookie &cookie) {
 
 void HttpRequest::executeScript() {
 	if (_purePath != "cgi-bin/hello.py" && _purePath != "cgi-bin/info.php") {
-		// std::clog << "marche pas" << std::endl;
+		std::clog << "marche pas" << std::endl;
 		return;
 	}
 
     int pipefd[2];
     if (pipe(pipefd) == -1) {
-		// std::clog << "NULL1" << std::endl; 
+		std::clog << "NULL1" << std::endl; 
         // throw std::runtime_error("Failed to create pipe");
     }
     pid_t pid = fork();
     if (pid == -1) {
-		// std::clog << "NULL2" << std::endl; 
+		std::clog << "NULL2" << std::endl; 
         // throw std::runtime_error("Failed to fork");
     } else if (pid == 0) {
         close(pipefd[0]);
@@ -189,7 +189,7 @@ void HttpRequest::executeScript() {
         // }
 
         execl(_purePath.c_str(), _purePath.c_str(), NULL);
-		// std::clog << "NULL3" << std::endl; 
+		std::clog << "NULL3" << std::endl; 
         exit(1);
     } else { 
         close(pipefd[1]);
@@ -205,10 +205,10 @@ void HttpRequest::executeScript() {
         // int status;
         // waitpid(pid, &status, 0);
         // if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
-		// 	// std::clog << "NULL4" << std::endl; 
+		// 	std::clog << "NULL4" << std::endl; 
         //     // throw std::runtime_error("CGI script execution failed");
         // }
-		// std::clog << YELLOW << "CGI Output: " << output << RESET << std::endl;
+		std::clog << YELLOW << "CGI Output: " << output << RESET << std::endl;
     }
 }
 
@@ -237,23 +237,23 @@ void HttpRequest::executeScript() {
 // 	}
 // 	response.addDateHeader();
 // 	response.setBody(_body);
-// 	// std::clog << RED << response.getFinalResponse() << RESET << std::endl;
+// 	std::clog << RED << response.getFinalResponse() << RESET << std::endl;
 // }
 
 void HttpRequest::print() const {
-	// std::clog << YELLOW << "Method : " << RESET << _methodStr << std::endl;
-	// std::clog << YELLOW << "Path : " << RESET << _path << std::endl;
-	// std::clog << YELLOW << "Pure Path : " << RESET << _purePath << std::endl;
-	// std::clog << YELLOW << "Query Params : " << RESET << std::endl;
+	std::clog << YELLOW << "Method : " << RESET << _methodStr << std::endl;
+	std::clog << YELLOW << "Path : " << RESET << _path << std::endl;
+	std::clog << YELLOW << "Pure Path : " << RESET << _purePath << std::endl;
+	std::clog << YELLOW << "Query Params : " << RESET << std::endl;
 	for (std::map<std::string, std::string>::const_iterator it = _queryParams.begin();
 		it != _queryParams.end(); ++it) {
-		// std::clog << " " << it->first << " : " << it->second << std::endl;
+		std::clog << " " << it->first << " : " << it->second << std::endl;
 	}
-	// std::clog << YELLOW << "HTTP Version : " << RESET << _httpVersion << std::endl;
-	// std::clog << YELLOW << "Headers : " << RESET << std::endl; 
+	std::clog << YELLOW << "HTTP Version : " << RESET << _httpVersion << std::endl;
+	std::clog << YELLOW << "Headers : " << RESET << std::endl; 
 	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); ++it) {
-		// std::clog << " " << it->first << " : " << it->second << std::endl;
+		std::clog << " " << it->first << " : " << it->second << std::endl;
 	}
-	// std::clog << YELLOW << "Boundary : " << RESET << _boundary << std::endl;
-	// std::clog << YELLOW << "Body : " << std::endl << RESET << _body;
+	std::clog << YELLOW << "Boundary : " << RESET << _boundary << std::endl;
+	std::clog << YELLOW << "Body : " << std::endl << RESET << _body;
 }
