@@ -195,14 +195,7 @@ void Polling::readClientInput(Client &client)
 	}
 	else if (readSize > 0)
 	{
-		// std::clog << "Received size " << readSize << " = " << client.getTmpBufferPtr() << std::endl;
-		// std::clog << "BEFORE" << std::endl;
-		// std::clog << PINK << client.getBuffer() << RESET << std::endl;
-		// std::clog << PURPLE << client.getTmpBufferPtr() << RESET << std::endl;
 		client.getBuffer().append(client.getTmpBufferPtr(), readSize);
-		// std::clog << "AFTER" << std::endl;
-		// std::clog << PINK << client.getBuffer() << RESET << std::endl;
-		// std::clog << PURPLE << client.getTmpBufferPtr() << RESET << std::endl;
 	}
 	else
 	{

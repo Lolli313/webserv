@@ -79,11 +79,12 @@ void HttpRequest::parse(const std::string &request) {
 
 	// parse la methode, le path et la version du http
 	std::istringstream iss(request);
+	std::clog << request << std::endl;
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
 	if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
-		std::cout << LIGHT_BLUE << "HttpRequest: Unknown method" << RESET << std::endl;
+		std::clog << LIGHT_BLUE << "HttpRequest: Unknown method" << RESET << std::endl;
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
 	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty()) {
@@ -145,38 +146,38 @@ void HttpRequest::cookie(Cookie &cookie) {
 	}
 }
 
-void HttpRequest::executeMethod() {
-	if (_methodStr == "GET") {
-		// std::cout << "code pour get" << std::endl;
-	} else if (_methodStr == "POST") {
-		Post post(*this);
-		post.parseBody();
-		post.saveInFile();
-	} else if (_methodStr == "DELETE") {
-		int fd = open(_path.c_str(), O_RDONLY);
-		if (fd == -1) {
-			throw Tools::Exception(500, "existe pas ou pas accessible");
-		} else {
-			std::remove(_path.c_str());
-		}
-		close(fd);
-	}
-}
+// void HttpRequest::executeMethod() {
+// 	if (_methodStr == "GET") {
+// 		std::clog << "code pour get" << std::endl;
+// 	} else if (_methodStr == "POST") {
+// 		Post post(*this);
+// 		post.parseBody();
+// 		post.saveInFile();
+// 	} else if (_methodStr == "DELETE") {
+// 		int fd = open(_path.c_str(), O_RDONLY);
+// 		if (fd == -1) {
+// 			throw Tools::Exception(500, "existe pas ou pas accessible");
+// 		} else {
+// 			std::remove(_path.c_str());
+// 		}
+// 		close(fd);
+// 	}
+// }
 
 void HttpRequest::executeScript() {
 	if (_purePath != "cgi-bin/hello.py" && _purePath != "cgi-bin/info.php") {
-		// std::cout << "marche pas" << std::endl;
+		std::clog << "marche pas" << std::endl;
 		return;
 	}
 
     int pipefd[2];
     if (pipe(pipefd) == -1) {
-		std::cout << "NULL1" << std::endl; 
+		std::clog << "NULL1" << std::endl; 
         // throw std::runtime_error("Failed to create pipe");
     }
     pid_t pid = fork();
     if (pid == -1) {
-		std::cout << "NULL2" << std::endl; 
+		std::clog << "NULL2" << std::endl; 
         // throw std::runtime_error("Failed to fork");
     } else if (pid == 0) {
         close(pipefd[0]);
@@ -188,7 +189,7 @@ void HttpRequest::executeScript() {
         // }
 
         execl(_purePath.c_str(), _purePath.c_str(), NULL);
-		std::cout << "NULL3" << std::endl; 
+		std::clog << "NULL3" << std::endl; 
         exit(1);
     } else { 
         close(pipefd[1]);
@@ -204,40 +205,40 @@ void HttpRequest::executeScript() {
         // int status;
         // waitpid(pid, &status, 0);
         // if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
-		// 	std::cout << "NULL4" << std::endl; 
+		// 	std::clog << "NULL4" << std::endl; 
         //     // throw std::runtime_error("CGI script execution failed");
         // }
-		std::cout << YELLOW << "CGI Output: " << output << RESET << std::endl;
+		std::clog << YELLOW << "CGI Output: " << output << RESET << std::endl;
     }
 }
 
-void HttpRequest::executeResponse() {
-	HttpResponse response;
-	if (_methodStr == "GET") {
-		response.setReturnCode(200);
-		response.setReturnMessage("Ok");
-	} else if (_methodStr == "POST") {
-		response.setReturnCode(201);
-		response.setReturnMessage("Created");
-	} else if (_methodStr == "DELETE") {
-		response.setReturnCode(204);
-		response.setReturnMessage("No Content");
-	}
-	response.setHttpVersion(_httpVersion);
-	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); ++it) {
-		if (it->first == "Content-Length" || it->first == "Content-Type" || it->first == "Connection"
-			|| it->first == "Server" || it->first == "Cache-Control" || it->first == "Cookie") {
-				if (it->first == "Cookie") {
-					response.addHeader("Set-Cookie", it->second);
-				} else {
-					response.addHeader(it->first, it->second);
-				}
-			}
-	}
-	response.addDateHeader();
-	response.setBody(_body);
-	std::cout << RED << response.getFinalResponse() << RESET << std::endl;
-}
+// void HttpRequest::executeResponse() {
+// 	HttpResponse response;
+// 	if (_methodStr == "GET") {
+// 		response.setReturnCode(200);
+// 		response.setReturnMessage("Ok");
+// 	} else if (_methodStr == "POST") {
+// 		response.setReturnCode(201);
+// 		response.setReturnMessage("Created");
+// 	} else if (_methodStr == "DELETE") {
+// 		response.setReturnCode(204);
+// 		response.setReturnMessage("No Content");
+// 	}
+// 	response.setHttpVersion(_httpVersion);
+// 	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); ++it) {
+// 		if (it->first == "Content-Length" || it->first == "Content-Type" || it->first == "Connection"
+// 			|| it->first == "Server" || it->first == "Cache-Control" || it->first == "Cookie") {
+// 				if (it->first == "Cookie") {
+// 					response.addHeader("Set-Cookie", it->second);
+// 				} else {
+// 					response.addHeader(it->first, it->second);
+// 				}
+// 			}
+// 	}
+// 	response.addDateHeader();
+// 	response.setBody(_body);
+// 	std::clog << RED << response.getFinalResponse() << RESET << std::endl;
+// }
 
 void HttpRequest::print() const {
 	std::clog << YELLOW << "Method : " << RESET << _methodStr << std::endl;
