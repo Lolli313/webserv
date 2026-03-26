@@ -28,7 +28,7 @@ async function validateAndSend() {
     sendButton.classList.add('active');
 
     try {
-        let url = `http://127.0.0.1:8080${path}`;
+        let url = `http://localhost:8080${path}`;
         let options = { method: selectedMethod };
 
         if (selectedMethod === 'POST' && bodyText) {

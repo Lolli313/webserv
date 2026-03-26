@@ -65,7 +65,12 @@ void Get::checkAndSetFile(const std::string &path)
 		_file.append(buffer, bytesRead);
 	close(fd);
 	if (bytesRead < 0)
+	{
+		if (errno == EISDIR)
+			throw Tools::Exception(404, "GET: cannot read a directory");
+		else
 			throw Tools::Exception(500, "GET: read error");
+	}
 	std::clog << YELLOW_BRIGHT << "File = " << _file << RESET << std::endl;
 }
 

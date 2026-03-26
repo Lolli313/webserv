@@ -24,7 +24,7 @@ std::atomic<int> failedConnections(0);
 std::mutex printMutex;
 
 // FIX 1: Signal handler must only use async-signal-safe operations.
-std::clog is NOT async-signal-safe. Just set the flag.
+// std::cout is NOT async-signal-safe. Just set the flag.
 void handle_sigint(int) {
     stopRequested.store(true, std::memory_order_relaxed);
 }

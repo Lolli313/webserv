@@ -233,7 +233,7 @@ void ServerManager::sendResponse(Client *client)
  */
 const std::string execute(const HttpRequest &request, const ConfigBase *config)
 {
-	std::clog << YELLOW_BRIGHT << "excecute" << RESET << std::endl;
+	std::clog << YELLOW_BRIGHT << "execute" << RESET << std::endl;
 	std::string response;
 	if (request.getMethodStr() == "GET")
 		return response = Get::executeGet(request, config);
