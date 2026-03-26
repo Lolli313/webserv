@@ -22,15 +22,11 @@ int main(int ac, char **av)
 	}
 	std::signal(SIGINT, &handle_signals);
 
-	// std::vector<std::string> temp;
-	// temp.push_back("8080");
-	// temp.push_back("4443");
 	try {
 		ParseConfig pc((std::string(av[1])));
 		// pc.printData();
-		// ServerManager serverManager(temp);
-	//	ServerManager sm(pc.getServerConfig());
-	//	sm.mainLoop();
+		ServerManager sm(pc.getServerConfig());
+		sm.mainLoop();
 	}
 	catch (Tools::Exception &e) {
 		if (e.getReturnCode() == 0) {

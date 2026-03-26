@@ -87,7 +87,7 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 */
 
 bool ServerBlockConfig::parseListen(std::vector<std::string>& tokens) {
-	std::string port(tokens[1]);
+	std::string& port(tokens[1]);
 	if (tokens.size() != 2 || !Tools::checkAndRemoveSemicolon(port))
 		return false;
 
@@ -109,11 +109,10 @@ bool ServerBlockConfig::parseServerName(std::vector<std::string>& tokens) {
 	if (!Tools::checkAndRemoveSemicolon(tokens.back()))
 		return false;
 
-	tokens.erase(tokens.begin());	
-	for (std::vector<std::string>::iterator cit = tokens.begin(); cit != tokens.end(); cit++)
+	for (std::vector<std::string>::iterator cit = tokens.begin() + 1; cit != tokens.end(); cit++)
 		Tools::transformStringToLowecase(*cit);
 
-	_serverNames = std::set<std::string>(tokens.begin(), tokens.end());
+	_serverNames = std::set<std::string>(tokens.begin() + 1, tokens.end());
 	return true;
 }
 

@@ -106,7 +106,7 @@ public:
 	const std::pair<int, std::string> &getReturnDirective() const;
 
 	void setRoot(const std::string &src);
-	void setIndex(const std::vector<std::string> &src);
+	void setIndex(std::vector<std::string>::const_iterator start, std::vector<std::string>::const_iterator end);
 	void setAutoIndex(bool src);
 	void setClientMaxBodySize(long src);
 	void setErrorPages(const std::map<int, std::string> &src);
