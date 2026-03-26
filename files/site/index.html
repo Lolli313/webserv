@@ -17,7 +17,7 @@
                 <h2>Create Your Own Request</h2><br>
             </div>
             <div class="documents">
-                <h3>Documents</h3>
+                <h2>Documents</h2>
                 <div class="uploads">
                     <pre id="uploads"></pre>
                 </div>
@@ -27,9 +27,9 @@
 
         <h3>Method</h3>
         <div class="button">
-            <button class="method-button" onclick="selectMethod('GET')">GET</button>
-            <button class="method-button" onclick="selectMethod('POST')">POST</button>
-            <button class="method-button" onclick="selectMethod('DELETE')">DELETE</button>
+            <button class="method-button" onclick="selectMethod('GET', event)">GET</button>
+            <button class="method-button" onclick="selectMethod('POST', event)">POST</button>
+            <button class="method-button" onclick="selectMethod('DELETE', event)">DELETE</button>
         </div>
 
         <div class="path">

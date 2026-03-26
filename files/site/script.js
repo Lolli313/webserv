@@ -31,16 +31,18 @@ async function validateAndSend() {
         let url = `http://127.0.0.1:8080${path}`;
         let options = { method: selectedMethod };
 
-        if (selectedMethod === 'POST' && bodyText) {
-            options.headers = { 'Content-Type': 'application/json' };
-            options.body = bodyText;
-        }
+        if (selectedMethod === 'POST') {
+            if (bodyText) {
+                options.headers = { 'Content-Type': 'application/json' };
+                options.body = bodyText;
+            }
 
-        if (fileInput.files.length > 0) {
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            options.body = formData;
-            // Ne pas définir 'Content-Type' pour FormData, le navigateur le fera automatiquement
+            if (fileInput.files.length > 0) {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                options.body = formData;
+                delete options.headers; // Laisser le navigateur définir l'en-tête pour FormData
+            }
         }
 
         // Envoyer la requête
@@ -48,7 +50,7 @@ async function validateAndSend() {
 
         // Afficher la réponse dans l'encadré
         const responseText = await response.text();
-        responseDiv.textContent = responseText;
+        responseDiv.textContent = `Status: ${response.status}\n${responseText}`;
     } catch (error) {
         responseDiv.textContent = `Erreur : ${error.message}`;
     } finally {
