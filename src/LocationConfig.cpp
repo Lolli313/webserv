@@ -83,7 +83,7 @@ bool LocationConfig::parseLocationBlock(std::vector<std::string> &tokens)
 	std::string line;
 	while (std::getline(*_infile, line))
 	{
-		if (line.empty() || line[0] == '#')
+		if (Tools::lineIsEmptyOrComment(line))
 			continue;
 
 		tokens = Tools::splitString(line);

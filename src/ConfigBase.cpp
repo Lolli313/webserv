@@ -52,7 +52,9 @@ const std::set<std::string> &ConfigBase::getAllowMethods() const { return _allow
 const std::pair<int, std::string> &ConfigBase::getReturnDirective() const { return _returnDirective; }
 
 void ConfigBase::setRoot(const std::string &src) { _root = src; }
-void ConfigBase::setIndex(const std::vector<std::string> &src) { _index = src; }
+void ConfigBase::setIndex(std::vector<std::string>::const_iterator start, std::vector<std::string>::const_iterator end) {
+	_index.assign(start, end);
+}
 void ConfigBase::setAutoIndex(bool src) { _autoindex = src; }
 void ConfigBase::setClientMaxBodySize(long src) { _clientMaxBodySize = src; }
 void ConfigBase::setErrorPages(const std::map<int, std::string> &src) { _errorPages = src; }
@@ -92,8 +94,10 @@ bool ConfigBase::handleRoot(std::vector<std::string> &tokens, std::ifstream *inf
 	if (!Tools::checkAndRemoveSemicolon(tokens[1]))
 		return false;
 
-	tokens.erase(tokens.begin());
-	setRoot(tokens[0]);
+	std::string& path = tokens[1];
+	if (path.empty() || !Tools::stringStartsWithCharacter(path, '/'))
+		return false;
+	setRoot(path);
 	return true;
 }
 
@@ -106,8 +110,7 @@ bool ConfigBase::handleIndex(std::vector<std::string> &tokens, std::ifstream *in
 	if (!Tools::checkAndRemoveSemicolon(tokens.back()))
 		return false;
 
-	tokens.erase(tokens.begin());
-	setIndex(tokens);
+	setIndex(tokens.begin() + 1, tokens.end());
 	return true;
 }
 
@@ -120,7 +123,7 @@ bool ConfigBase::handleAutoindex(std::vector<std::string> &tokens, std::ifstream
 	if (!Tools::checkAndRemoveSemicolon(tokens[1]))
 		return false;
 
-	std::string autoindexArgument(tokens[1]);
+	const std::string& autoindexArgument(tokens[1]);
 	if (autoindexArgument == "on")
 		setAutoIndex(true);
 	else if (autoindexArgument == "off")
@@ -140,7 +143,7 @@ bool ConfigBase::handleClientMaxBodySize(std::vector<std::string> &tokens, std::
 	if (!Tools::checkAndRemoveSemicolon(tokens[1]))
 		return false;
 
-	std::string maxSize(tokens[1]);
+	std::string& maxSize(tokens[1]);
 	return handleMaxSizeConversion(maxSize);
 }
 
@@ -245,17 +248,19 @@ bool ConfigBase::handleErrorPage(std::vector<std::string> &tokens, std::ifstream
  */
 bool ConfigBase::handleErrorOneLiner(std::vector<std::string> &tokens)
 {
-	std::string errorPagePath(tokens.back());
-	if (!Tools::checkAndRemoveSemicolon(errorPagePath))
+	std::string& errorPagePath(tokens.back());
+	if (!Tools::checkAndRemoveSemicolon(errorPagePath) || errorPagePath.empty()
+		|| !Tools::stringStartsWithCharacter(errorPagePath, '/'))
 		return false;
 
-	// erase first ("error_page") and last elements (errorPagePath)
-	tokens.erase(tokens.end() - 1);
-	tokens.erase(tokens.begin());
+	// Ignore the first token "error_page"
+	std::vector<std::string>::const_iterator it = tokens.begin() + 1;
+	// End iterator to ignore the error path
+	std::vector<std::string>::const_iterator eit = tokens.end() - 1;
 
-	for (std::vector<std::string>::const_iterator it = tokens.begin(); it != tokens.end(); it++)
+	for (; it != eit; it++)
 	{
-		std::string temp = *it;
+		const std::string& temp = *it;
 		if (temp.size() != 3 || !Tools::isNumber(temp))
 			return false;
 
@@ -288,7 +293,7 @@ bool ConfigBase::handleErrorMultiLiner(std::vector<std::string> &tokens, std::if
 	std::string line;
 	while (std::getline(*infile, line))
 	{
-		if (line.empty() || line[0] == '#')
+		if (Tools::lineIsEmptyOrComment(line))
 			continue;
 
 		tokens = Tools::splitString(line);
@@ -303,8 +308,9 @@ bool ConfigBase::handleErrorMultiLiner(std::vector<std::string> &tokens, std::if
 		if (httpCode < 300 || httpCode > 599)
 			return false;
 
-		std::string errorPagePath(tokens[1]);
-		if (!Tools::checkAndRemoveSemicolon(errorPagePath))
+		std::string& errorPagePath(tokens[1]);
+		if (!Tools::checkAndRemoveSemicolon(errorPagePath) || errorPagePath.empty()
+		|| !Tools::stringStartsWithCharacter(errorPagePath, '/'))
 			return false;
 
 		addOrReplaceErrorPage(httpCode, errorPagePath);
@@ -331,14 +337,12 @@ bool ConfigBase::handleAllowMethods(std::vector<std::string> &tokens, std::ifstr
 	if (tokens.size() < 2)
 		return false;
 
-	std::vector<std::string> parseTokens(tokens);
-	if (!Tools::checkAndRemoveSemicolon(parseTokens.back()))
+	if (!Tools::checkAndRemoveSemicolon(tokens.back()))
 		return false;
 
-	parseTokens.erase(parseTokens.begin());
 	std::set<std::string> allowedMethods;
-	std::vector<std::string>::iterator it = parseTokens.begin();
-	for (; it != parseTokens.end(); it++)
+	std::vector<std::string>::iterator it = tokens.begin() + 1;
+	for (; it != tokens.end(); it++)
 	{
 		if (!HttpTools::isValidMethod(*it))
 			return false;
@@ -354,12 +358,10 @@ bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *i
 	if (tokens.size() < 2 || tokens.size() > 3)
 		return false;
 
-	std::vector<std::string> parseTokens(tokens);
-	if (!Tools::checkAndRemoveSemicolon(parseTokens.back()))
+	if (!Tools::checkAndRemoveSemicolon(tokens.back()))
 		return false;
 
-	parseTokens.erase(parseTokens.begin());
-	std::string temp(parseTokens[0]);
+	std::string& temp(tokens[1]);
 	if (temp.size() != 3 || !Tools::isNumber(temp))
 		return false;
 
@@ -368,8 +370,8 @@ bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *i
 		return false;
 
 	std::string path("");
-	if (parseTokens.size() > 1)
-		path = parseTokens[1];
+	if (tokens.size() > 2)
+		path = tokens[2];
 	setReturnDirective(std::make_pair(httpCode, path));
 	return true;
 }
@@ -389,6 +391,8 @@ void ConfigBase::printData() const {
 	std::clog << "clientMaxBodySize: " << getClientMaxBodySize() << std::endl;
 
 	std::clog << "error pages: ";
+	if (getErrorPages().empty())
+		std::clog << std::endl;
 	std::map<int, std::string>::const_iterator errorit = getErrorPages().begin();
 	for (;errorit != getErrorPages().end(); errorit++) {
 		std::clog << errorit->first << ", " << errorit->second << std::endl;
@@ -436,7 +440,7 @@ void ConfigBase::initRoot() {
 		setRoot(LAST_RESORT_PATH);
 	else {
 		std::string root(path);
-		root += "/files";
+		root += FILE_FOLDER_NAME;
 		setRoot(root);
 	}
 }

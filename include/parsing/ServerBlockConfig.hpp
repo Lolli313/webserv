@@ -1,9 +1,11 @@
 #pragma once
 
+#include "TerminalColors.hpp"
 #include "LocationConfig.hpp"
 #include "ConfigBase.hpp"
 #include "HttpTools.hpp"
 #include "Tools.hpp"
+#include "CGI.hpp"
 
 #include <iostream>
 #include <algorithm>
@@ -20,6 +22,7 @@ private:
 	std::string _port;
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
+	CGI _cgi;
 	std::ifstream *_infile;
 	ServerBlockConfig();
 
@@ -62,10 +65,10 @@ public:
 	bool parseAllowMethods(std::vector<std::string>& tokens);
 	bool parseReturn(std::vector<std::string>& tokens);
 	// test pour les cgi
-	// bool parseCgi(const std::vector<std::string>& tokens);
-    // bool parseCgiPath(const std::vector<std::string>& tokens);
-    // bool parseCgiPython(const std::vector<std::string>& tokens);
-    // bool parseCgiPhp(const std::vector<std::string>& tokens);
+	bool parseCgi(std::vector<std::string>& tokens);
+    // bool parseCgiPath(std::vector<std::string>& tokens);
+    // bool parseCgiPython(std::vector<std::string>& tokens);
+    // bool parseCgiPhp(std::vector<std::string>& tokens);
 
 	void initWithDefaultData();
 	void printData() const;

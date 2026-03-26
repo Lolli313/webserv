@@ -26,13 +26,14 @@ ParseConfig::ParseConfig(const std::string& filePath) : _fileName(filePath) {
 	}
 	std::string line;
 	while (std::getline(infile, line)) {
-		if (line.empty() || line[0] == '#') {
+		if (Tools::lineIsEmptyOrComment(line)) {
 			continue;
 		}
 		else if (!checkServerKeyword(line, &infile)) {
 			throw Tools::Exception("Parsing error");
 		}
 	}
+	std::clog << LIGHT_BLUE << "Config parsing done!" << RESET << std::endl;
 }
 
 /*

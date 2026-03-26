@@ -14,7 +14,7 @@ ServerBlockConfig::~ServerBlockConfig() {}
 ServerBlockConfig::ServerBlockConfig(std::ifstream *infile) : _infile(infile) {
 	std::string line;
 	while (std::getline(*_infile, line)) {
-		if (line[0] == '#' || line.empty())
+		if (Tools::lineIsEmptyOrComment(line))
 			continue;
 		else if (line[0] == '}')
 			return;
@@ -75,11 +75,7 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 	temp.insert(std::make_pair("error_page", &ServerBlockConfig::parseErrorPage));
 	temp.insert(std::make_pair("allow_methods", &ServerBlockConfig::parseAllowMethods));
 	temp.insert(std::make_pair("return", &ServerBlockConfig::parseReturn));
-	// test pour les cgi
-	// temp.insert(std::make_pair("cgi", &ServerBlockConfig::parseCgi));
-	// temp.insert(std::make_pair("path", &ServerBlockConfig::parseCgiPath));
-	// temp.insert(std::make_pair("python", &ServerBlockConfig::parseCgiPython));
-	// temp.insert(std::make_pair("php", &ServerBlockConfig::parseCgiPhp));
+	temp.insert(std::make_pair("cgi", &ServerBlockConfig::parseCgi));
 
 	return temp;
 }
@@ -91,7 +87,7 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 */
 
 bool ServerBlockConfig::parseListen(std::vector<std::string>& tokens) {
-	std::string port(tokens[1]);
+	std::string& port(tokens[1]);
 	if (tokens.size() != 2 || !Tools::checkAndRemoveSemicolon(port))
 		return false;
 
@@ -113,8 +109,10 @@ bool ServerBlockConfig::parseServerName(std::vector<std::string>& tokens) {
 	if (!Tools::checkAndRemoveSemicolon(tokens.back()))
 		return false;
 
-	tokens.erase(tokens.begin());
-	_serverNames = std::set<std::string>(tokens.begin(), tokens.end());
+	for (std::vector<std::string>::iterator cit = tokens.begin() + 1; cit != tokens.end(); cit++)
+		Tools::transformStringToLowecase(*cit);
+
+	_serverNames = std::set<std::string>(tokens.begin() + 1, tokens.end());
 	return true;
 }
 
@@ -155,6 +153,10 @@ bool ServerBlockConfig::parseLocation(std::vector<std::string>& tokens) {
 	std::string locationPath = tokens[1];
 	if (_locationConfigs.find(locationPath) != _locationConfigs.end())
 		throw Tools::Exception("Duplicate location path found");
+
+	if (!Tools::stringStartsWithCharacter(locationPath, '/'))
+		return false;
+
 	std::vector<std::string>::iterator it = tokens.begin();
 	std::advance(it, 1);
 	tokens.erase(it);
@@ -178,34 +180,51 @@ bool ServerBlockConfig::parseReturn(std::vector<std::string>& tokens) {
 	return false;
 }
 
-// test pour les cgi
+bool checkCgiDirectiveValidity(std::vector<std::string>& tokens) {
+	if (tokens.size() != 2)
+		return false;
+	
+	std::string& path = tokens[1];
+	if (!Tools::checkAndRemoveSemicolon(path) || path.empty() || !Tools::stringStartsWithCharacter(path, '/'))
+		return false;
 
-// bool ServerBlockConfig::parseCgi(const std::vector<std::string>& tokens) {
-//     // Logique pour activer le CGI dans le bloc courant
-//     // Exemple : _currentBlock.cgiEnabled = true;
-// }
+	return true;
+}
 
-// bool ServerBlockConfig::parseCgiPath(const std::vector<std::string>& tokens) {
-//     if (tokens.size() < 2) {
-// 		return false;
-// 	}
-//     _currentBlock.cgiPath = tokens[1];
-// }
+bool ServerBlockConfig::parseCgi(std::vector<std::string>& tokens) {
+	if (tokens.size() < 2 || tokens.size() > 3)
+		return false;
 
-// bool ServerBlockConfig::parseCgiPython(const std::vector<std::string>& tokens) {
-//     if (tokens.size() < 2) {
-// 		return false
-// 	}
-//     _currentBlock.cgiPythonInterpreter = tokens[1];
-// }
+	if (!Tools::isValidBraceFormat("cgi", tokens, _infile))
+		return false;
 
-// bool ServerBlockConfig::parseCgiPhp(const std::vector<std::string>& tokens) {
-//     if (tokens.size() < 2) {
-// 		return false
-// 	}
-//     _currentBlock.cgiPhpInterpreter = tokens[1];
-// }
+	std::string line;
+	while (std::getline(*_infile, line)) {
+		if (Tools::lineIsEmptyOrComment(line))
+			continue;
 
+		tokens = Tools::splitString(line);
+		if (tokens[0] == "}")
+			return true;
+		
+		if (!checkCgiDirectiveValidity(tokens))
+			return false;
+
+		const std::string& key = tokens[0];
+		const std::string& value = tokens[1];
+
+		if (key == "path")
+			_cgi.setPath(value);
+		else if (key == "python")
+			_cgi.setPythonPath(value);
+		else if (key == "php")
+			_cgi.setPhpPath(value);
+		else
+			return false;
+	}
+	_cgi.setHasCGI(true);
+	return true;
+}
 
 /*
 =================================================================

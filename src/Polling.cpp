@@ -1,5 +1,5 @@
 
-#include "terminalColors.hpp"
+#include "TerminalColors.hpp"
 #include "Polling.hpp"
 #include "Tools.hpp"
 

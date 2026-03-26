@@ -56,4 +56,7 @@ public:
 	static std::string intToString(int nbr);
 	static bool checkPath(const std::string &path);
 	static void findAndReplaceAllOccurences(std::string& input, const std::string& replaceWord, const std::string& replaceBy);
+	static bool lineIsEmptyOrComment(std::string& str);
+	static void transformStringToLowecase(std::string& str);
+	static bool stringStartsWithCharacter(const std::string& str, char c);
 };

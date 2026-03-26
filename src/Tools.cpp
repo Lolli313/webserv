@@ -144,7 +144,7 @@ bool Tools::isNumber(const std::string &str)
 }
 
 /**
- * Checks whether the tokens vector has one the following formats:
+ * @brief Checks whether the tokens vector has one the following formats:
  *
  * targetToken
  * {
@@ -152,6 +152,12 @@ bool Tools::isNumber(const std::string &str)
  * OR
  *
  * targetToken {
+ * 
+ * @param targetToken Name of the directive to look for (for ex "listen")
+ * @param tokens Vector of whitespace-split words from the current input line
+ * @param infile Pointer to the opened config file
+ * 
+ * @returns Whether tokens have a valid brace format
  */
 bool Tools::isValidBraceFormat(const std::string &targetToken, const std::vector<std::string> &tokens, std::ifstream *infile)
 {
@@ -194,3 +200,27 @@ void Tools::findAndReplaceAllOccurences(std::string& input, const std::string& r
 		pos = input.find(replaceWord, pos + replaceBy.size());
 	}
 }
+
+/**
+ * @brief Checks if a string is empty or is a # comment
+ * @attention Ignores whitespace
+ */
+bool Tools::lineIsEmptyOrComment(std::string& str) {
+	std::string::size_type pos = str.find_first_not_of(" \t\n\r\f\v");
+	if (pos == std::string::npos)
+		return true;
+	
+	return (str[pos] == '#');
+}
+
+void Tools::transformStringToLowecase(std::string& str) {
+	for (std::size_t i = 0; i < str.size(); i++)
+		str[i] = std::tolower(str[i]);
+}
+
+bool Tools::stringStartsWithCharacter(const std::string& str, char c) {
+	return (!str.empty() && str[0] == c);
+}
+
+
+

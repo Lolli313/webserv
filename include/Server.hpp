@@ -2,7 +2,7 @@
 #define SERVER_HPP
 
 #include "parsing/ServerBlockConfig.hpp"
-#include "terminalColors.hpp"
+#include "TerminalColors.hpp"
 #include "LocationConfig.hpp"
 #include "ServerSocket.hpp"
 #include "ConfigBase.hpp"

@@ -1,7 +1,7 @@
 #ifndef SERVERMANAGER_HPP
 #define SERVERMANAGER_HPP
 
-#include "terminalColors.hpp"
+#include "TerminalColors.hpp"
 #include "parsing/ParseConfig.hpp"
 #include "ServerSocket.hpp"
 #include "Polling.hpp"

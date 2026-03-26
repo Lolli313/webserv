@@ -1,6 +1,6 @@
 #pragma once
 
-#include "terminalColors.hpp"
+#include "TerminalColors.hpp"
 #include "Tools.hpp"
 #include "HttpTools.hpp"
 #include "Cookie.hpp"
