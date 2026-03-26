@@ -36,6 +36,47 @@ HttpTools &HttpTools::operator=(const HttpTools &obj)
 =================================================================
 */
 
+/**
+ * @brief Takes a content-type or an extension and returns its counterpart. (ex: extension=.txt, content-type=text/plain)
+ */
+const std::string HttpTools::getContentType(const std::string &target)
+{
+    static std::map<std::string, std::string> mapKeyValue;
+    static std::map<std::string, std::string> mapValueKey;
+    std::map<std::string, std::string>::const_iterator it;
+    if (mapKeyValue.empty() || mapValueKey.empty())
+    {
+        initContentType(mapKeyValue, true);
+        initContentType(mapValueKey, false);
+    }
+
+    it = mapKeyValue.find(target);
+    if (it != mapKeyValue.end())
+        return it->second;
+    
+    it = mapValueKey.find(target);
+    if (it != mapValueKey.end())
+        return it->second;
+    return std::string("");
+}
+
+/**
+ * @param isKey if true, takes the key as key, and if false, it uses the key as value.
+ */
+void HttpTools::initContentType(std::map<std::string, std::string> &contentType, bool isKey) {
+    if (isKey) {
+        #define X(key, value) contentType[key] = value;
+        CONTENT_TYPE_PAIRS
+        #undef X
+    }
+    else {
+        #define X(key, value) contentType[value] = key;
+        CONTENT_TYPE_PAIRS
+        #undef X
+    }
+}
+
+
 const HttpTools::MapType &HttpTools::getHttpCodes()
 {
     static HttpTools::MapType httpCodes;
