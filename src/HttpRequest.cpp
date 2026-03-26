@@ -119,7 +119,7 @@ void HttpRequest::parse(const std::string &request) {
 	}
 
 	// trouve le boundary
-	std::map<std::string, std::string>::const_iterator itContentType = _header.find("Content-Type");
+	std::map<std::string, std::string>::const_iterator itContentType = _header.find("content-type");
 	if (itContentType != _header.end()) {
 		size_t boundaryPos = itContentType->second.find("boundary=");
 		if (boundaryPos != std::string::npos) {
@@ -140,7 +140,7 @@ void HttpRequest::parse(const std::string &request) {
 }
 
 void HttpRequest::cookie(Cookie &cookie) {
-	std::map<std::string, std::string>::const_iterator itCookie = _header.find("Cookie");
+	std::map<std::string, std::string>::const_iterator itCookie = _header.find("cookie");
 	if (itCookie != _header.end()) {
 		cookie.setCookie(itCookie->second);
 	}

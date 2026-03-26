@@ -27,17 +27,18 @@ void Post::parseBody() {
 
     if (boundary.empty()) {
         std::map<std::string, std::string> head;
-        std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("Content-Type");
+        std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("content-type");
         if (it != _request.getHeader().end()) {
-            head["Content-Type"] = it->second;
+            head["content-type"] = it->second;
         }
-        it = _request.getHeader().find("Content-Disposition");
+        it = _request.getHeader().find("content-disposition");
         if (it != _request.getHeader().end()) {
-            head["Content-Disposition"] = it->second;
+            head["content-disposition"] = it->second;
         } else {
-            head["Content-Disposition"] = "name=\"post\"";
+            throw Tools::Exception(400, "Post: No Name");
+            // head["Content-Disposition"] = "name=\"post\"";
         }
-        head["Body"] = _request.getBody();
+        head["body"] = _request.getBody();
         _header.push_back(head);
         return;
     }
@@ -68,7 +69,7 @@ void Post::parseBody() {
                 if (!body.empty() && body[body.size() - 1] == '\n') {
                     body.erase(body.size() - 1);
                 }
-                head["Body"] = body;
+                head["body"] = body;
                 _header.push_back(head);
                 part.erase();
             }
@@ -91,7 +92,7 @@ void Post::print() const {
         for (std::map<std::string, std::string>::const_iterator it = _header[i].begin();
             it != _header[i].end(); ++it) {
             std::clog << YELLOW << it->first << " : " << RESET;
-            if (it->first == "Body") {
+            if (it->first == "body") {
                 std::clog << std::endl;
             }
             std::clog << it->second << std::endl;
@@ -102,7 +103,7 @@ void Post::print() const {
 
 void Post::saveInFile() const {
     for (size_t i = 0; i < _header.size(); ++i) {
-        std::map<std::string, std::string>::const_iterator it = _header[i].find("Content-Disposition");
+        std::map<std::string, std::string>::const_iterator it = _header[i].find("content-disposition");
         if (it == _header[i].end()) {
             throw Tools::Exception(400, "Post: No content disposition");
         }
@@ -110,7 +111,8 @@ void Post::saveInFile() const {
         const std::string& name = it->second;
         size_t namePos = name.find("name=\"");
         if (namePos == std::string::npos) {
-            filename = "post";
+            throw Tools::Exception(400, "Post: No Name");
+            // filename = "post";
         } else {
             size_t start = namePos + 6;
             size_t end = name.find("\"", start);
@@ -120,7 +122,7 @@ void Post::saveInFile() const {
                 filename = name.substr(start, end - start);
             }
         }
-        it = _header[i].find("Content-Type");
+        it = _header[i].find("content-type");
         if (it != _header[i].end()) {
             const std::string& format = it->second;
             size_t start = format.find("/");
@@ -135,7 +137,7 @@ void Post::saveInFile() const {
         if (!outFile) {
             throw Tools::Exception(500, "Post: Can't create file");
         }
-        it = _header[i].find("Body");
+        it = _header[i].find("body");
         outFile << it->second;
         outFile.close();
     }
@@ -149,10 +151,10 @@ const std::string Post::executePost(const HttpRequest &request)
 
     HttpResponse response(HttpTools::getReturnPair(201));
 	for (std::map<std::string, std::string>::const_iterator it = request.getHeader().begin(); it != request.getHeader().end(); ++it) {
-		if (it->first == "Content-Length" || it->first == "Content-Type" || it->first == "Connection"
-			|| it->first == "Server" || it->first == "Cache-Control" || it->first == "Cookie") {
-				if (it->first == "Cookie") {
-					response.addHeader("Set-Cookie", it->second);
+		if (it->first == "content-length" || it->first == "content-type" || it->first == "connection"
+			|| it->first == "server" || it->first == "cache-control" || it->first == "cookie") {
+				if (it->first == "cookie") {
+					response.addHeader("set-cookie", it->second);
 				} else {
 					response.addHeader(it->first, it->second);
 				}
