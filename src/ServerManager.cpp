@@ -438,6 +438,15 @@ bool ServerManager::matchServerFD(int eventFD) const
 	return false;
 }
 
+
+void ServerManager::handleTimeout()
+{
+	// a vector of pointers to each Client timestamp
+	// init timestamp at Client creation
+	// update it at each Client request, or any connection i guess (in existingClient)
+}
+
+
 void ServerManager::eventLoop()
 {
 	while (!_sigStop)
@@ -448,6 +457,7 @@ void ServerManager::eventLoop()
 			if (errno == EINTR)
 				return;
 		}
+
 		const epoll_event *eventArray = _polling->getEventArray();
 		for (int i = 0; i < _polling->getEventCount(); i++)
 		{

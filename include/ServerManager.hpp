@@ -66,7 +66,7 @@ public:
 	void mainLoop();
 	void sendResponse(Client *client);
 	void throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config);
-
+	void handleTimeout();
 };
 
 #endif

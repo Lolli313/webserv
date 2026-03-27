@@ -29,6 +29,8 @@ private:
 	bool _readyToReceive; // Client is waiting for response
 	bool _toBeClosed; // CLient should be closed, can be set by EPOLLHUP
 
+	int _timestamp; // Client last action, used for TIMEOUT
+
 	Client &operator=(const Client &obj);
 	
 public:
@@ -59,6 +61,9 @@ public:
 
 	void setToBeClosed(bool status);
 	bool toBeClosed() const;
+
+	void updateTimestamp();
+	int getTimestamp() const;
 
 	void setResponseBuff(const std::string &response);
 	const std::string &getResponseBuff() const;
