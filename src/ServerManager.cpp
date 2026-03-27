@@ -260,15 +260,18 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
  * @returns Minimal HTML code to be used as a body in the HTTP response
  * @attention Replace the template strings {(CODE)} and {(MSG)} with the HTTP code and message
  */
-const std::string generateFallBackPage() {
+const std::string generateFallBackPage()
+{
 	return "<html><body><h1>{(CODE)} {(MSG)}</h1></body></html>";
 }
 
 const std::string generateErrorPage(int code);
 
-const std::string readErrorFile(const std::string& errorPath, int code, bool isPredefined) {
+const std::string readErrorFile(const std::string &errorPath, int code, bool isPredefined)
+{
 	int fd = open(errorPath.c_str(), O_RDONLY);
-	if (fd == -1) {
+	if (fd == -1)
+	{
 		// If the error page defined in the config file fails while trying to open it,
 		// generate a templated error page by the server
 		if (isPredefined)
@@ -289,8 +292,9 @@ const std::string readErrorFile(const std::string& errorPath, int code, bool isP
 	return finalString;
 }
 
-const std::string generateErrorPage(int code) {
-	const char* workingDirectory = std::getenv("PWD");
+const std::string generateErrorPage(int code)
+{
+	const char *workingDirectory = std::getenv("PWD");
 	std::string errorPagePath = ERROR_PAGE_TEMPLATE_PATH;
 	std::string fullPath(std::string(workingDirectory) + errorPagePath);
 	std::string fileContent = readErrorFile(fullPath, code, false);
@@ -299,10 +303,14 @@ const std::string generateErrorPage(int code) {
 	return fileContent;
 }
 
-void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config)
+void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config, bool reThrow)
 {
 	if (!tmpClient)
-		throw;
+	{
+		if (reThrow)
+			throw;
+		return;
+	}
 	std::clog << PINK << "THROW ";
 	std::clog << PINK << e.getMsgLog() << RESET << std::endl;
 	if (e.getReturnCode() >= 100)
@@ -317,17 +325,19 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 		// ===============================
 
 		std::string errorBody;
-		if (config) {
+		if (config)
+		{
 			HttpTools::MapType::const_iterator it = config->getErrorPages().find(e.getReturnCode());
 			if (it == config->getErrorPages().end())
 				errorBody = generateErrorPage(e.getReturnCode());
-			else {
+			else
+			{
 				errorBody = readErrorFile(config->getRoot() + it->second, e.getReturnCode(), true);
 			}
 		}
 		else
 			errorBody = generateErrorPage(e.getReturnCode());
-		
+
 		HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
 		response.setBody(errorBody);
 		response.addHeader("Content-Length", Tools::intToString(errorBody.size()));
@@ -353,8 +363,8 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 		tmpClient->refreshClient();
 	}
 	// ============================================================================
-
-	throw;
+	if (reThrow)
+		throw;
 }
 
 void ServerManager::existingClient(int eventFD)
@@ -363,9 +373,10 @@ void ServerManager::existingClient(int eventFD)
 	const ConfigBase *config = NULL;
 	if (tmpClient)
 	{
+		tmpClient->updateTimestamp();
 		try
 		{
-			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");			
+			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
 			// std::clog << RED << tmpClient->getBuffer() << RESET << std::endl;
 			std::string tmpRequest = tmpClient->bufferManager();
 			// std::clog << GREEN << tmpClient->getBuffer() << RESET << std::endl;
@@ -408,16 +419,16 @@ void ServerManager::existingClient(int eventFD)
 					tmpClient->refreshClient();
 				}
 			}
-			// tmpClient->printStatus();	
+			// tmpClient->printStatus();
 			if (tmpClient->toBeClosed())
 			{
 				_polling->deleteCLient(tmpClient);
-				return ;
+				return;
 			}
 		}
 		catch (Tools::Exception &e)
 		{
-			throwHandler(tmpClient, e, config);
+			throwHandler(tmpClient, e, config, true);
 		}
 	}
 	else
@@ -438,14 +449,34 @@ bool ServerManager::matchServerFD(int eventFD) const
 	return false;
 }
 
-
 void ServerManager::handleTimeout()
 {
-	// a vector of pointers to each Client timestamp
-	// init timestamp at Client creation
-	// update it at each Client request, or any connection i guess (in existingClient)
-}
+	const std::time_t currTime = std::time(0);
+	std::vector<Client *> &clients = _polling->getClientVector();
 
+	for (std::vector<Client *>::reverse_iterator it = clients.rbegin();
+		 it != clients.rend();)
+	{
+		Client *client = *it;
+		if (!client)
+		{
+			++it;
+			continue;
+		}
+		// std::cout << (currTime - client->getTimestamp()) << std::endl;
+		if ((currTime - client->getTimestamp()) > TIMEOUT)
+		{
+			client->setToBeClosed(true);
+			std::string message = "timeout for client fd = " + Tools::intToString(client->getFD());
+			Tools::Exception timeoutException(408, message);
+			// Call throwHandler without throwing to bypass the normal logic.
+			throwHandler(client, timeoutException, NULL, false);
+			it = clients.rbegin();
+			continue;
+		}
+		++it;
+	}
+}
 
 void ServerManager::eventLoop()
 {
@@ -457,7 +488,7 @@ void ServerManager::eventLoop()
 			if (errno == EINTR)
 				return;
 		}
-
+		handleTimeout();
 		const epoll_event *eventArray = _polling->getEventArray();
 		for (int i = 0; i < _polling->getEventCount(); i++)
 		{
@@ -482,7 +513,8 @@ void ServerManager::mainLoop()
 		}
 		catch (Tools::Exception &e)
 		{
-			if (e.getReturnCode() == 0) {
+			if (e.getReturnCode() == 0)
+			{
 				std::clog << PINK << e.getMsgLog() << RESET << std::endl;
 			}
 		}

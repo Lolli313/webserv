@@ -222,5 +222,7 @@ bool Tools::stringStartsWithCharacter(const std::string& str, char c) {
 	return (!str.empty() && str[0] == c);
 }
 
-
-
+bool Tools::fileExists(const char* filename) {
+    std::ifstream file(filename);
+    return file.good();
+}

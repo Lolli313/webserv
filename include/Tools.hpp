@@ -59,4 +59,5 @@ public:
 	static bool lineIsEmptyOrComment(std::string& str);
 	static void transformStringToLowecase(std::string& str);
 	static bool stringStartsWithCharacter(const std::string& str, char c);
+	static bool fileExists(const char *filename);
 };

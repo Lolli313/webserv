@@ -4,6 +4,7 @@
 #include <string>
 #include <unistd.h>
 #include <cstring>
+#include <ctime>
 
 #define BUFFERSIZE 4096
 
@@ -29,7 +30,7 @@ private:
 	bool _readyToReceive; // Client is waiting for response
 	bool _toBeClosed; // CLient should be closed, can be set by EPOLLHUP
 
-	int _timestamp; // Client last action, used for TIMEOUT
+	std::time_t _timestamp; // Client last action, used for TIMEOUT
 
 	Client &operator=(const Client &obj);
 	
@@ -63,7 +64,8 @@ public:
 	bool toBeClosed() const;
 
 	void updateTimestamp();
-	int getTimestamp() const;
+	const std::time_t &getTimestamp() const;
+	const std::time_t &getTimestampInSeconds() const;
 
 	void setResponseBuff(const std::string &response);
 	const std::string &getResponseBuff() const;
