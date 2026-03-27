@@ -11,7 +11,7 @@ int main() {
     //     "POST /upload HTTP/1.1\r\n"
     //     "Host: 127.0.0.1:8080\r\n"
     //     "Content-Type: multipart/form-data; boundary=" + boundary + "\r\n"
-    //     "Content-Length: 250\r\n"
+    //     "Content-Length: 132\r\n"
     //     "\r\n"
     //     + boundary + "\r\n"
     //     "Content-Disposition: form-data; name=\"data\"\r\n"
@@ -20,19 +20,34 @@ int main() {
     //     + boundary + "--\r\n";
     // client.clientSend(request);
 
-    std::string test =
-    "GET /api/utilisateurs HTTP/1.1\r\n"
-    "Host: 127.0.0.1:8080\r\n"
-    "Content-Type: application/json\r\n"
-    "Content-Length: 71\r\n"
-    "Authorization: Bearer token123\r\n"
-    "User-Agent: MonClient/1.0\r\n"
+std::string test =
+    "POST /api/upload HTTP/1.1\r\n"
+    "host: 127.0.0.1:8080\r\n"
+    "content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
+    "authorization: Bearer token123\r\n"
+    "user-agent: MonClient/1.0\r\n"
+    "content-length: 583\r\n"  // À ajuster selon la taille réelle
     "\r\n"
-    "{\n"
-    "  \"nom\": \"Charles\",\n"
-    "  \"age\": 30,\n"
-    "  \"email\": \"charles@example.com\"\n"
-    "}";
+
+    "----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
+    "content-disposition: form-data; name=\"document\"; filename=\"rapport.abw\"\r\n"
+    "content-type: application/x-abiword\r\n"
+    "\r\n"
+    "<abiword xmlns=\"http://www.abisource.com/abiword.dtd\" version=\"1.0\">\n"
+    "  <p>Ceci est un exemple de document AbiWord.</p>\n"
+    "</abiword>\r\n"
+
+    "----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
+    "content-disposition: form-data; name=\"archive\"; filename=\"data.arc\"\r\n"
+    "content-type: application/x-freearc\r\n"
+    "\r\n"
+    "!<arch>\n"
+    "document.txt   1234567890  12345  100  644  1234567890  12345\n"
+    "`\n"
+    "Ceci est un exemple de contenu d'archive.\n"
+    "\n"
+
+    "----WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n";
 
     // std::string test3 = "DELETE /post.json HTTP/1.1\r\n"
     // "Host: 127.0.0.1:8080\r\n\r\n";

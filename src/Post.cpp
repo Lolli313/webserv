@@ -25,6 +25,7 @@ void Post::parseBody() {
     std::istringstream iss(_request.getBody());
     bool inPart = false;
 
+    // std::cout << _request.getBody() << std::endl;
     if (boundary.empty()) {
         std::map<std::string, std::string> head;
         std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("content-type");
@@ -42,11 +43,11 @@ void Post::parseBody() {
         _header.push_back(head);
         return;
     }
-
     while (std::getline(iss, line)) {
-        if (line == boundary + "\r" || line == boundary + "--\r" || line == "--" + boundary + "\r" || line == "--" +boundary + "--\r") {
+        // std::cout << GREEN << line << RESET << std::endl;
+        if (line == boundary + "\r" || line == boundary + "--\r" || line == "--" + boundary + "\r" || line == "--" + boundary + "--\r" || line == boundary + "--" || line == "--" + boundary + "--") {
             if (inPart && !part.empty()) {
-                
+                // std::cout << RED << part << RESET << std::endl;
                 std::string currLine;
                 std::istringstream currStream(part);
                 std::map<std::string, std::string> head;
@@ -57,6 +58,8 @@ void Post::parseBody() {
                         std::string key = currLine.substr(0, pos);
                         std::string value = currLine.substr(pos + 1);
                         value.erase(0, value.find_first_not_of(" \t"));
+                        Tools::transformStringToLowecase(key);
+                        Tools::transformStringToLowecase(value);
                         head[key] = value;
                     }
                 }
@@ -102,6 +105,7 @@ void Post::print() const {
 }
 
 void Post::saveInFile() const {
+    // this->print();
     for (size_t i = 0; i < _header.size(); ++i) {
         std::map<std::string, std::string>::const_iterator it = _header[i].find("content-disposition");
         if (it == _header[i].end()) {
@@ -117,21 +121,33 @@ void Post::saveInFile() const {
             size_t start = namePos + 6;
             size_t end = name.find("\"", start);
             if (end == std::string::npos) {
-                filename = "post";
+                throw Tools::Exception(400, "Post: No Name");
+                // filename = "post";
             } else {
                 filename = name.substr(start, end - start);
             }
         }
         it = _header[i].find("content-type");
         if (it != _header[i].end()) {
-            const std::string& format = it->second;
-            size_t start = format.find("/");
-            std::string formatType = format.substr(start + 1);
-            size_t end = formatType.find_first_of(" \r\n\t;");
-            if (end != std::string::npos) {
-                formatType.erase(end);
-            }
-            filename += '.' + formatType;
+            //
+            // const std::string& format = it->second;
+            // size_t start = format.find("/");
+            // std::string formatType = format.substr(start + 1);
+            // size_t end = formatType.find_first_of(" \r\n\t;");
+            //
+            // if (end != std::string::npos) {
+            //     formatType.erase(end);
+            // }
+
+            std::string contentType = it->second;
+            size_t start = contentType.find_first_not_of(" \t\r\n");
+			if (start != std::string::npos) {
+				size_t end = contentType.find_first_of(";\r\n ", start);
+                contentType = contentType.substr(start, end - start);
+			}
+            std::string formatType = HttpTools::getContentType(contentType);
+            // std::cout << "formatType : " << formatType << " contentType : " << contentType << std::endl;
+            filename += formatType;
         }
         std::ofstream outFile(("files/" + filename).c_str(), std::ios::out | std::ios::binary);
         if (!outFile) {

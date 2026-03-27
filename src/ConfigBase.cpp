@@ -391,7 +391,7 @@ void ConfigBase::printData() const {
 	std::clog << "clientMaxBodySize: " << getClientMaxBodySize() << std::endl;
 
 	std::clog << "error pages: ";
-	if (getErrorPages().empty())
+	if (getErrorPages().empty()) {}
 		std::clog << std::endl;
 	std::map<int, std::string>::const_iterator errorit = getErrorPages().begin();
 	for (;errorit != getErrorPages().end(); errorit++) {

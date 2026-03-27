@@ -7,6 +7,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <cctype>
 
 /*
 =================================================================
@@ -176,14 +178,28 @@ std::string Client::bufferManager() {
 		return "";
 	}
 	_buffer.erase(0, minPos);
-
 	// maintenant on verifie si la partie des headers est finit et note le debut du body
+	size_t posHeaderStart = _buffer.find_first_of("\r\n");
 	size_t posHeaderEnd = _buffer.find("\r\n\r\n");
+	
+	if (posHeaderStart != std::string::npos) {
+		bool flag = false;
+		for (size_t i = posHeaderStart; i < posHeaderEnd; ++i) {
+			if (_buffer[i] == ':') {
+				flag = true;
+			} else if (_buffer[i] == '\r') {
+				flag = false;
+			}
+			if (flag == false) {
+				_buffer[i] = std::tolower(_buffer[i]);
+			}
+		}
+	}
+	// transform en minuscule
 	if (posHeaderEnd == std::string::npos) {
         return "";
     }
 	std::string headers = _buffer.substr(0, posHeaderEnd);
-	Tools::transformStringToLowecase(headers);
 	size_t posBodyStart = posHeaderEnd + 4;
 
 	// la il faut trouver Content-Length pour savoir si le body est finit si il y en a un
@@ -194,7 +210,6 @@ std::string Client::bufferManager() {
 		setDoneReceiving(true);
 		return request;
 	}
-
 	// si il y a un content length on verifie qu'il soit remplit
 	size_t posContentLengthStop = headers.find("\r\n", posContentLengthStart);
 	if (posContentLengthStop == std::string::npos) {

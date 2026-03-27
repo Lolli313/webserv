@@ -107,6 +107,7 @@ void HttpRequest::parse(const std::string &request) {
     	throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
 	while (std::getline(iss, line) && !line.empty() && line != "\r") {
+		
 		size_t pos = line.find(':');
 		if (pos != std::string::npos) {
 			std::string key = line.substr(0, pos);
