@@ -46,9 +46,9 @@ void Get::checkRequest()
 void Get::checkAndSetFile(const std::string &path)
 {
 	std::clog << YELLOW_BRIGHT << "checkAndSetFile" << RESET << std::endl;
-	std::string fullPath = _config->getRoot() + path;
-	std::clog << YELLOW_BRIGHT << "fullpath = " << fullPath << RESET << std::endl;
-	int fd = open(fullPath.c_str(), O_RDONLY);
+	_path = _config->getRoot() + path;
+	std::clog << YELLOW_BRIGHT << "fullpath = " << _path << RESET << std::endl;
+	int fd = open(_path.c_str(), O_RDONLY);
 	if (fd < 0)
 	{
 		if (errno == ENOENT)
@@ -74,6 +74,15 @@ void Get::checkAndSetFile(const std::string &path)
 	std::clog << YELLOW_BRIGHT << "File = " << _file << RESET << std::endl;
 }
 
+const std::string Get::getExtension() const
+{
+	std::string::size_type pos = _path.rfind(".");
+
+	if (pos == std::string::npos || pos == 0)
+    	return "";
+	
+	return HttpTools::getContentType(_path.substr(pos));
+}
 
 const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *config)
 {
@@ -86,5 +95,8 @@ const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *
 	response.addDateHeader();
 	response.setBody(get._file);
 	response.addHeader("Content-length", Tools::intToString(get._file.size()));
+	std::string extension = get.getExtension();
+	if (!extension.empty())
+		response.addHeader("Content-Type", extension);
 	return response.getFinalResponse();
 }
