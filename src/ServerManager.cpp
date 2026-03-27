@@ -186,7 +186,7 @@ const ConfigBase *ServerManager::findConfigBase(const Client &client, const Http
 {
 	std::string port = findPort(eventFD);
 	(void)client;
-	std::map<std::string, std::string>::const_iterator it = request.getHeader().find("Host");
+	std::map<std::string, std::string>::const_iterator it = request.getHeader().find("host");
 	if (it == request.getHeader().end())
 	{
 		throw Tools::Exception(400, "Host header missing");
@@ -238,8 +238,10 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 	if (request.getMethodStr() == "GET")
 		return response = Get::executeGet(request, config);
 
-	else if (request.getMethodStr() == "POST")
+	else if (request.getMethodStr() == "POST") {
+		// std::clog << YELLOW_BRIGHT << "post" << RESET << std::endl;
 		return response = Post::executePost(request);
+	}
 
 	else if (request.getMethodStr() == "DELETE")
 	{
@@ -368,7 +370,7 @@ void ServerManager::existingClient(int eventFD)
 			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");			
 			// // std::clog << RED << tmpClient->getBuffer() << RESET << std::endl;
 			std::string tmpRequest = tmpClient->bufferManager();
-			// // std::clog << GREEN << tmpClient->getBuffer() << RESET << std::endl;
+			// // std::clog << GREEN << tmpRequest << RESET << std::endl;
 			// std::string tmpRequest =
 			// 	"GET /ascii/body.txt HTTP/1.1\r\n"
 			// 	"Host: localhost:8080\r\n"
@@ -379,12 +381,14 @@ void ServerManager::existingClient(int eventFD)
 			{
 				HttpRequest request;
 				request.parse(tmpRequest);
+				request.print();
+				
 				// Ideally we would call this function after the headers are parsed, for now it is here
 				config = findConfigBase(*tmpClient, request, eventFD);
 				handleReturnAndAllowMethod(config, request.getMethodStr());
-
 				tmpClient->setResponseBuff(execute(request, config));
 				tmpClient->setResponseToBeSent(true);
+				// exit(1);
 				// cookies
 				// /uploads/images/img.png
 
