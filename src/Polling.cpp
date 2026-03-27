@@ -71,6 +71,8 @@ Client &Polling::getClient(const unsigned int fd)
 		Tools::Exception("Client not found");
 	return *itClient->second;
 }
+
+std::vector<Client *> &Polling::getClientVector() { return _clientVector; }
 /*
 =================================================================
 ===== METHODS ===================================================
@@ -122,7 +124,9 @@ void Polling::addFdToEpoll(int targetFD, int eventFlags)
 void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
 {
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
-	_clientMap[targetFD] = new Client(targetFD);
+	Client *client = new Client(targetFD);
+	_clientMap[targetFD] = client;
+	_clientVector.push_back(client);
 	std::clog << "Adding FD to epoll and client maps" << std::endl;
 }
 
@@ -143,6 +147,14 @@ bool Polling::deleteCLient(Client *client)
 	close(client->getFD());
 	if ((_clientMap.erase(client->getFD())) != 1)
 		return (false);
+	for (std::vector<Client *>::iterator it = _clientVector.begin(); it != _clientVector.end(); it++)
+	{
+		if (*it == client)
+		{
+			_clientVector.erase(it);
+			break;
+		}
+	}
 	delete client;
 	return (true);
 }
@@ -277,6 +289,6 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 
 void Polling::epollWaitEvent()
 {
-	std::clog << "epoll WAITING, " << _clientMap.size() << " clients." << std::endl;
+	// std::clog << "epoll WAITING, " << _clientMap.size() << " clients." << std::endl;
 	_eventCount = epoll_wait(_epollFD, _eventArray, MAX_EVENTS, TIMEOUT);
 }

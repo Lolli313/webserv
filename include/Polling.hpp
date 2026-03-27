@@ -19,7 +19,7 @@
 #include <set>
 
 #define MAX_EVENTS 5
-#define TIMEOUT -1
+#define TIMEOUT 60
 #define BUFFERSIZE 4096
 
 class Polling
@@ -27,6 +27,7 @@ class Polling
 private:
 	epoll_event _eventArray[MAX_EVENTS];
 	std::map<const unsigned int, Client *> _clientMap;
+	std::vector<Client *> _clientVector; // Used to retrieve the timestamp of each client, FD is used to get a O(1) loolkup
 	int _eventCount;
 	int _epollFD;
 	int _currEventFD;
@@ -46,6 +47,7 @@ public:
 	int getEventCount() const;
 	int getNewClientFlags() const;
 	Client &getClient(const unsigned int fd);
+	std::vector<Client *> &getClientVector();
 
 	const epoll_event *getEventArray() const;
 

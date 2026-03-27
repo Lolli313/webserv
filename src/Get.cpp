@@ -5,7 +5,7 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Get::Get(const HttpRequest &request, const ConfigBase *config) : _request(request), _config(config) {}
+Get::Get(const HttpRequest &request, const ConfigBase *config) : _request(request), _config(config), _rootDir(ROOT_DIR) {}
 
 Get::~Get() {}
 
@@ -43,12 +43,9 @@ void Get::checkRequest()
 	_host = it->second;
 }
 
-void Get::checkAndSetFile(const std::string &path)
+int openFile(const std::string &path)
 {
-	std::clog << YELLOW_BRIGHT << "checkAndSetFile" << RESET << std::endl;
-	_path = _config->getRoot() + path;
-	std::clog << YELLOW_BRIGHT << "fullpath = " << _path << RESET << std::endl;
-	int fd = open(_path.c_str(), O_RDONLY);
+	int fd = open(path.c_str(), O_RDONLY);
 	if (fd < 0)
 	{
 		if (errno == ENOENT)
@@ -58,7 +55,30 @@ void Get::checkAndSetFile(const std::string &path)
 		else
 			throw Tools::Exception(500, "GET: unknown error, cannot open the file");
 	}
-	std::clog << YELLOW_BRIGHT << "Before reading file"<< RESET << std::endl;
+	return fd;
+}
+
+void Get::setIndexFile()
+{
+	for (std::vector<std::string>::const_iterator it = _config->getIndex().begin(); it != _config->getIndex().end(); it++)
+	{
+		std::string currIndex = _path + "/" + *it;
+		if (Tools::fileExists(currIndex.c_str()))
+		{
+			_path.append(*it);
+			return ;
+		}
+	}
+}
+
+void Get::checkAndSetFile(const std::string &path)
+{
+	_path = _config->getRoot() + path;
+	if (_path.size() >= _rootDir.size() &&
+    _path.compare(_path.size() - _rootDir.size(), _rootDir.size(), _rootDir) == 0)
+		setIndexFile();
+	std::clog << YELLOW_BRIGHT << "file path = " << _path << RESET << std::endl;
+	int fd = openFile(_path);
 	char buffer[BUFFERSIZE];
 	ssize_t bytesRead = 0;
 	while ((bytesRead = read(fd, buffer, BUFFERSIZE)) > 0)

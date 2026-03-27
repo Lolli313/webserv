@@ -20,7 +20,8 @@ Client::Client(int fd) : _clientFD(fd),
 						_responseSent(false), 
 						_keepAlive(true), 
 						_readyToReceive(false), 
-						_toBeClosed(false)
+						_toBeClosed(false),
+						_timestamp(std::time(0))
 						{
 	std::clog << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
 }
@@ -37,7 +38,8 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD),
 								_responseSent(obj._responseSent), 
 								_keepAlive(obj._keepAlive), 
 								_readyToReceive(obj._readyToReceive), 
-								_toBeClosed(obj._toBeClosed)
+								_toBeClosed(obj._toBeClosed),
+								_timestamp(obj._timestamp)
 								{ 
 	std::clog << PINK << "Client copy constructor" << RESET << std::endl;
 	std::memcpy(_tmpBuff, obj._tmpBuff, BUFFERSIZE);
@@ -131,6 +133,11 @@ std::size_t Client::getBytesSent() const { return _bytesSent; }
 void Client::setBytesSent(std::size_t bytes) { _bytesSent = bytes; }
 // Add the bytes to the total bytesSent
 void Client::addBytesSent(std::size_t bytes) { _bytesSent += bytes; }
+
+// Set _timestamp to current time.
+void Client::updateTimestamp() { _timestamp = std::time(0); }
+const std::time_t &Client::getTimestamp() const { return _timestamp; }
+const std::time_t &Client::getTimestampInSeconds() const { return _timestamp; }
 
 /*
 =================================================================

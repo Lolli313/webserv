@@ -65,8 +65,8 @@ public:
 	void eventLoop();
 	void mainLoop();
 	void sendResponse(Client *client);
-	void throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config);
-
+	void throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config, bool reThrow);
+	void handleTimeout();
 };
 
 #endif
