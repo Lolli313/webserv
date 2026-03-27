@@ -84,17 +84,7 @@ void HttpResponse::addHeader(const std::string &key, const std::string &value)
 
 void HttpResponse::addDateHeader()
 {
-    std::time_t now = std::time(NULL);
-
-    // Convert to UTC (GMT)
-    std::tm *gmt = std::gmtime(&now);
-
-    char buffer[100];
-    std::strftime(buffer, sizeof(buffer),
-                  "%a, %d %b %Y %H:%M:%S GMT",
-                  gmt);
-
-    std::string finalTime(buffer);
+    std::string finalTime = Tools::getExtendedTimeOfDay();
 	addHeader(std::make_pair("Date", finalTime));
 }
 

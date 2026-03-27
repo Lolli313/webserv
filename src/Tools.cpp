@@ -226,3 +226,27 @@ bool Tools::fileExists(const char* filename) {
     std::ifstream file(filename);
     return file.good();
 }
+
+std::string Tools::getTimeOfDay() {
+	std::time_t now = std::time(NULL);
+
+    // Convert to UTC (GMT)
+    std::tm *gmt = std::gmtime(&now);
+
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%H:%M:%S GMT", gmt);
+
+	return std::string(buffer);
+}
+
+std::string Tools::getExtendedTimeOfDay() {
+	std::time_t now = std::time(NULL);
+
+    // Convert to UTC (GMT)
+    std::tm *gmt = std::gmtime(&now);
+
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", gmt);
+
+	return std::string(buffer);
+}

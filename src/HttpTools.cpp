@@ -66,12 +66,12 @@ const std::string HttpTools::getContentType(const std::string &target)
 void HttpTools::initContentType(std::map<std::string, std::string> &contentType, bool isKey) {
     if (isKey) {
         #define X(key, value) contentType[key] = value;
-        CONTENT_TYPE_PAIRS
+            CONTENT_TYPE_PAIRS
         #undef X
     }
     else {
         #define X(key, value) contentType[value] = key;
-        CONTENT_TYPE_PAIRS
+            CONTENT_TYPE_PAIRS
         #undef X
     }
 }

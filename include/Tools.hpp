@@ -1,11 +1,16 @@
 #pragma once
 
+#include "Logger.hpp"
+
+class Logger;
+
 #include <exception>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <string>
 #include <vector>
+#include <ctime>
 
 class Tools
 {
@@ -60,4 +65,7 @@ public:
 	static void transformStringToLowecase(std::string& str);
 	static bool stringStartsWithCharacter(const std::string& str, char c);
 	static bool fileExists(const char *filename);
+	static std::string getTimeOfDay();
+	static std::string getExtendedTimeOfDay();
+
 };

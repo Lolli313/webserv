@@ -23,6 +23,15 @@ int main(int ac, char **av)
 	std::signal(SIGINT, &handle_signals);
 
 	try {
+		LOG(DEBUG, "Index file ignored");
+		LOG(INFO, "Index file ignored");
+		LOG(WARNING, "Index file ignored");
+		LOG(ERROR, "Index file ignored");
+		LOG(CRITICAL, "Index file ignored");
+		LOG(GET, DEBUG, "Index file ignored");
+		LOG(POST, INFO, "Index file ignored");
+		LOG(DELETE, ERROR, "Index file ignored");
+
 		ParseConfig pc((std::string(av[1])));
 		// pc.printData();
 		ServerManager sm(pc.getServerConfig());

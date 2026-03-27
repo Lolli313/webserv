@@ -1,11 +1,12 @@
 #pragma once
 
-#include <string>
-#include <map>
+#include "TerminalColors.hpp"
 #include "HttpTools.hpp"
 #include "Tools.hpp"
+
+#include <string>
 #include <ctime>
-#include "TerminalColors.hpp"
+#include <map>
 
 #define HTTP_VERSION "HTTP/1.1"
 
