@@ -24,11 +24,11 @@ Client::Client(int fd) : _clientFD(fd),
 						_readyToReceive(false), 
 						_toBeClosed(false)
 						{
-	// std::clog << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
+	std::clog << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
 }
 
 Client::~Client() {
-	// std::clog << RED << "Client destructor" << RESET << std::endl;
+	std::clog << RED << "Client destructor" << RESET << std::endl;
 	// close(_clientFD); 
 }
 
@@ -41,7 +41,7 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD),
 								_readyToReceive(obj._readyToReceive), 
 								_toBeClosed(obj._toBeClosed)
 								{ 
-	// std::clog << PINK << "Client copy constructor" << RESET << std::endl;
+	std::clog << PINK << "Client copy constructor" << RESET << std::endl;
 	std::memcpy(_tmpBuff, obj._tmpBuff, BUFFERSIZE);
 	_buffer = obj._buffer;
 };
@@ -55,7 +55,7 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD),
 // Undefined behavior / deprecated
 Client &Client::operator=(const Client &obj)
 {
-	// std::clog << PINK << "Client = operator" << RESET << std::endl;
+	std::clog << PINK << "Client = operator" << RESET << std::endl;
 	(void)obj;
 	return (*this);
 };
@@ -75,14 +75,14 @@ char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
 
 bool Client::doneReceiving() const { 
-	// std::clog << "Done receiving = " << _doneReceiving << std::endl;
-	// std::clog << "Done receiving :)" << std::endl;
+	std::clog << "Done receiving = " << _doneReceiving << std::endl;
+	std::clog << "Done receiving :)" << std::endl;
 	return _doneReceiving;
 }
 
 void Client::setDoneReceiving(bool status) {
 	_doneReceiving = status;
-	// std::clog << "Done receiving status is: " << status << std::endl;
+	std::clog << "Done receiving status is: " << status << std::endl;
 }
 
 void Client::setKeepAlive(bool status) { _keepAlive = status; }

@@ -17,7 +17,7 @@ int main(int ac, char **av)
 	(void)av;
 	if (ac != 2)
 	{
-		// std::clog << "Please include one config file" << std::endl;
+		std::clog << "Please include one config file" << std::endl;
 		return 1;
 	}
 	std::signal(SIGINT, &handle_signals);
@@ -30,20 +30,20 @@ int main(int ac, char **av)
 	}
 	catch (Tools::Exception &e) {
 		if (e.getReturnCode() == 0) {
-			// std::clog << "Custom exception: " << PINK << e.getMsgLog() << RESET << std::endl;
+			std::clog << "Custom exception: " << PINK << e.getMsgLog() << RESET << std::endl;
 		}
 		else if (e.getReturnCode() == 1) {
-			// std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+			std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
 		}
 		else {
-			// std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+			std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
 		}
 	}
 	catch (std::exception &e) {
-		// std::clog << "Builtin exception: " << ORANGE << e.what() << RESET << std::endl;
+		std::clog << "Builtin exception: " << ORANGE << e.what() << RESET << std::endl;
 	}
 	catch (...) {
-		// std::clog << ORANGE << "Undefined error" << RESET << std::endl;
+		std::clog << ORANGE << "Undefined error" << RESET << std::endl;
 	}
 	return 0;
 }

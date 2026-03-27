@@ -59,8 +59,8 @@ int main()
 	int status = 0;
 	if ((status = getaddrinfo("127.0.0.1", "8080", &prep, &res)) != 0)
 	{
-		// std::clog << gai_strerror(status) << std::endl;
-		// std::clog << res->ai_flags << std::endl;
+		std::clog << gai_strerror(status) << std::endl;
+		std::clog << res->ai_flags << std::endl;
 		freeaddrinfo(res);
 		return (1);
 	}
@@ -133,7 +133,7 @@ int main()
 	while (running)
 	{
 		eventCount = epoll_wait(epollFD, eventArray, MAX_EVENTS, TIMEOUT);
-		// std::clog << PURPLE << eventCount << " events ready" << RESET << std::endl;
+		std::clog << PURPLE << eventCount << " events ready" << RESET << std::endl;
 
 		// NEW EVENTS: GO THROUGH EACH EVENT
 		for (int i = 0; i < eventCount; i++)
@@ -151,7 +151,7 @@ int main()
 				if ((newSocket = accept(eventFD, (sockaddr *)&clientAddr, &clientLen)) >= 0)
 				{
 					// SET THE FLAGS OF EVENTS THAT WE WNT TO MONITOR
-					// std::clog << "Found a new connection" << std::endl;
+					std::clog << "Found a new connection" << std::endl;
 					int registerEvents = EPOLLIN | EPOLLRDHUP | EPOLLERR;
 
 					fcntl(newSocket, F_SETFL, O_NONBLOCK);
@@ -167,7 +167,7 @@ int main()
 				// AN ERROR OCCURED
 				if (newSocket < 0)
 				{
-					// std::clog << RED << "accept return value = " << newSocket << RESET << std::endl;
+					std::clog << RED << "accept return value = " << newSocket << RESET << std::endl;
 					freeaddrinfo(res);
 					close(eventFD);
 					perror("accept");
@@ -179,13 +179,13 @@ int main()
 			// EXISTING CLIENT EVENT
 			else
 			{
-				// std::clog << "Found an existing connection" << std::endl;
+				std::clog << "Found an existing connection" << std::endl;
 
 				// CLIENT DISCONNECTED
 				uint32_t currEvent = eventArray[i].events;
 				if (currEvent & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
 				{
-					// std::clog << "Client disconnected or error" << std::endl;
+					std::clog << "Client disconnected or error" << std::endl;
 					epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
 					close(eventFD);
 					continue;
@@ -197,9 +197,9 @@ int main()
 					if ((readSize = recv(eventFD, &readBuffer[0], BUFFERSIZE, 0)) > 0)
 					{
 						mainBuffer.append(readBuffer.data(), readSize);
-						// std::clog << "Received size = " << readSize << std::endl;
-						// std::clog << GREEN_BRIGHT << "Received content: " << readBuffer << RESET << std::endl;
-						// std::clog << LIGHT_BLUE << "All content received: " << mainBuffer << RESET << std::endl;
+						std::clog << "Received size = " << readSize << std::endl;
+						std::clog << GREEN_BRIGHT << "Received content: " << readBuffer << RESET << std::endl;
+						std::clog << LIGHT_BLUE << "All content received: " << mainBuffer << RESET << std::endl;
 						if (mainBuffer.find("stop") != std::string::npos)
 						{
 							// CLOSE ALL FDS OF THE MAP TO STOP SERVER CLEAN
@@ -214,12 +214,12 @@ int main()
 						}
 					}
 
-					// std::clog << RED << "HERE=======================" << RESET << std::endl;
+					std::clog << RED << "HERE=======================" << RESET << std::endl;
 
 					// ERROR
 					if (readSize < 0)
 					{
-						// std::clog << "Rcv error" << std::endl;
+						std::clog << "Rcv error" << std::endl;
 						epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
 						close(eventFD);
 						clientMap.erase(eventFD);
@@ -228,15 +228,15 @@ int main()
 					// CLIENT IS DONE SENDING
 					else if (readSize == 0)
 					{
-						// std::clog << "Found the end of the message" << std::endl;
-						// std::clog << "Client disconnected" << std::endl;
+						std::clog << "Found the end of the message" << std::endl;
+						std::clog << "Client disconnected" << std::endl;
 						epollEventAction(epollFD, eventFD, EPOLL_CTL_DEL, 0);
 						close(eventFD);
 						clientMap.erase(eventFD);
 
 						// END OF RECEPTION, PRINT THE OUTPUT OF THE CLIENT
-						// std::clog << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
-						// std::clog << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
+						std::clog << YELLOW << "Total size read: " << mainBuffer.size() << RESET << std::endl;
+						std::clog << GREEN << "Read data from client:" << mainBuffer << RESET << std::endl;
 						mainBuffer.clear();
 						continue;
 					}
