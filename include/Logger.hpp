@@ -42,5 +42,6 @@ public:
 	static void logger(LogLevel level, const std::string& message);
 	static void logger(httpMethods method, LogLevel level, const std::string& message);
 	static void logger(LogLevel level, const char* color, const std::string& message);
+	static void logger(LogLevel level, const char* color, const std::string& key, const std::string& value);
 	
 };

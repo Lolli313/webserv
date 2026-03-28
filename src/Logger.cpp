@@ -73,14 +73,19 @@ void Logger::initEnumStringMap(std::map<int, std::string>& enumStringMap) {
 */
 
 void Logger::logger(LogLevel level, const std::string& message) {
-	std::clog << getLevelColor(level) << "[" << Tools::getTimeOfDay() << "] " << "[" << getStringFromEnum(level) << "] " << message << RESET << std::endl;
+	std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << getLevelColor(level) << "[" << getStringFromEnum(level) << "] " << message << RESET << std::endl;
 }
 
 void Logger::logger(httpMethods method, LogLevel level, const std::string& message) {
-	std::clog << getLevelColor(level) << "[" << Tools::getTimeOfDay() << "] " << "[" << getStringFromEnum(method) << "] " << message << RESET << std::endl;
+	std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << getLevelColor(level) << "[" << getStringFromEnum(method) << "] " << message << RESET << std::endl;
 }
 
 void Logger::logger(LogLevel level, const char* color, const std::string& message) {
-	std::clog << color << "[" << Tools::getTimeOfDay() << "] " << "[" << getStringFromEnum(level) << "] " << message << RESET << std::endl;
+	std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << color << "[" << getStringFromEnum(level) << "] " << message << RESET << std::endl;
 }
+
+void Logger::logger(LogLevel level, const char* color, const std::string& key, const std::string& value) {
+	std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << color << "[" << getStringFromEnum(level) << "] " << key << ": " << RESET << value << std::endl;
+}
+
 
