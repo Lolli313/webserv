@@ -156,7 +156,6 @@ bool ConfigBase::handleMaxSizeConversion(std::string &maxSize)
 		std::size_t pos = maxSize.find_first_not_of(digits);
 		if (pos == std::string::npos)
 		{
-			// std::clog << "Unknown error" << std::endl;
 			LOG(ERROR, "Unknown error in handleMaxSizeConversion");
 			return false;
 		}

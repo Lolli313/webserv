@@ -17,7 +17,6 @@ int main(int ac, char **av)
 	(void)av;
 	if (ac != 2)
 	{
-		// std::clog << "Please include one config file" << std::endl;
 		LOG(CRITICAL, "Please include one config file");
 		return 1;
 	}
@@ -31,25 +30,18 @@ int main(int ac, char **av)
 		sm.mainLoop();
 	}
 	catch (Tools::Exception &e) {
-		if (e.getReturnCode() == 0) {
-			// std::clog << "Custom exception: " << PINK << e.getMsgLog() << RESET << std::endl;
+		if (e.getReturnCode() == 0)
 			LOG(CRITICAL, PINK, "Custom exception: ", e.getMsgLog());
-		}
-		else if (e.getReturnCode() == 1) {
-			// std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+		else if (e.getReturnCode() == 1)
 			LOG(CRITICAL, e.getMsgLog());
-		}
-		else {
-			// std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+		else
 			LOG(CRITICAL, e.getMsgLog());
-		}
+
 	}
 	catch (std::exception &e) {
-		// std::clog << "Builtin exception: " << ORANGE << e.what() << RESET << std::endl;
 		LOG(CRITICAL, PINK, "Builting exception: ", e.what());
 	}
 	catch (...) {
-		// std::clog << ORANGE << "Undefined error" << RESET << std::endl;
 		LOG(CRITICAL, "Undefine error");
 	}
 	return 0;

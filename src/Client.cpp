@@ -25,12 +25,10 @@ Client::Client(int fd) : _clientFD(fd),
 						_toBeClosed(false),
 						_timestamp(std::time(0))
 						{
-	// std::clog << ORANGE << "NEW CLIENT FD = " << fd << RESET << std::endl;
 	LOG(INFO, CYAN_BRIGHT, "NEW CLIENT FD", Tools::intToString(fd));
 }
 
 Client::~Client() {
-	// std::clog << RED << "Client destructor" << RESET << std::endl;
 	LOG(INFO, RED_BRIGHT, "Client destructor");
 	// close(_clientFD); 
 }
@@ -45,7 +43,6 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD),
 								_toBeClosed(obj._toBeClosed),
 								_timestamp(obj._timestamp)
 								{ 
-	// std::clog << PINK << "Client copy constructor" << RESET << std::endl;
 	LOG(INFO, PINK, "Client copy constructor");
 	std::memcpy(_tmpBuff, obj._tmpBuff, BUFFERSIZE);
 	_buffer = obj._buffer;
@@ -60,7 +57,6 @@ Client::Client(const Client &obj) : _clientFD(obj._clientFD),
 // Undefined behavior / deprecated
 Client &Client::operator=(const Client &obj)
 {
-	// std::clog << PINK << "Client = operator" << RESET << std::endl;
 	LOG(INFO, PINK, "Client = operator");
 	(void)obj;
 	return (*this);
@@ -81,16 +77,13 @@ char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
 
 bool Client::doneReceiving() const { 
-	// std::clog << "Done receiving = " << _doneReceiving << std::endl;
-	LOG(INFO, LIGHT_GRAY, ("Done receiving = " + Tools::intToString(_doneReceiving)));
-	// std::clog << "Done receiving :)" << std::endl;
+	LOG(INFO, LIGHT_GRAY, "Done receiving", Tools::boolToString(_doneReceiving));
 	return _doneReceiving;
 }
 
 void Client::setDoneReceiving(bool status) {
 	_doneReceiving = status;
-	// std::clog << "Done receiving status is: " << status << std::endl;
-	LOG(INFO, LIGHT_GRAY, "Done receiving status is: " + Tools::intToString(status));
+	LOG(INFO, LIGHT_GRAY, "Done receiving status is", Tools::boolToString(status));
 }
 
 void Client::setKeepAlive(bool status) { _keepAlive = status; }
@@ -234,7 +227,6 @@ std::string Client::bufferManager() {
 		setDoneReceiving(true);
         return request;
     } else {
-		// std::clog << _buffer.length() << " " << posBodyStart << " " << contentLength << std::endl;
 		LOG(DEBUG, DEFAULT, Tools::intToString(_buffer.length()) + " " + Tools::intToString(posBodyStart) + " " + 
 			Tools::intToString(contentLength));
         throw Tools::Exception(413, "HttpRequest: Malformed body");

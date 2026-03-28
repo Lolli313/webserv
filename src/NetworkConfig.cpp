@@ -22,14 +22,12 @@ NetworkConfig::NetworkConfig(const std::string &ipAddr, const std::string &port)
 
 NetworkConfig::NetworkConfig(const std::string &port) : _ipAddr(DEFAULT_LOCAL_IP), _port(port)
 {
-	// std::clog << GREEN << "netwowrkconfig constructor" << RESET << std::endl;
 	LOG(INFO, "NetworkConfig constructor");
 	prepareAddressInfo(_ipAddr, _port);
 }
 
 NetworkConfig::~NetworkConfig() {
 	freeNetworkConfig(); 
-	// std::clog << RED << "netwowrkconfig destructor" << RESET << std::endl;
 	LOG(INFO, RED_BRIGHT, "NetworkConfig destructor");
 }
 
@@ -38,7 +36,6 @@ NetworkConfig::NetworkConfig(const NetworkConfig &obj) :
 	_port(obj.getPort())
 	{
 		prepareAddressInfo(_ipAddr, _port);
-		// std::clog << BLUE << "NetworkConfig copy constructor" << RESET << std::endl;
 		LOG(INFO, "NetworkConfig copy constructor");
 	}
 
@@ -100,7 +97,6 @@ void NetworkConfig::prepareAddressInfo(const std::string &ipAddr, const std::str
 
 	prep.ai_family = AF_INET;
 	prep.ai_socktype = SOCK_STREAM;
-	// std::clog << LIGHT_BLUE << ipAddr.c_str() << " and " << port.c_str() << RESET << std::endl;
 	LOG(INFO, LIGHT_BLUE, ipAddr + " and " + port);
 	int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &prep, &_info);
 	if (status != 0)

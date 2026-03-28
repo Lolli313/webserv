@@ -79,13 +79,11 @@ void HttpRequest::parse(const std::string &request) {
 
 	// parse la methode, le path et la version du http
 	std::istringstream iss(request);
-	// std::clog << request << std::endl;
 	LOG(DEBUG, request);
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
 	if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
-		// std::clog << LIGHT_BLUE << "HttpRequest: Unknown method" << RESET << std::endl;
 		LOG(WARNING, LIGHT_BLUE, "HttpRequest: Unknown method");
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
@@ -169,20 +167,17 @@ void HttpRequest::cookie(Cookie &cookie) {
 
 void HttpRequest::executeScript() {
 	if (_purePath != "cgi-bin/hello.py" && _purePath != "cgi-bin/info.php") {
-		// std::clog << "marche pas" << std::endl;
 		LOG(ERROR, "Script not found");
 		return;
 	}
 
     int pipefd[2];
     if (pipe(pipefd) == -1) {
-		// std::clog << "NULL1" << std::endl; 
 		LOG(CRITICAL, "Failed to pipe");
         // throw std::runtime_error("Failed to create pipe");
     }
     pid_t pid = fork();
     if (pid == -1) {
-		// std::clog << "NULL2" << std::endl; 
 		LOG(CRITICAL, "Failed to fork");
         // throw std::runtime_error("Failed to fork");
     } else if (pid == 0) {
@@ -195,7 +190,6 @@ void HttpRequest::executeScript() {
         // }
 
         execl(_purePath.c_str(), _purePath.c_str(), NULL);
-		// std::clog << "NULL3" << std::endl; 
 		LOG(CRITICAL, "Failed to execl");
         exit(1);
     } else { 
@@ -215,7 +209,6 @@ void HttpRequest::executeScript() {
 		// 	std::clog << "NULL4" << std::endl; 
         //     // throw std::runtime_error("CGI script execution failed");
         // }
-		// std::clog << YELLOW << "CGI Output: " << output << RESET << std::endl;
 		LOG(INFO, YELLOW, "CGI output: " + output);
     }
 }
