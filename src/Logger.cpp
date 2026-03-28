@@ -80,3 +80,7 @@ void Logger::logger(httpMethods method, LogLevel level, const std::string& messa
 	std::clog << getLevelColor(level) << "[" << Tools::getTimeOfDay() << "] " << "[" << getStringFromEnum(method) << "] " << message << RESET << std::endl;
 }
 
+void Logger::logger(LogLevel level, const char* color, const std::string& message) {
+	std::clog << color << "[" << Tools::getTimeOfDay() << "] " << "[" << getStringFromEnum(level) << "] " << message << RESET << std::endl;
+}
+

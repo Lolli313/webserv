@@ -31,6 +31,7 @@ int main(int ac, char **av)
 		LOG(GET, DEBUG, "Index file ignored");
 		LOG(POST, INFO, "Index file ignored");
 		LOG(DELETE, ERROR, "Index file ignored");
+		LOG(DEBUG, LIGHT_GRAY, "Index file ignored");
 
 		ParseConfig pc((std::string(av[1])));
 		// pc.printData();
