@@ -193,6 +193,11 @@ std::string Tools::intToString(int nbr)
 	return oss.str();
 }
 
+std::string Tools::boolToString(bool b) {
+	return b ? "true" : "false";
+}
+
+
 void Tools::findAndReplaceAllOccurences(std::string& input, const std::string& replaceWord, const std::string& replaceBy) {
 	std::size_t pos = input.find(replaceWord);
 	while (pos != std::string::npos) {
