@@ -79,12 +79,14 @@ void HttpRequest::parse(const std::string &request) {
 
 	// parse la methode, le path et la version du http
 	std::istringstream iss(request);
-	std::clog << request << std::endl;
+	// std::clog << request << std::endl;
+	LOG(DEBUG, request);
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
 	if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
-		std::clog << LIGHT_BLUE << "HttpRequest: Unknown method" << RESET << std::endl;
+		// std::clog << LIGHT_BLUE << "HttpRequest: Unknown method" << RESET << std::endl;
+		LOG(WARNING, LIGHT_BLUE, "HttpRequest: Unknown method");
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
 	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty()) {
@@ -167,18 +169,21 @@ void HttpRequest::cookie(Cookie &cookie) {
 
 void HttpRequest::executeScript() {
 	if (_purePath != "cgi-bin/hello.py" && _purePath != "cgi-bin/info.php") {
-		std::clog << "marche pas" << std::endl;
+		// std::clog << "marche pas" << std::endl;
+		LOG(ERROR, "Script not found");
 		return;
 	}
 
     int pipefd[2];
     if (pipe(pipefd) == -1) {
-		std::clog << "NULL1" << std::endl; 
+		// std::clog << "NULL1" << std::endl; 
+		LOG(CRITICAL, "Failed to pipe");
         // throw std::runtime_error("Failed to create pipe");
     }
     pid_t pid = fork();
     if (pid == -1) {
-		std::clog << "NULL2" << std::endl; 
+		// std::clog << "NULL2" << std::endl; 
+		LOG(CRITICAL, "Failed to fork");
         // throw std::runtime_error("Failed to fork");
     } else if (pid == 0) {
         close(pipefd[0]);
@@ -190,7 +195,8 @@ void HttpRequest::executeScript() {
         // }
 
         execl(_purePath.c_str(), _purePath.c_str(), NULL);
-		std::clog << "NULL3" << std::endl; 
+		// std::clog << "NULL3" << std::endl; 
+		LOG(CRITICAL, "Failed to execl");
         exit(1);
     } else { 
         close(pipefd[1]);
@@ -209,7 +215,8 @@ void HttpRequest::executeScript() {
 		// 	std::clog << "NULL4" << std::endl; 
         //     // throw std::runtime_error("CGI script execution failed");
         // }
-		std::clog << YELLOW << "CGI Output: " << output << RESET << std::endl;
+		// std::clog << YELLOW << "CGI Output: " << output << RESET << std::endl;
+		LOG(INFO, YELLOW, "CGI output: " + output);
     }
 }
 
@@ -242,19 +249,31 @@ void HttpRequest::executeScript() {
 // }
 
 void HttpRequest::print() const {
-	std::clog << YELLOW << "Method : " << RESET << _methodStr << std::endl;
-	std::clog << YELLOW << "Path : " << RESET << _path << std::endl;
-	std::clog << YELLOW << "Pure Path : " << RESET << _purePath << std::endl;
-	std::clog << YELLOW << "Query Params : " << RESET << std::endl;
-	for (std::map<std::string, std::string>::const_iterator it = _queryParams.begin();
-		it != _queryParams.end(); ++it) {
-		std::clog << " " << it->first << " : " << it->second << std::endl;
-	}
-	std::clog << YELLOW << "HTTP Version : " << RESET << _httpVersion << std::endl;
-	std::clog << YELLOW << "Headers : " << RESET << std::endl; 
-	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); ++it) {
-		std::clog << " " << it->first << " : " << it->second << std::endl;
-	}
-	std::clog << YELLOW << "Boundary : " << RESET << _boundary << std::endl;
-	std::clog << YELLOW << "Body : " << std::endl << RESET << _body;
+    // Single line Key/Value pairs
+    LOG(DEBUG, YELLOW, "Method", _methodStr);
+    LOG(DEBUG, YELLOW, "Path", _path);
+    LOG(DEBUG, YELLOW, "Pure Path", _purePath);
+    
+    // Section Header
+    LOG(DEBUG, YELLOW, "Query Params", ""); 
+    for (std::map<std::string, std::string>::const_iterator it = _queryParams.begin();
+        it != _queryParams.end(); ++it) {
+        // Indent the key for better hierarchy
+        LOG(DEBUG, YELLOW, "  " + it->first, it->second);
+    }
+
+    LOG(DEBUG, YELLOW, "HTTP Version", _httpVersion);
+    
+    // Section Header
+    LOG(DEBUG, YELLOW, "Headers", ""); 
+    for (std::map<std::string, std::string>::const_iterator it = _header.begin(); 
+        it != _header.end(); ++it) {
+        LOG(DEBUG, YELLOW_BRIGHT, "  " + it->first, it->second);
+    }
+
+    LOG(DEBUG, YELLOW, "Boundary", _boundary);
+    
+    // Body is usually a large block, so we use the standard LOG for the content
+    LOG(DEBUG, YELLOW, "Body", "");
+    LOG(DEBUG, RESET, _body); 
 }

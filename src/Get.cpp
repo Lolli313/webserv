@@ -36,7 +36,8 @@ Get::~Get() {}
 
 void Get::checkRequest()
 {
-	std::clog << YELLOW_BRIGHT << "checkRequest" << RESET << std::endl;
+	// std::clog << YELLOW_BRIGHT << "checkRequest" << RESET << std::endl;
+	LOG(INFO, YELLOW_BRIGHT, "checkRequest");
 	std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("Host");
 	if (it == _request.getHeader().end())
 		throw Tools::Exception(400, "GET: host not found.");
@@ -77,7 +78,8 @@ void Get::checkAndSetFile(const std::string &path)
 	if (_path.size() >= _rootDir.size() &&
     _path.compare(_path.size() - _rootDir.size(), _rootDir.size(), _rootDir) == 0)
 		setIndexFile();
-	std::clog << YELLOW_BRIGHT << "file path = " << _path << RESET << std::endl;
+	// std::clog << YELLOW_BRIGHT << "file path = " << _path << RESET << std::endl;
+	LOG(INFO, YELLOW_BRIGHT, "file path = " + _path);
 	int fd = openFile(_path);
 	char buffer[BUFFERSIZE];
 	ssize_t bytesRead = 0;
@@ -91,7 +93,8 @@ void Get::checkAndSetFile(const std::string &path)
 		else
 			throw Tools::Exception(500, "GET: read error");
 	}
-	std::clog << YELLOW_BRIGHT << "File = " << _file << RESET << std::endl;
+	// std::clog << YELLOW_BRIGHT << "File = " << _file << RESET << std::endl;
+	LOG(INFO, YELLOW_BRIGHT, "File = " + _file);
 }
 
 const std::string Get::getExtension() const
@@ -106,7 +109,8 @@ const std::string Get::getExtension() const
 
 const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *config)
 {
-	std::clog << YELLOW_BRIGHT << "executeGET" << RESET << std::endl;
+	// std::clog << YELLOW_BRIGHT << "executeGET" << RESET << std::endl;
+	LOG(INFO, YELLOW_BRIGHT, "executeGET");
 	Get get(request, config);
 	get.checkRequest();
 	get.checkAndSetFile(request.getPurePath());

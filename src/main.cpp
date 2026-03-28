@@ -17,22 +17,14 @@ int main(int ac, char **av)
 	(void)av;
 	if (ac != 2)
 	{
-		std::clog << "Please include one config file" << std::endl;
+		// std::clog << "Please include one config file" << std::endl;
+		LOG(CRITICAL, "Please include one config file");
 		return 1;
 	}
 	std::signal(SIGINT, &handle_signals);
 
 	try {
-		LOG(DEBUG, "Index file ignored");
-		LOG(INFO, "Index file ignored");
-		LOG(WARNING, "Index file ignored");
-		LOG(ERROR, "Index file ignored");
-		LOG(CRITICAL, "Index file ignored");
-		LOG(GET, DEBUG, "Index file ignored");
-		LOG(POST, INFO, "Index file ignored");
-		LOG(DELETE, ERROR, "Index file ignored");
-		LOG(DEBUG, LIGHT_GRAY, "Index file ignored");
-
+		LOG(DEBUG, YELLOW_BRIGHT, "Index file ignored");
 		ParseConfig pc((std::string(av[1])));
 		// pc.printData();
 		ServerManager sm(pc.getServerConfig());
@@ -40,20 +32,25 @@ int main(int ac, char **av)
 	}
 	catch (Tools::Exception &e) {
 		if (e.getReturnCode() == 0) {
-			std::clog << "Custom exception: " << PINK << e.getMsgLog() << RESET << std::endl;
+			// std::clog << "Custom exception: " << PINK << e.getMsgLog() << RESET << std::endl;
+			LOG(CRITICAL, PINK, "Custom exception: ", e.getMsgLog());
 		}
 		else if (e.getReturnCode() == 1) {
-			std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+			// std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+			LOG(CRITICAL, e.getMsgLog());
 		}
 		else {
-			std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+			// std::clog << ORANGE << e.getMsgLog() << RESET << std::endl;
+			LOG(CRITICAL, e.getMsgLog());
 		}
 	}
 	catch (std::exception &e) {
-		std::clog << "Builtin exception: " << ORANGE << e.what() << RESET << std::endl;
+		// std::clog << "Builtin exception: " << ORANGE << e.what() << RESET << std::endl;
+		LOG(CRITICAL, PINK, "Builting exception: ", e.what());
 	}
 	catch (...) {
-		std::clog << ORANGE << "Undefined error" << RESET << std::endl;
+		// std::clog << ORANGE << "Undefined error" << RESET << std::endl;
+		LOG(CRITICAL, "Undefine error");
 	}
 	return 0;
 }

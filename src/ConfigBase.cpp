@@ -156,7 +156,8 @@ bool ConfigBase::handleMaxSizeConversion(std::string &maxSize)
 		std::size_t pos = maxSize.find_first_not_of(digits);
 		if (pos == std::string::npos)
 		{
-			std::clog << "Unknown error" << std::endl;
+			// std::clog << "Unknown error" << std::endl;
+			LOG(ERROR, "Unknown error in handleMaxSizeConversion");
 			return false;
 		}
 		bitmask_t foundBit = charToBit(maxSize[pos]);
@@ -377,38 +378,41 @@ bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *i
 }
 
 void ConfigBase::printData() const {
-	std::clog << "Root: " << getRoot() << std::endl;
+    // Single values
+    LOG(DEBUG, YELLOW_BRIGHT, "Root", getRoot());
+    
+    // Autoindex (Boolean to string)
+    LOG(DEBUG, YELLOW_BRIGHT, "Autoindex", (getAutoIndex() ? "on" : "off"));
 
-	std::clog << "Indexes: ";
-	std::vector<std::string>::const_iterator indexit = getIndex().begin();
-	for (;indexit != getIndex().end(); indexit++) {
-		std::clog << *indexit << ", ";
-	}
-	std::clog << std::endl;
-	
-	std::clog << "autoindex: " << getAutoIndex() << std::endl;
+    // Client Max Body Size
+    LOG(DEBUG, YELLOW_BRIGHT, "Client Max Body Size", Tools::intToString(getClientMaxBodySize()));
 
-	std::clog << "clientMaxBodySize: " << getClientMaxBodySize() << std::endl;
+    // Indexes (Joined list)
+    std::string indexes;
+    for (std::vector<std::string>::const_iterator it = getIndex().begin(); it != getIndex().end(); ++it) {
+        if (!indexes.empty()) indexes += ", ";
+        indexes += *it;
+    }
+    LOG(DEBUG, YELLOW_BRIGHT, "Indexes", (indexes.empty() ? "none" : indexes));
 
-	std::clog << "error pages: ";
-	if (getErrorPages().empty()) {}
-		std::clog << std::endl;
-	std::map<int, std::string>::const_iterator errorit = getErrorPages().begin();
-	for (;errorit != getErrorPages().end(); errorit++) {
-		std::clog << errorit->first << ", " << errorit->second << std::endl;
-	}
+    // Error Pages (Iterated Key/Value)
+    LOG(DEBUG, YELLOW_BRIGHT, "Error Pages", (getErrorPages().empty() ? "none" : ""));
+    for (std::map<int, std::string>::const_iterator it = getErrorPages().begin(); it != getErrorPages().end(); ++it) {
+        LOG(DEBUG, YELLOW_BRIGHT, "  Status " + Tools::intToString(it->first), it->second);
+    }
 
-	std::clog << "allow methods: ";
-	std::set<std::string>::const_iterator allowMethodit = getAllowMethods().begin();
-	for (;allowMethodit != getAllowMethods().end(); allowMethodit++) {
-		std::clog << *allowMethodit << ", ";
-	}
-	std::clog << std::endl;
+    // Allow Methods (Joined list)
+    std::string methods;
+    for (std::set<std::string>::const_iterator it = getAllowMethods().begin(); it != getAllowMethods().end(); ++it) {
+        if (!methods.empty()) methods += ", ";
+        methods += *it;
+    }
+    LOG(DEBUG, YELLOW_BRIGHT, "Allow Methods", (methods.empty() ? "none" : methods));
 
-	std::clog << "return directive: ";
-	std::clog << getReturnDirective().first << ", ";
-	std::clog << ((getReturnDirective().second.empty()) ? "\"\"" : getReturnDirective().second);
-	std::clog << std::endl;
+    // Return Directive
+    std::string returnVal = Tools::intToString(getReturnDirective().first) + 
+                            (getReturnDirective().second.empty() ? "" : " -> " + getReturnDirective().second);
+    LOG(DEBUG, YELLOW_BRIGHT, "Return Directive", returnVal);
 }
 
 /**

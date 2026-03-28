@@ -1,7 +1,4 @@
 #include "Cookie.hpp"
-#include "TerminalColors.hpp"
-
-#include <sstream>
 
 /*
 ================================================================================
@@ -67,9 +64,11 @@ void Cookie::setCookie(std::string cookie) {
 
 void Cookie::printCookie() const {
     for (std::map<std::string, std::map<std::string, std::string> >::const_iterator it = _cookie.begin(); it != _cookie.end(); ++it) {
-        std::clog << YELLOW << it->first << RESET << std::endl;
+        // std::clog << YELLOW << it->first << RESET << std::endl;
+        LOG(DEBUG, YELLOW, it->first);
         for (std::map<std::string, std::string>::const_iterator itSession = it->second.begin(); itSession != it->second.end(); ++itSession) {
-            std::clog << " " << itSession->first << " : " << itSession->second << std::endl;
+            // std::clog << " " << itSession->first << " : " << itSession->second << std::endl;
+            LOG(DEBUG, DEFAULT, " " + itSession->first + " : " + itSession->second);
         }
     }
 }
