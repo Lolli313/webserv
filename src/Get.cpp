@@ -37,7 +37,7 @@ Get::~Get() {}
 void Get::checkRequest()
 {
 	LOG(INFO, YELLOW_BRIGHT, "checkRequest");
-	std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("Host");
+	std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("host");
 	if (it == _request.getHeader().end())
 		throw Tools::Exception(400, "GET: host not found.");
 	_host = it->second;
