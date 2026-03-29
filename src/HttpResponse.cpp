@@ -7,6 +7,7 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
+HttpResponse::HttpResponse() : _httpVersion(HTTP_VERSION), _returnCode(0), _returnMessage("") {}
 HttpResponse::HttpResponse(int code, const std::string &message) : _httpVersion(HTTP_VERSION), _returnCode(code), _returnMessage(message) {}
 HttpResponse::HttpResponse(const std::string &httpVersion, int code, const std::string &message) : _httpVersion(httpVersion), _returnCode(code), _returnMessage(message) {}
 HttpResponse::HttpResponse(const std::pair<int, const std::string> &response) : _httpVersion(HTTP_VERSION), _returnCode(response.first), _returnMessage(response.second) {}

@@ -329,21 +329,27 @@ const std::string handleRedirect(Tools::Exception &e) {
 	return response.getFinalResponse();
 }
 
-const std::string handleOtherCodes(const ConfigBase* config, const int HttpCode) {
+const std::string handleOtherCodes(const ConfigBase* config, const int httpCode) {
 	std::string errorBody;
 	if (config) {
-		HttpTools::MapType::const_iterator it = config->getErrorPages().find(HttpCode);
+		HttpTools::MapType::const_iterator it = config->getErrorPages().find(httpCode);
 		if (it == config->getErrorPages().end())
-			errorBody = generateErrorPage(HttpCode);
+			errorBody = generateErrorPage(httpCode);
 		else
 		{
-			errorBody = readErrorFile(config->getRoot() + it->second, HttpCode, true);
+			errorBody = readErrorFile(config->getRoot() + it->second, httpCode, true);
 		}
 	}
 	else
-		errorBody = generateErrorPage(HttpCode);
+		errorBody = generateErrorPage(httpCode);
 
-	HttpResponse response(HttpTools::getReturnPair(HttpCode));
+	HttpResponse response(HttpTools::getReturnPair(httpCode));
+	
+	// Manually set return code and message if the code is a custom one
+	if (HttpTools::getReturnPair(httpCode).second == "") {
+		response.setReturnCode(httpCode);
+		response.setReturnMessage("Custom Error");
+	}
 	response.setBody(errorBody);
 	response.addHeader("Content-Length", Tools::intToString(errorBody.size()));
 	response.addHeader("Content-Type", HttpTools::getContentType(".html"));

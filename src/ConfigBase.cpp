@@ -392,6 +392,7 @@ bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *i
 		}
 
 		path = tokens[2];
+		_errorPages[httpCode] = path;
 	}
 	else {
 		if (tokens.size() != 2) {

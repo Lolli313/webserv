@@ -38,7 +38,7 @@ private:
 	void addHeadersToResponse();
 
 public:
-	HttpResponse() {};
+	HttpResponse();
 	HttpResponse(int code, const std::string &message);
 	HttpResponse(const std::string &httpVersion, int code, const std::string &message);
 	HttpResponse(const HttpResponse &obj);
