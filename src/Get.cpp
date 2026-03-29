@@ -91,7 +91,7 @@ void Get::checkAndSetFile(const std::string &path)
 		else
 			throw Tools::Exception(500, "GET: read error");
 	}
-	LOG(INFO, YELLOW_BRIGHT, "File = " + _file);
+	LOG(DEBUG, "File = " + _file);
 }
 
 const std::string Get::getExtension() const

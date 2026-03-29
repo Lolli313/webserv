@@ -10,6 +10,8 @@ class Tools;
 #include <ctime>
 #include <map>
 
+#define ENABLE_INFO_LOGGING false
+
 #define LOG_LEVEL					\
 	X(DEBUG, GREEN_BRIGHT, 8)		\
 	X(INFO, BLUE_BRIGHT, 9)			\
@@ -40,7 +42,6 @@ public:
 	static const std::string& getStringFromEnum(int level);
 
 	static void logger(LogLevel level, const std::string& message);
-	static void logger(httpMethods method, LogLevel level, const std::string& message);
 	static void logger(LogLevel level, const char* color, const std::string& message);
 	static void logger(LogLevel level, const char* color, const std::string& key, const std::string& value);
 	

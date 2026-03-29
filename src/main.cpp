@@ -23,7 +23,6 @@ int main(int ac, char **av)
 	std::signal(SIGINT, &handle_signals);
 
 	try {
-		LOG(DEBUG, YELLOW_BRIGHT, "Index file ignored");
 		ParseConfig pc((std::string(av[1])));
 		// pc.printData();
 		ServerManager sm(pc.getServerConfig());

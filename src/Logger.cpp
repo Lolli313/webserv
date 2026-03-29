@@ -61,9 +61,6 @@ void Logger::initEnumStringMap(std::map<int, std::string>& enumStringMap) {
 	#define X(level, message, ID) enumStringMap[level] = #level;
 		LOG_LEVEL
 	#undef X
-	enumStringMap[GET] = "GET";
-	enumStringMap[POST] = "POST";
-	enumStringMap[DELETE] = "DELETE";
 }
 
 /*
@@ -73,19 +70,21 @@ void Logger::initEnumStringMap(std::map<int, std::string>& enumStringMap) {
 */
 
 void Logger::logger(LogLevel level, const std::string& message) {
-	std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << getLevelColor(level) << "[" << getStringFromEnum(level) << "] " << message << RESET << std::endl;
-}
-
-void Logger::logger(httpMethods method, LogLevel level, const std::string& message) {
-	std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << getLevelColor(level) << "[" << getStringFromEnum(method) << "] " << message << RESET << std::endl;
+	if (!(!ENABLE_INFO_LOGGING && level == INFO))
+		std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << getLevelColor(level) <<
+				"[" << getStringFromEnum(level) << "] " << message << RESET << std::endl;
 }
 
 void Logger::logger(LogLevel level, const char* color, const std::string& message) {
-	std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << color << "[" << getStringFromEnum(level) << "] " << message << RESET << std::endl;
+	if (!(!ENABLE_INFO_LOGGING && level == INFO))
+		std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << color << "[" <<
+				getStringFromEnum(level) << "] " << message << RESET << std::endl;
 }
 
 void Logger::logger(LogLevel level, const char* color, const std::string& key, const std::string& value) {
-	std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << color << "[" << getStringFromEnum(level) << "] " << key << ": " << RESET << value << std::endl;
+	if (!(!ENABLE_INFO_LOGGING && level == INFO))
+		std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << color << "[" <<
+				getStringFromEnum(level) << "] " << key << ": " << RESET << value << std::endl;
 }
 
 
