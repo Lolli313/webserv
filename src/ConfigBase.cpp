@@ -352,6 +352,17 @@ bool ConfigBase::handleAllowMethods(std::vector<std::string> &tokens, std::ifstr
 	return true;
 }
 
+bool isValidReturnPath(const std::string& path) {
+	if (!path.empty() && path[0] == '/')
+		return true;
+
+	const std::string prefix = "https://";
+	if (path.size() >= prefix.size() && path.compare(0, prefix.size(), prefix) == 0)
+		return true;
+
+	return false;
+}
+
 bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
@@ -362,16 +373,32 @@ bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *i
 		return false;
 
 	std::string& temp(tokens[1]);
-	if (temp.size() != 3 || !Tools::isNumber(temp))
+	if (temp.size() < 1 || temp.size() > 3 || !Tools::isNumber(temp))
 		return false;
 
 	int httpCode = std::atoi(temp.c_str());
-	if (httpCode < 300 || httpCode > 599)
+	if (httpCode < 100 || httpCode > 999)
 		return false;
 
 	std::string path("");
-	if (tokens.size() > 2)
+	if (httpCode >= 300 && httpCode <= 399) {
+		if (tokens.size() != 3 || tokens[2].empty()) {
+			tokens[0].append(" " + Tools::intToString(httpCode));
+			return false;
+		}
+		if (!isValidReturnPath(tokens[2])) {
+			tokens[0].append(" " + Tools::intToString(httpCode));
+			return false;
+		}
+
 		path = tokens[2];
+	}
+	else {
+		if (tokens.size() != 2) {
+			tokens[0].append(" " + Tools::intToString(httpCode));
+			return false;
+		}
+	}
 	setReturnDirective(std::make_pair(httpCode, path));
 	return true;
 }
