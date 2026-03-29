@@ -311,6 +311,48 @@ const std::string generateErrorPage(int code)
 	return fileContent;
 }
 
+const std::string handleRedirect(Tools::Exception &e) {
+	HttpResponse response(HttpTools::getReturnPair(302));
+	const std::string& location = e.getMsgLog();
+	const int code = e.getReturnCode();
+	if (code == 301 || code == 302 || code == 303 || code == 305 || code == 307 || code == 308)
+		response.addHeader("Location", location);
+
+	if (code == 300) {
+		response.setBody("<a href=\"/v1\">Ver 1</a><br><a href=\"/v2\">Ver 2</a>");
+		response.addHeader("Content-Length", Tools::intToString(response.getBody().size()));
+	}
+	else
+		response.addHeader("Content-Length", "0");
+	response.addDateHeader();
+
+	return response.getFinalResponse();
+}
+
+const std::string handleOtherCodes(const ConfigBase* config, const int HttpCode) {
+	std::string errorBody;
+	if (config) {
+		HttpTools::MapType::const_iterator it = config->getErrorPages().find(HttpCode);
+		if (it == config->getErrorPages().end())
+			errorBody = generateErrorPage(HttpCode);
+		else
+		{
+			errorBody = readErrorFile(config->getRoot() + it->second, HttpCode, true);
+		}
+	}
+	else
+		errorBody = generateErrorPage(HttpCode);
+
+	HttpResponse response(HttpTools::getReturnPair(HttpCode));
+	response.setBody(errorBody);
+	response.addHeader("Content-Length", Tools::intToString(errorBody.size()));
+	response.addHeader("Content-Type", HttpTools::getContentType(".html"));
+	LOG(INFO, LIGHT_BLUE, "Error file size is", Tools::intToString(errorBody.size()));
+	response.addDateHeader();
+	
+	return response.getFinalResponse();
+}
+
 void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config, bool reThrow)
 {
 	if (!tmpClient)
@@ -322,39 +364,18 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 	if (e.getReturnCode() >= 400)
 		LOG(ERROR, e.getMsgLog());
 	else
-		LOG(INFO, PINK, e.getMsgLog());
+		LOG(DEBUG, PINK, "Throw code " + Tools::intToString(e.getReturnCode()), e.getMsgLog());
 
 	if (e.getReturnCode() >= 100)
 	{
-		// ===============================
-		// HOW TO GET THE ERROR FILES ???
-		// get value of server.getPathConfig() to a temp variable ConfigBase,
-		// fix the code of that getPathConfig() function (bring the code from checkRequestValidity)
-		// and pass the ConfigBase as parameter to the throwHandler()
-		// and pass the ConfigBase as parameter to POST and GET method handlers
-		// ===============================
-
-		std::string errorBody;
-		if (config)
-		{
-			HttpTools::MapType::const_iterator it = config->getErrorPages().find(e.getReturnCode());
-			if (it == config->getErrorPages().end())
-				errorBody = generateErrorPage(e.getReturnCode());
-			else
-			{
-				errorBody = readErrorFile(config->getRoot() + it->second, e.getReturnCode(), true);
-			}
-		}
+		std::string responseString;
+		if (e.getReturnCode() >= 300 && e.getReturnCode() <= 308)
+			responseString = handleRedirect(e);
 		else
-			errorBody = generateErrorPage(e.getReturnCode());
+			responseString = handleOtherCodes(config, e.getReturnCode());
 
-		HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
-		response.setBody(errorBody);
-		response.addHeader("Content-Length", Tools::intToString(errorBody.size()));
-		LOG(INFO, LIGHT_BLUE, "Error file size is", Tools::intToString(errorBody.size()));
-		response.addDateHeader();
-
-		tmpClient->setResponseBuff(response.getFinalResponse());
+		LOG(DEBUG, responseString);
+		tmpClient->setResponseBuff(responseString);
 		sendResponse(tmpClient);
 	}
 
@@ -524,10 +545,10 @@ void ServerManager::mainLoop()
 		}
 		catch (Tools::Exception &e)
 		{
-			// if (e.getReturnCode() == 0)
-			// {
+			if (e.getReturnCode() == 0)
+			{
 				LOG(ERROR, e.getMsgLog());
-			// }
+			}
 		}
 		catch (std::exception &e)
 		{
