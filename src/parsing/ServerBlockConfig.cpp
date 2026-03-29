@@ -91,14 +91,10 @@ bool ServerBlockConfig::parseListen(std::vector<std::string>& tokens) {
 	if (tokens.size() != 2 || !Tools::checkAndRemoveSemicolon(port))
 		return false;
 
-	if (port.size() > 5 && !Tools::isNumber(port))
+	if (!Tools::isValidPort(port))
 		return false;
-
-	int portStr = std::atoi(port.c_str());
-	// unsigned short max is 65535
-	if (portStr <= 0 || portStr > std::numeric_limits<unsigned short>::max())
-		return false;
-	_port = Tools::intToString(portStr);
+	
+	_port = port;
 	return true;
 }
 

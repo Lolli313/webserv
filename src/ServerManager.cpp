@@ -150,15 +150,22 @@ const std::string &ServerManager::findPort(int eventFD)
 	return _serverSocketArray[0]->getPort();
 }
 
-std::pair<std::string, std::string> splitHostPair(const std::string &str)
+std::pair<std::string, std::string> buildHostPair(const std::string &str, const std::string& port)
 {
 	std::vector<std::string> split = Tools::splitString(str, ":");
+	if (split.size() == 1)
+		return std::make_pair(split[0], port);
+	
+	if (!Tools::isValidPort(split[1]))
+		throw Tools::Exception(400, "Port of Host header is invalid");
+	
 	return std::make_pair(split[0], split[1]);
+	
 }
 
-Server *ServerManager::findServer(const std::string &host)
+Server *ServerManager::findServer(const std::string &host, const std::string& port)
 {
-	std::pair<std::string, std::string> hostPair = splitHostPair(host);
+	std::pair<std::string, std::string> hostPair = buildHostPair(host, port);
 
 	int targetPort = std::atoi(hostPair.second.c_str());
 	std::pair<int, std::string> exactKey(targetPort, hostPair.first);
@@ -191,7 +198,7 @@ const ConfigBase *ServerManager::findConfigBase(const Client &client, const Http
 		// LOG(ERROR, "Host header missing");
 		throw Tools::Exception(400, "Host header missing");
 	}
-	Server *server = findServer(it->second);
+	Server *server = findServer(it->second, port);
 	std::string modifiableString(request.getPath());
 	return &server->getPathConfig(modifiableString);
 }
@@ -200,7 +207,6 @@ void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &met
 {
 	if (config->getReturnDirective().first)
 	{
-		// std:: << LIGHT_BLUE << "Found return directive with code " << config->getReturnDirective().first << RESET << std::endl;
 		// LOG(INFO, LIGHT_BLUE, "Found return directive with code " + Tools::intToString(config->getReturnDirective().first));
 		throw Tools::Exception(config->getReturnDirective().first, config->getReturnDirective().second);
 	}

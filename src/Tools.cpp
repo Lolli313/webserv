@@ -255,3 +255,14 @@ std::string Tools::getExtendedTimeOfDay() {
 
 	return std::string(buffer);
 }
+
+bool Tools::isValidPort(const std::string& port) {
+	if (port.size() > 5 && !Tools::isNumber(port))
+		return false;
+
+	int portInt = std::atoi(port.c_str());
+	// unsigned short max is 65535
+	if (portInt <= 0 || portInt > std::numeric_limits<unsigned short>::max())
+		return false;
+	return true;
+}

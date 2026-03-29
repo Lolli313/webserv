@@ -30,7 +30,7 @@ int main(int ac, char **av)
 	}
 	catch (Tools::Exception &e) {
 		if (e.getReturnCode() == 0)
-			LOG(CRITICAL, PINK, "Custom exception: ", e.getMsgLog());
+			LOG(CRITICAL, RED, "Custom exception", e.getMsgLog());
 		else if (e.getReturnCode() == 1)
 			LOG(CRITICAL, e.getMsgLog());
 		else
@@ -38,7 +38,7 @@ int main(int ac, char **av)
 
 	}
 	catch (std::exception &e) {
-		LOG(CRITICAL, PINK, "Builting exception: ", e.what());
+		LOG(CRITICAL, RED, "Builtin exception: ", e.what());
 	}
 	catch (...) {
 		LOG(CRITICAL, "Undefine error");

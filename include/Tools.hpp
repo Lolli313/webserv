@@ -8,6 +8,8 @@ class Logger;
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <cstdlib>
+#include <limits>
 #include <string>
 #include <vector>
 #include <ctime>
@@ -68,5 +70,5 @@ public:
 	static bool fileExists(const char *filename);
 	static std::string getTimeOfDay();
 	static std::string getExtendedTimeOfDay();
-
+	static bool isValidPort(const std::string& port);
 };
