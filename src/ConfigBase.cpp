@@ -156,7 +156,7 @@ bool ConfigBase::handleMaxSizeConversion(std::string &maxSize)
 		std::size_t pos = maxSize.find_first_not_of(digits);
 		if (pos == std::string::npos)
 		{
-			std::clog << "Unknown error" << std::endl;
+			LOG(ERROR, "Unknown error in handleMaxSizeConversion");
 			return false;
 		}
 		bitmask_t foundBit = charToBit(maxSize[pos]);
@@ -352,6 +352,17 @@ bool ConfigBase::handleAllowMethods(std::vector<std::string> &tokens, std::ifstr
 	return true;
 }
 
+bool isValidReturnPath(const std::string& path) {
+	if (!path.empty() && path[0] == '/')
+		return true;
+
+	const std::string prefix = "https://";
+	if (path.size() >= prefix.size() && path.compare(0, prefix.size(), prefix) == 0)
+		return true;
+
+	return false;
+}
+
 bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *infile)
 {
 	(void)infile;
@@ -362,53 +373,73 @@ bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *i
 		return false;
 
 	std::string& temp(tokens[1]);
-	if (temp.size() != 3 || !Tools::isNumber(temp))
+	if (temp.size() < 1 || temp.size() > 3 || !Tools::isNumber(temp))
 		return false;
 
 	int httpCode = std::atoi(temp.c_str());
-	if (httpCode < 300 || httpCode > 599)
+	if (httpCode < 100 || httpCode > 999)
 		return false;
 
 	std::string path("");
-	if (tokens.size() > 2)
+	if (httpCode >= 300 && httpCode <= 399) {
+		if (tokens.size() != 3 || tokens[2].empty()) {
+			tokens[0].append(" " + Tools::intToString(httpCode));
+			return false;
+		}
+		if (!isValidReturnPath(tokens[2])) {
+			tokens[0].append(" " + Tools::intToString(httpCode));
+			return false;
+		}
+
 		path = tokens[2];
+		_errorPages[httpCode] = path;
+	}
+	else {
+		if (tokens.size() != 2) {
+			tokens[0].append(" " + Tools::intToString(httpCode));
+			return false;
+		}
+	}
 	setReturnDirective(std::make_pair(httpCode, path));
 	return true;
 }
 
 void ConfigBase::printData() const {
-	std::clog << "Root: " << getRoot() << std::endl;
+    // Single values
+    LOG(DEBUG, YELLOW_BRIGHT, "Root", getRoot());
+    
+    // Autoindex (Boolean to string)
+    LOG(DEBUG, YELLOW_BRIGHT, "Autoindex", (getAutoIndex() ? "on" : "off"));
 
-	std::clog << "Indexes: ";
-	std::vector<std::string>::const_iterator indexit = getIndex().begin();
-	for (;indexit != getIndex().end(); indexit++) {
-		std::clog << *indexit << ", ";
-	}
-	std::clog << std::endl;
-	
-	std::clog << "autoindex: " << getAutoIndex() << std::endl;
+    // Client Max Body Size
+    LOG(DEBUG, YELLOW_BRIGHT, "Client Max Body Size", Tools::intToString(getClientMaxBodySize()));
 
-	std::clog << "clientMaxBodySize: " << getClientMaxBodySize() << std::endl;
+    // Indexes (Joined list)
+    std::string indexes;
+    for (std::vector<std::string>::const_iterator it = getIndex().begin(); it != getIndex().end(); ++it) {
+        if (!indexes.empty()) indexes += ", ";
+        indexes += *it;
+    }
+    LOG(DEBUG, YELLOW_BRIGHT, "Indexes", (indexes.empty() ? "none" : indexes));
 
-	std::clog << "error pages: ";
-	if (getErrorPages().empty()) {}
-		std::clog << std::endl;
-	std::map<int, std::string>::const_iterator errorit = getErrorPages().begin();
-	for (;errorit != getErrorPages().end(); errorit++) {
-		std::clog << errorit->first << ", " << errorit->second << std::endl;
-	}
+    // Error Pages (Iterated Key/Value)
+    LOG(DEBUG, YELLOW_BRIGHT, "Error Pages", (getErrorPages().empty() ? "none" : ""));
+    for (std::map<int, std::string>::const_iterator it = getErrorPages().begin(); it != getErrorPages().end(); ++it) {
+        LOG(DEBUG, YELLOW_BRIGHT, "  Status " + Tools::intToString(it->first), it->second);
+    }
 
-	std::clog << "allow methods: ";
-	std::set<std::string>::const_iterator allowMethodit = getAllowMethods().begin();
-	for (;allowMethodit != getAllowMethods().end(); allowMethodit++) {
-		std::clog << *allowMethodit << ", ";
-	}
-	std::clog << std::endl;
+    // Allow Methods (Joined list)
+    std::string methods;
+    for (std::set<std::string>::const_iterator it = getAllowMethods().begin(); it != getAllowMethods().end(); ++it) {
+        if (!methods.empty()) methods += ", ";
+        methods += *it;
+    }
+    LOG(DEBUG, YELLOW_BRIGHT, "Allow Methods", (methods.empty() ? "none" : methods));
 
-	std::clog << "return directive: ";
-	std::clog << getReturnDirective().first << ", ";
-	std::clog << ((getReturnDirective().second.empty()) ? "\"\"" : getReturnDirective().second);
-	std::clog << std::endl;
+    // Return Directive
+    std::string returnVal = Tools::intToString(getReturnDirective().first) + 
+                            (getReturnDirective().second.empty() ? "" : " -> " + getReturnDirective().second);
+    LOG(DEBUG, YELLOW_BRIGHT, "Return Directive", returnVal);
 }
 
 /**
