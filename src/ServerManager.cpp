@@ -187,7 +187,7 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 	throw Tools::Exception(500, "Error finding server");
 }
 
-const ConfigBase *ServerManager::findConfigBase(const Client &client, const HttpRequest &request, int eventFD)
+const ConfigBase *ServerManager::findConfigBase(Client &client, const HttpRequest &request, int eventFD)
 {
 	std::string port = findPort(eventFD);
 	(void)client;
@@ -195,6 +195,7 @@ const ConfigBase *ServerManager::findConfigBase(const Client &client, const Http
 	if (it == request.getHeader().end())
 	{
 		// LOG(ERROR, "Host header missing");
+		client.setToBeClosed(true);
 		throw Tools::Exception(400, "Host header missing");
 	}
 	Server *server = findServer(it->second, port);
