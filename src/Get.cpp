@@ -74,6 +74,7 @@ void Get::setIndexFile()
 void Get::checkAndSetFile(const std::string &path)
 {
 	_path = _config->getRoot() + path;
+	LOG(INFO, RED, "file path = " + _path);
 	if (_path.size() >= _rootDir.size() &&
     _path.compare(_path.size() - _rootDir.size(), _rootDir.size(), _rootDir) == 0)
 		setIndexFile();

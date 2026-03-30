@@ -448,9 +448,9 @@ void ServerManager::existingClient(int eventFD)
 			{
 				HttpRequest request;
 				request.parse(tmpRequest);
-				request.cookie(_cookie);
-				_cookie.printCookie();
-				// request.print();
+				// request.cookie(_cookie);
+				// _cookie.printCookie();
+				request.print();
 
 				// Ideally we would call this function after the headers are parsed, for now it is here
 				config = findConfigBase(*tmpClient, request, eventFD);
