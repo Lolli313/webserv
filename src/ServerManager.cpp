@@ -229,7 +229,7 @@ void ServerManager::sendResponse(Client *client)
 		throw Tools::Exception("sendResponse = -1");
 	}
 	client->addBytesSent(sent);
-	if (client->getBytesSent() >= client->getBuffer().size())
+	if (client->getBytesSent() >= client->getResponseBuff().size())
 		client->setResponseSent(true);
 }
 

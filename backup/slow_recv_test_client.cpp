@@ -67,8 +67,8 @@ int main(int argc, char* argv[]) {
 
     // Trigger a response from server (adjust path as needed).
     std::string req =
-        "GET /big HTTP/1.1\r\n"
-        "Host: test\r\n"
+        "GET / HTTP/1.1\r\n"
+        "Host: localhost:8080\r\n"
         "Connection: close\r\n\r\n";
     ssize_t s = send(fd, req.c_str(), req.size(), MSG_NOSIGNAL);
     if (s < 0) {
