@@ -368,9 +368,9 @@ void ServerManager::existingClient(int eventFD)
 		try
 		{
 			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");			
-			// std::clog << RED << tmpClient->getBuffer() << RESET << std::endl;
+			std::clog << RED << tmpClient->getBuffer() << RESET << std::endl;
 			std::string tmpRequest = tmpClient->bufferManager();
-			// std::clog << GREEN << tmpRequest << RESET << std::endl;
+			std::clog << GREEN << tmpRequest << RESET << std::endl;
 			// std::string tmpRequest =
 			// 	"GET /ascii/body.txt HTTP/1.1\r\n"
 			// 	"Host: localhost:8080\r\n"

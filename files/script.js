@@ -1,3 +1,4 @@
+let uploadedFiles = [];
 let selectedMethod = null;
 
 function selectMethod(method) {
@@ -6,6 +7,16 @@ function selectMethod(method) {
     });
     event.target.classList.add('active');
     selectedMethod = method;
+}
+
+function updateUploadsDisplay() {
+    const uploadsDiv = document.getElementById('uploads');
+    if (uploadedFiles.length === 0) {
+        uploadsDiv.textContent = "Aucun fichier uploadé.";
+        return;
+    }
+    let fileList = uploadedFiles.map(file => `${file.name} (${(file.size / 1024).toFixed(2)} Ko)`).join('\n');
+    uploadsDiv.textContent = fileList;
 }
 
 async function validateAndSend() {
@@ -39,18 +50,19 @@ async function validateAndSend() {
 
             if (fileInput.files.length > 0) {
                 const formData = new FormData();
-                formData.append('file', fileInput.files[0]);
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append('file', fileInput.files[i]);
+                    uploadedFiles.push(fileInput.files[i]); // Ajoute le fichier à la liste
+                }
                 options.body = formData;
-                delete options.headers; // Laisser le navigateur définir l'en-tête pour FormData
+                delete options.headers;
             }
         }
 
-        // Envoyer la requête
         const response = await fetch(url, options);
-
-        // Afficher la réponse dans l'encadré
         const responseText = await response.text();
         responseDiv.textContent = `Status: ${response.status}\n${responseText}`;
+        updateUploadsDisplay();
     } catch (error) {
         responseDiv.textContent = `Erreur : ${error.message}`;
     } finally {
