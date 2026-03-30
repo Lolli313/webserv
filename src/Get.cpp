@@ -74,6 +74,7 @@ bool Get::setIndexFile(const std::string &path)
 
 void Get::checkAndSetFile(const std::string &path)
 {
+	_path = _config->getRoot() + path;
 	LOG(DEBUG, "ROOT = " + _config->getRoot());
 	// Check if it is a directory
 	// 1. check setIndexFile()
