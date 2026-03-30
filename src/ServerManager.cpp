@@ -217,6 +217,8 @@ void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &met
 		// LOG(INFO, LIGHT_BLUE, method + " method not allowed");
 		throw Tools::Exception(405, "Method not allowed");
 	}
+	if (method != "GET" && method != "POST" && method != "DELETE")
+		throw Tools::Exception(501, "Method " + method + " not implemented");
 }
 
 void ServerManager::sendResponse(Client *client)

@@ -83,7 +83,8 @@ void HttpRequest::parse(const std::string &request) {
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
-	if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
+	// if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
+	if (!HttpTools::isValidMethod(_methodStr)) {
 		LOG(WARNING, LIGHT_BLUE, "HttpRequest: Unknown method");
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
