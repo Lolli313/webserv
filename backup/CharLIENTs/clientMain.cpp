@@ -20,46 +20,46 @@ int main() {
     //     + boundary + "--\r\n";
     // client.clientSend(request);
 
-std::string test =
-    "POST /api/upload HTTP/1.1\r\n"
-    "host: 127.0.0.1:8080\r\n"
-    "content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
-    "authorization: Bearer token123\r\n"
-    "user-agent: MonClient/1.0\r\n"
-    "content-length: 583\r\n"  // À ajuster selon la taille réelle
-    "\r\n"
+// std::string test =
+//     "POST /api/upload HTTP/1.1\r\n"
+//     "host: lOcAlHOSt\r\n"
+//     "content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
+//     "authorization: Bearer token123\r\n"
+//     "user-agent: MonClient/1.0\r\n"
+//     "content-length: 583\r\n"
+//     "\r\n"
 
-    "----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
-    "content-disposition: form-data; name=\"document\"; filename=\"rapport.abw\"\r\n"
-    "content-type: application/x-abiword\r\n"
-    "\r\n"
-    "<abiword xmlns=\"http://www.abisource.com/abiword.dtd\" version=\"1.0\">\n"
-    "  <p>Ceci est un exemple de document AbiWord.</p>\n"
-    "</abiword>\r\n"
+//     "----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
+//     "content-disposition: form-data; name=\"document\"; filename=\"rapport.abw\"\r\n"
+//     "content-type: application/x-abiword\r\n"
+//     "\r\n"
+//     "<abiword xmlns=\"http://www.abisource.com/abiword.dtd\" version=\"1.0\">\n"
+//     "  <p>Ceci est un exemple de document AbiWord.</p>\n"
+//     "</abiword>\r\n"
 
-    "----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
-    "content-disposition: form-data; name=\"archive\"; filename=\"data.arc\"\r\n"
-    "content-type: application/x-freearc\r\n"
-    "\r\n"
-    "!<arch>\n"
-    "document.txt   1234567890  12345  100  644  1234567890  12345\n"
-    "`\n"
-    "Ceci est un exemple de contenu d'archive.\n"
-    "\n"
+//     "----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
+//     "content-disposition: form-data; name=\"archive\"; filename=\"data.arc\"\r\n"
+//     "content-type: application/x-freearc\r\n"
+//     "\r\n"
+//     "!<arch>\n"
+//     "document.txt   1234567890  12345  100  644  1234567890  12345\n"
+//     "`\n"
+//     "Ceci est un exemple de contenu d'archive.\n"
+//     "\n"
 
-    "----WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n";
+//     "----WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n";
 
     // std::string test3 = "DELETE /post.json HTTP/1.1\r\n"
     // "Host: 127.0.0.1:8080\r\n\r\n";
 
-    // std::string cookies =
-    // "GET /hello.txt HTTP/1.1\r\n"
-    // "Host: cgi.com\r\n"
-    // "User-Agent: Mozilla/5.0 (X11; Linux x86_64)\r\n"
-    // "Accept: text/html\r\n"
-    // "Cookie: session_id=abc123; theme=dark; lang=fr\r\n"
-    // "Connection: keep-alive\r\n"
-    // "\r\n";
+    std::string cookies =
+    "GET /utilisateur HTTP/1.1\r\n"
+    "Host: cgi.com\r\n"
+    "User-Agent: Mozilla/5.0 (X11; Linux x86_64)\r\n"
+    "Accept: text/html\r\n"
+    "Cookie: session_id=abc123; theme=dark; lang=fr\r\n"
+    "Connection: keep-alive\r\n"
+    "\r\n";
 
 
     // std::string boulangerie =
@@ -83,8 +83,9 @@ std::string test =
     std::string message;
 
     std::getline(std::cin, message);
-    client.clientSend(test);
-    // client.clientSend(test2);
+    client.clientSend(cookies);
+    while (client.clientReceive().empty()) {
+    }
     // std::getline(std::cin, message);
     // client.clientSend(test3);
     // client.clientSend(test2);
@@ -94,7 +95,7 @@ std::string test =
     // client.clientSend(boulangerie);
     // std::getline(std::cin, message);
     // client.clientSend(test3);
-    // std::getline(std::cin, message);
+    std::getline(std::cin, message);
     client.clientDisconnect();
     return 0;
 }

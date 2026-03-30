@@ -180,8 +180,7 @@ std::string Client::bufferManager() {
 	// maintenant on verifie si la partie des headers est finit et note le debut du body
 	size_t posHeaderStart = _buffer.find_first_of("\r\n");
 	size_t posHeaderEnd = _buffer.find("\r\n\r\n");
-	
-	if (posHeaderStart != std::string::npos) {
+	if (posHeaderStart != std::string::npos && posHeaderEnd != std::string::npos) {
 		bool flag = false;
 		for (size_t i = posHeaderStart; i < posHeaderEnd; ++i) {
 			if (_buffer[i] == ':') {
@@ -195,12 +194,11 @@ std::string Client::bufferManager() {
 		}
 	}
 	// transform en minuscule
-	if (posHeaderEnd == std::string::npos) {
+	if (posHeaderStart == std::string::npos || posHeaderEnd == std::string::npos) {
         return "";
     }
 	std::string headers = _buffer.substr(0, posHeaderEnd);
 	size_t posBodyStart = posHeaderEnd + 4;
-
 	// la il faut trouver Content-Length pour savoir si le body est finit si il y en a un
 	size_t posContentLengthStart = headers.find("content-length: ");
 	if (posContentLengthStart == std::string::npos) {
