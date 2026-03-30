@@ -9,8 +9,6 @@
 #include "ConfigBase.hpp"
 #include "Polling.hpp"
 
-#define ROOT_DIR "/webserv/files/"
-
 class Get
 {
 private:

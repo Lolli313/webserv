@@ -5,7 +5,7 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Get::Get(const HttpRequest &request, const ConfigBase *config) : _request(request), _config(config), _rootDir(ROOT_DIR) {}
+Get::Get(const HttpRequest &request, const ConfigBase *config) : _request(request), _config(config), _rootDir(config->getRoot()) {}
 
 Get::~Get() {}
 
@@ -73,9 +73,14 @@ void Get::setIndexFile()
 
 void Get::checkAndSetFile(const std::string &path)
 {
-	_path = _config->getRoot() + path;
-	if (_path.size() >= _rootDir.size() &&
-    _path.compare(_path.size() - _rootDir.size(), _rootDir.size(), _rootDir) == 0)
+	_path = _rootDir;
+	LOG(DEBUG, "ROOT = " + _config->getRoot());
+	// Check if it is a directory
+	// if it is, check if auto index is on
+	// if it is, return the files of the directory
+	// if not autoindex, check if there is a index.html in this directory.
+	// if there is one, return it
+	// else, throw the 404 error.
 		setIndexFile();
 	LOG(INFO, YELLOW_BRIGHT, "file path = " + _path);
 	int fd = openFile(_path);
@@ -109,6 +114,7 @@ const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *
 	LOG(INFO, YELLOW_BRIGHT, "executeGET");
 	Get get(request, config);
 	get.checkRequest();
+	LOG(DEBUG, "PUREPATH = " + request.getPurePath());
 	get.checkAndSetFile(request.getPurePath());
 
 	HttpResponse response(HttpTools::getReturnPair(200));
