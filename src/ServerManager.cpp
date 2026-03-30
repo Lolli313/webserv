@@ -412,7 +412,6 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 
 	if (tmpClient && tmpClient->toBeClosed())
 	{
-		LOG(DEBUG, PINK, "WTFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 		if (!_polling->deleteCLient(tmpClient))
 			throw Tools::Exception("Error at deleting client");
 		tmpClient = NULL;
