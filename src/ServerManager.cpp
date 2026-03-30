@@ -150,20 +150,19 @@ const std::string &ServerManager::findPort(int eventFD)
 	return _serverSocketArray[0]->getPort();
 }
 
-std::pair<std::string, std::string> buildHostPair(const std::string &str, const std::string& port)
+std::pair<std::string, std::string> buildHostPair(const std::string &str, const std::string &port)
 {
 	std::vector<std::string> split = Tools::splitString(str, ":");
 	if (split.size() == 1)
 		return std::make_pair(split[0], port);
-	
+
 	if (!Tools::isValidPort(split[1]))
 		throw Tools::Exception(400, "Port of Host header is invalid");
-	
+
 	return std::make_pair(split[0], split[1]);
-	
 }
 
-Server *ServerManager::findServer(const std::string &host, const std::string& port)
+Server *ServerManager::findServer(const std::string &host, const std::string &port)
 {
 	std::pair<std::string, std::string> hostPair = buildHostPair(host, port);
 
@@ -222,14 +221,16 @@ void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &met
 void ServerManager::sendResponse(Client *client)
 {
 	int sent = send(client->getFD(), client->getResponseBuff().c_str() + client->getBytesSent(), client->getResponseBuff().size() - client->getBytesSent(), MSG_NOSIGNAL);
+	LOG(DEBUG, "SEND " + Tools::intToString(sent));
 
 	if (sent < 0)
+	{
+		client->setToBeClosed(true);
 		throw Tools::Exception("sendResponse = -1");
+	}
 	client->addBytesSent(sent);
 	if (client->getBytesSent() >= client->getBuffer().size())
-	{
 		client->setResponseSent(true);
-	}
 }
 
 /**
@@ -244,7 +245,8 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 	if (request.getMethodStr() == "GET")
 		return response = Get::executeGet(request, config);
 
-	else if (request.getMethodStr() == "POST") {
+	else if (request.getMethodStr() == "POST")
+	{
 		LOG(INFO, YELLOW_BRIGHT, "post");
 		return response = Post::executePost(request);
 	}
@@ -311,14 +313,16 @@ const std::string generateErrorPage(int code)
 	return fileContent;
 }
 
-const std::string handleRedirect(Tools::Exception &e) {
+const std::string handleRedirect(Tools::Exception &e)
+{
 	HttpResponse response(HttpTools::getReturnPair(302));
-	const std::string& location = e.getMsgLog();
+	const std::string &location = e.getMsgLog();
 	const int code = e.getReturnCode();
 	if (code == 301 || code == 302 || code == 303 || code == 305 || code == 307 || code == 308)
 		response.addHeader("Location", location);
 
-	if (code == 300) {
+	if (code == 300)
+	{
 		response.setBody("<a href=\"/v1\">Ver 1</a><br><a href=\"/v2\">Ver 2</a>");
 		response.addHeader("Content-Length", Tools::intToString(response.getBody().size()));
 	}
@@ -329,9 +333,11 @@ const std::string handleRedirect(Tools::Exception &e) {
 	return response.getFinalResponse();
 }
 
-const std::string handleOtherCodes(const ConfigBase* config, const int httpCode) {
+const std::string handleOtherCodes(const ConfigBase *config, const int httpCode)
+{
 	std::string errorBody;
-	if (config) {
+	if (config)
+	{
 		HttpTools::MapType::const_iterator it = config->getErrorPages().find(httpCode);
 		if (it == config->getErrorPages().end())
 			errorBody = generateErrorPage(httpCode);
@@ -344,9 +350,10 @@ const std::string handleOtherCodes(const ConfigBase* config, const int httpCode)
 		errorBody = generateErrorPage(httpCode);
 
 	HttpResponse response(HttpTools::getReturnPair(httpCode));
-	
+
 	// Manually set return code and message if the code is a custom one
-	if (HttpTools::getReturnPair(httpCode).second == "") {
+	if (HttpTools::getReturnPair(httpCode).second == "")
+	{
 		response.setReturnCode(httpCode);
 		response.setReturnMessage("Custom Error");
 	}
@@ -355,7 +362,7 @@ const std::string handleOtherCodes(const ConfigBase* config, const int httpCode)
 	response.addHeader("Content-Type", HttpTools::getContentType(".html"));
 	LOG(INFO, LIGHT_BLUE, "Error file size is", Tools::intToString(errorBody.size()));
 	response.addDateHeader();
-	
+
 	return response.getFinalResponse();
 }
 
@@ -382,11 +389,25 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 
 		LOG(DEBUG, responseString);
 		tmpClient->setResponseBuff(responseString);
-		sendResponse(tmpClient);
+		try
+		{
+			sendResponse(tmpClient);
+		}
+		catch (Tools::Exception &e)
+		{
+			if (tmpClient->toBeClosed())
+			{
+				if (!_polling->deleteCLient(tmpClient))
+					throw Tools::Exception("Error at deleting client");
+				tmpClient = NULL;
+			}
+			LOG(CRITICAL, "Response THROWS in throwHandler");
+		}
 	}
 
-	if (tmpClient->toBeClosed())
+	if (tmpClient && tmpClient->toBeClosed())
 	{
+		LOG(DEBUG, PINK, "WTFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 		if (!_polling->deleteCLient(tmpClient))
 			throw Tools::Exception("Error at deleting client");
 		tmpClient = NULL;
@@ -426,7 +447,7 @@ void ServerManager::existingClient(int eventFD)
 				HttpRequest request;
 				request.parse(tmpRequest);
 				request.print();
-				
+
 				// Ideally we would call this function after the headers are parsed, for now it is here
 				config = findConfigBase(*tmpClient, request, eventFD);
 				handleReturnAndAllowMethod(config, request.getMethodStr());
@@ -542,7 +563,6 @@ void ServerManager::eventLoop()
 
 void ServerManager::mainLoop()
 {
-	// int i = 0;
 	while (!_sigStop)
 	{
 		try
@@ -551,10 +571,7 @@ void ServerManager::mainLoop()
 		}
 		catch (Tools::Exception &e)
 		{
-			if (e.getReturnCode() == 0)
-			{
-				LOG(ERROR, e.getMsgLog());
-			}
+			LOG(ERROR, RED_BRIGHT, "mainLoop", e.getMsgLog());
 		}
 		catch (std::exception &e)
 		{

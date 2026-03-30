@@ -71,19 +71,19 @@ void Logger::initEnumStringMap(std::map<int, std::string>& enumStringMap) {
 
 void Logger::logger(LogLevel level, const std::string& message) {
 	if (!(!ENABLE_INFO_LOGGING && level == INFO))
-		std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << getLevelColor(level) <<
+		std::clog << DEFAULT << "[" << Tools::getTimeOfDay() << "] " << getLevelColor(level) <<
 				"[" << getStringFromEnum(level) << "] " << message << RESET << std::endl;
 }
 
 void Logger::logger(LogLevel level, const char* color, const std::string& message) {
 	if (!(!ENABLE_INFO_LOGGING && level == INFO))
-		std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << color << "[" <<
+		std::clog << DEFAULT << "[" << Tools::getTimeOfDay() << "] " << color << "[" <<
 				getStringFromEnum(level) << "] " << message << RESET << std::endl;
 }
 
 void Logger::logger(LogLevel level, const char* color, const std::string& key, const std::string& value) {
 	if (!(!ENABLE_INFO_LOGGING && level == INFO))
-		std::clog << LIGHT_GRAY << "[" << Tools::getTimeOfDay() << "] " << color << "[" <<
+		std::clog << DEFAULT << "[" << Tools::getTimeOfDay() << "] " << color << "[" <<
 				getStringFromEnum(level) << "] " << key << ": " << RESET << value << std::endl;
 }
 
