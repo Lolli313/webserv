@@ -24,7 +24,7 @@ std::atomic<int> failedConnections(0);
 std::mutex printMutex;
 
 // FIX 1: Signal handler must only use async-signal-safe operations.
-// std::cout is NOT async-signal-safe. Just set the flag.
+// std is NOT async-signal-safe. Just set the flag.
 void handle_sigint(int) {
     stopRequested.store(true, std::memory_order_relaxed);
 }
@@ -58,8 +58,7 @@ void raise_fd_limit(int newLimit) {
         }
         
         if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
-            std::clog << "New RLIMIT_NOFILE: soft=" << rl.rlim_cur 
-                      << " hard=" << rl.rlim_max << std::endl;
+            std::clog << "New RLIMIT_NOFILE: soft=" << rl.rlim_cur << " hard=" << rl.rlim_max << std::endl;
         }
     } else {
         std::cerr << "getrlimit(RLIMIT_NOFILE) failed: " << std::strerror(errno) << std::endl;
@@ -72,18 +71,15 @@ void print_system_limits() {
     struct rlimit rl;
     
     if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
-        std::clog << "RLIMIT_NOFILE (open files): soft=" << rl.rlim_cur 
-                  << " hard=" << rl.rlim_max << std::endl;
+        std::clog << "RLIMIT_NOFILE (open files): soft=" << rl.rlim_cur << " hard=" << rl.rlim_max << std::endl;
     }
     
     if (getrlimit(RLIMIT_NPROC, &rl) == 0) {
-        std::clog << "RLIMIT_NPROC (threads/processes): soft=" << rl.rlim_cur 
-                  << " hard=" << rl.rlim_max << std::endl;
+        std::clog << "RLIMIT_NPROC (threads/processes): soft=" << rl.rlim_cur << " hard=" << rl.rlim_max << std::endl;
     }
     
     if (getrlimit(RLIMIT_STACK, &rl) == 0) {
-        std::clog << "RLIMIT_STACK (thread stack): soft=" << rl.rlim_cur 
-                  << " hard=" << rl.rlim_max << std::endl;
+        std::clog << "RLIMIT_STACK (thread stack): soft=" << rl.rlim_cur << " hard=" << rl.rlim_max << std::endl;
     }
     
     std::clog << "==============================\n" << std::endl;

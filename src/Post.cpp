@@ -25,7 +25,6 @@ void Post::parseBody() {
     std::istringstream iss(_request.getBody());
     bool inPart = false;
 
-    // std::cout << _request.getBody() << std::endl;
     if (boundary.empty()) {
         std::map<std::string, std::string> head;
         std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("content-type");
@@ -44,10 +43,8 @@ void Post::parseBody() {
         return;
     }
     while (std::getline(iss, line)) {
-        // std::cout << GREEN << line << RESET << std::endl;
         if (line == boundary + "\r" || line == boundary + "--\r" || line == "--" + boundary + "\r" || line == "--" + boundary + "--\r" || line == boundary + "--" || line == "--" + boundary + "--") {
             if (inPart && !part.empty()) {
-                // std::cout << RED << part << RESET << std::endl;
                 std::string currLine;
                 std::istringstream currStream(part);
                 std::map<std::string, std::string> head;
@@ -146,7 +143,7 @@ void Post::saveInFile() const {
                 contentType = contentType.substr(start, end - start);
 			}
             std::string formatType = HttpTools::getContentType(contentType);
-            // std::cout << "formatType : " << formatType << " contentType : " << contentType << std::endl;
+            // std::clog << "formatType : " << formatType << " contentType : " << contentType << std::endl;
             filename += formatType;
         }
         std::ofstream outFile(("files/" + filename).c_str(), std::ios::out | std::ios::binary);
