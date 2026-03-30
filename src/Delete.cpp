@@ -38,7 +38,7 @@ Delete &Delete::operator=(const Delete &obj)
 
 const std::string Delete::executeDelete(const HttpRequest &request, const ConfigBase *config) {
 	std::string fullPath = config->getRoot() + request.getPurePath();
-	std::clog << fullPath << std::endl;
+	LOG(INFO, "GET: Deleting file " + fullPath);
 	std::ifstream infile(fullPath.c_str());
 	if (!infile.is_open()) {
 		throw Tools::Exception(404, "File doesn't exist");

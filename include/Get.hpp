@@ -9,6 +9,8 @@
 #include "ConfigBase.hpp"
 #include "Polling.hpp"
 
+#define ROOT_DIR "/webserv/files/"
+
 class Get
 {
 private:
@@ -17,6 +19,7 @@ private:
 	std::string _host;
 	std::string _file;
 	std::string _path;
+	const std::string _rootDir;
 	Get(const HttpRequest &request, const ConfigBase *config);
 
 public:
@@ -27,6 +30,7 @@ public:
 	void checkRequest();
 	void checkAndSetFile(const std::string &path);
 	const std::string getExtension() const;
+	void setIndexFile();
 
 	static const std::string executeGet(const HttpRequest &request, const ConfigBase *config);
 };

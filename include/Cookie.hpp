@@ -1,8 +1,12 @@
 #pragma once
 
-#include <map>
-#include <string>
+#include "TerminalColors.hpp"
+#include "Tools.hpp"
+
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <map>
 
 class Cookie {
 

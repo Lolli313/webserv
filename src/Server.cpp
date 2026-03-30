@@ -8,7 +8,7 @@
 
 Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(new ServerSocket(port)), _port(port)
 {
-	std::clog << "Server constructor for _port = " << _port << RESET << std::endl;
+	LOG(INFO, "Server constructor for _port = " + _port);
 }
 
 Server::Server(const Server &obj) :
@@ -18,7 +18,7 @@ Server::Server(const Server &obj) :
 	_serverNames(obj.getServerNames()),
 	_locationConfigs(obj.getLocationConfigs())
 {
-	std::clog << BLUE << "Server copy constructor" << RESET << std::endl;
+	LOG(INFO, BLUE, "Server copy constructor");
 }
 
 Server::Server(const ServerBlockConfig &config, ServerSocket *socket) : 
@@ -30,7 +30,7 @@ Server::Server(const ServerBlockConfig &config, ServerSocket *socket) :
 
 Server::~Server()
 {
-	std::clog << RED << "Calling Server's destructor" << RESET << std::endl;
+	LOG(INFO, RED_BRIGHT, "Calling Server's destructor");
 }
 
 /*
@@ -61,7 +61,7 @@ bool locationMatchesPath(std::string &path, const std::string &location)
  * @return A LocationConfig reference, so all the methods and data are directly accessible. */
 const ConfigBase &Server::getPathConfig(std::string &path)
 {
-	std::clog << LIGHT_BLUE << "Path to look for is: " << path << RESET << std::endl;
+	LOG(INFO, LIGHT_BLUE, "Path to look for is: ", path);
 	while (!path.empty())
 	{
 		std::map<std::string, LocationConfig>::const_iterator it = _locationConfigs.begin();
@@ -69,7 +69,7 @@ const ConfigBase &Server::getPathConfig(std::string &path)
 		{
 			if (locationMatchesPath(path, it->first))
 			{
-				std::clog << LIGHT_BLUE << "Found a match for the location: " << it->first << RESET << std::endl;
+				LOG(INFO, LIGHT_BLUE, "Found a match for the location: ", it->first);
 				return it->second;
 			}
 		}

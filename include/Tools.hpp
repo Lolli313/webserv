@@ -1,11 +1,18 @@
 #pragma once
 
+#include "Logger.hpp"
+
+class Logger;
+
 #include <exception>
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <cstdlib>
+#include <limits>
 #include <string>
 #include <vector>
+#include <ctime>
 
 class Tools
 {
@@ -54,9 +61,14 @@ public:
 	static bool isValidBraceFormat(const std::string &targetToken, const std::vector<std::string> &tokens, std::ifstream *infile);
 	static bool checkAndRemoveSemicolon(std::string &str);
 	static std::string intToString(int nbr);
+	static std::string boolToString(bool b);
 	static bool checkPath(const std::string &path);
 	static void findAndReplaceAllOccurences(std::string& input, const std::string& replaceWord, const std::string& replaceBy);
 	static bool lineIsEmptyOrComment(std::string& str);
 	static void transformStringToLowecase(std::string& str);
 	static bool stringStartsWithCharacter(const std::string& str, char c);
+	static bool fileExists(const char *filename);
+	static std::string getTimeOfDay();
+	static std::string getExtendedTimeOfDay();
+	static bool isValidPort(const std::string& port);
 };

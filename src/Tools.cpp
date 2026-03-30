@@ -193,6 +193,11 @@ std::string Tools::intToString(int nbr)
 	return oss.str();
 }
 
+std::string Tools::boolToString(bool b) {
+	return b ? "true" : "false";
+}
+
+
 void Tools::findAndReplaceAllOccurences(std::string& input, const std::string& replaceWord, const std::string& replaceBy) {
 	std::size_t pos = input.find(replaceWord);
 	while (pos != std::string::npos) {
@@ -222,5 +227,42 @@ bool Tools::stringStartsWithCharacter(const std::string& str, char c) {
 	return (!str.empty() && str[0] == c);
 }
 
+bool Tools::fileExists(const char* filename) {
+    std::ifstream file(filename);
+    return file.good();
+}
 
+std::string Tools::getTimeOfDay() {
+	std::time_t now = std::time(NULL);
 
+    // Convert to UTC (GMT)
+    std::tm *gmt = std::gmtime(&now);
+
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%H:%M:%S GMT", gmt);
+
+	return std::string(buffer);
+}
+
+std::string Tools::getExtendedTimeOfDay() {
+	std::time_t now = std::time(NULL);
+
+    // Convert to UTC (GMT)
+    std::tm *gmt = std::gmtime(&now);
+
+    char buffer[100];
+    std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", gmt);
+
+	return std::string(buffer);
+}
+
+bool Tools::isValidPort(const std::string& port) {
+	if (port.size() > 5 && !Tools::isNumber(port))
+		return false;
+
+	int portInt = std::atoi(port.c_str());
+	// unsigned short max is 65535
+	if (portInt <= 0 || portInt > std::numeric_limits<unsigned short>::max())
+		return false;
+	return true;
+}

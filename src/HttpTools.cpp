@@ -66,12 +66,12 @@ const std::string HttpTools::getContentType(const std::string &target)
 void HttpTools::initContentType(std::map<std::string, std::string> &contentType, bool isKey) {
     if (isKey) {
         #define X(key, value) contentType[key] = value;
-        CONTENT_TYPE_PAIRS
+            CONTENT_TYPE_PAIRS
         #undef X
     }
     else {
         #define X(key, value) contentType[value] = key;
-        CONTENT_TYPE_PAIRS
+            CONTENT_TYPE_PAIRS
         #undef X
     }
 }
@@ -230,63 +230,63 @@ bool HttpTools::isValidHttpRequestHeader(const std::string &header)
 
 void HttpTools::initHttpRequestHeaders(std::set<std::string> &httpRequestHeaders) {
     // En-têtes de base
-    httpRequestHeaders.insert("Accept");
-    httpRequestHeaders.insert("Accept-Charset");
-    httpRequestHeaders.insert("Accept-Encoding");
-    httpRequestHeaders.insert("Accept-Language");
-    httpRequestHeaders.insert("Authorization");
-    httpRequestHeaders.insert("Cache-Control");
-    httpRequestHeaders.insert("Connection");
-    httpRequestHeaders.insert("Content-Length");
-    httpRequestHeaders.insert("Content-Type");
-    httpRequestHeaders.insert("Cookie");
-    httpRequestHeaders.insert("Host");
-    httpRequestHeaders.insert("Origin");
-    httpRequestHeaders.insert("Referer");
-    httpRequestHeaders.insert("User-Agent");
+    httpRequestHeaders.insert("accept");
+    httpRequestHeaders.insert("accept-charset");
+    httpRequestHeaders.insert("accept-encoding");
+    httpRequestHeaders.insert("accept-language");
+    httpRequestHeaders.insert("authorization");
+    httpRequestHeaders.insert("cache-control");
+    httpRequestHeaders.insert("connection");
+    httpRequestHeaders.insert("content-length");
+    httpRequestHeaders.insert("content-type");
+    httpRequestHeaders.insert("cookie");
+    httpRequestHeaders.insert("host");
+    httpRequestHeaders.insert("origin");
+    httpRequestHeaders.insert("referer");
+    httpRequestHeaders.insert("user-agent");
 
     // En-têtes conditionnels
-    httpRequestHeaders.insert("If-Match");
-    httpRequestHeaders.insert("If-Modified-Since");
-    httpRequestHeaders.insert("If-None-Match");
-    httpRequestHeaders.insert("If-Range");
-    httpRequestHeaders.insert("If-Unmodified-Since");
-    httpRequestHeaders.insert("Pragma");
+    httpRequestHeaders.insert("if-match");
+    httpRequestHeaders.insert("if-modified-since");
+    httpRequestHeaders.insert("if-none-match");
+    httpRequestHeaders.insert("if-range");
+    httpRequestHeaders.insert("if-unmodified-since");
+    httpRequestHeaders.insert("pragma");
 
     // En-têtes pour les requêtes multiparties et plages
-    httpRequestHeaders.insert("Content-Disposition");
-    httpRequestHeaders.insert("Range");
-    httpRequestHeaders.insert("TE");
+    httpRequestHeaders.insert("content-disposition");
+    httpRequestHeaders.insert("range");
+    httpRequestHeaders.insert("te");
 
     // En-têtes de sécurité
-    httpRequestHeaders.insert("Content-Security-Policy");
-    httpRequestHeaders.insert("DNT");
-    httpRequestHeaders.insert("Strict-Transport-Security");
-    httpRequestHeaders.insert("Upgrade-Insecure-Requests");
-    httpRequestHeaders.insert("X-Content-Type-Options");
-    httpRequestHeaders.insert("X-Frame-Options");
-    httpRequestHeaders.insert("X-XSS-Protection");
+    httpRequestHeaders.insert("content-security-policy");
+    httpRequestHeaders.insert("dnt");
+    httpRequestHeaders.insert("strict-transport-security");
+    httpRequestHeaders.insert("upgrade-insecure-requests");
+    httpRequestHeaders.insert("x-content-type-options");
+    httpRequestHeaders.insert("x-frame-options");
+    httpRequestHeaders.insert("x-xss-protection");
 
     // En-têtes pour les proxies et CDN
-    httpRequestHeaders.insert("Forwarded");
-    httpRequestHeaders.insert("X-Forwarded-For");
-    httpRequestHeaders.insert("X-Forwarded-Host");
-    httpRequestHeaders.insert("X-Forwarded-Proto");
-    httpRequestHeaders.insert("X-Real-IP");
-    httpRequestHeaders.insert("Via");
+    httpRequestHeaders.insert("forwarded");
+    httpRequestHeaders.insert("x-forwarded-for");
+    httpRequestHeaders.insert("x-forwarded-host");
+    httpRequestHeaders.insert("x-forwarded-proto");
+    httpRequestHeaders.insert("x-real-ip");
+    httpRequestHeaders.insert("via");
 
     // En-têtes pour les APIs et AJAX
-    httpRequestHeaders.insert("Access-Control-Request-Method");
-    httpRequestHeaders.insert("Access-Control-Request-Headers");
-    httpRequestHeaders.insert("X-API-Key");
-    httpRequestHeaders.insert("X-Requested-With");
+    httpRequestHeaders.insert("access-control-request-method");
+    httpRequestHeaders.insert("access-control-request-headers");
+    httpRequestHeaders.insert("x-api-key");
+    httpRequestHeaders.insert("x-requested-with");
 
     // En-têtes pour les performances et réseaux modernes
-    httpRequestHeaders.insert("Save-Data");
-    httpRequestHeaders.insert("Sec-Fetch-Dest");
-    httpRequestHeaders.insert("Sec-Fetch-Mode");
-    httpRequestHeaders.insert("Sec-Fetch-Site");
-    httpRequestHeaders.insert("Sec-Fetch-User");
+    httpRequestHeaders.insert("save-data");
+    httpRequestHeaders.insert("sec-fetch-dest");
+    httpRequestHeaders.insert("sec-fetch-mode");
+    httpRequestHeaders.insert("sec-fetch-site");
+    httpRequestHeaders.insert("sec-fetch-user");
 }
 
 /*

@@ -7,6 +7,7 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
+HttpResponse::HttpResponse() : _httpVersion(HTTP_VERSION), _returnCode(0), _returnMessage("") {}
 HttpResponse::HttpResponse(int code, const std::string &message) : _httpVersion(HTTP_VERSION), _returnCode(code), _returnMessage(message) {}
 HttpResponse::HttpResponse(const std::string &httpVersion, int code, const std::string &message) : _httpVersion(httpVersion), _returnCode(code), _returnMessage(message) {}
 HttpResponse::HttpResponse(const std::pair<int, const std::string> &response) : _httpVersion(HTTP_VERSION), _returnCode(response.first), _returnMessage(response.second) {}
@@ -60,7 +61,7 @@ const std::string &HttpResponse::getBody() const { return _body; }
  */
 const std::string &HttpResponse::getFinalResponse()
 {
-	std::clog << YELLOW_BRIGHT << "getFinalResponse" << RESET << std::endl;
+	LOG(INFO, YELLOW_BRIGHT, "getFinalResponse");
 	if (_finalResponse.empty())
 		buildFinalResponse();
 	return _finalResponse;
@@ -84,17 +85,7 @@ void HttpResponse::addHeader(const std::string &key, const std::string &value)
 
 void HttpResponse::addDateHeader()
 {
-    std::time_t now = std::time(NULL);
-
-    // Convert to UTC (GMT)
-    std::tm *gmt = std::gmtime(&now);
-
-    char buffer[100];
-    std::strftime(buffer, sizeof(buffer),
-                  "%a, %d %b %Y %H:%M:%S GMT",
-                  gmt);
-
-    std::string finalTime(buffer);
+    std::string finalTime = Tools::getExtendedTimeOfDay();
 	addHeader(std::make_pair("Date", finalTime));
 }
 

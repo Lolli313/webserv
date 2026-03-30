@@ -3,7 +3,7 @@
 Test commands:
 - server
 ```
-make && valgrind --leak-check=full --track-fds=yes ./webserv test.conf
+make && valgrind --leak-check=full --track-fds=yes -s ./webserv test.conf
 ```
 - terminal client
 ```

@@ -91,14 +91,10 @@ bool ServerBlockConfig::parseListen(std::vector<std::string>& tokens) {
 	if (tokens.size() != 2 || !Tools::checkAndRemoveSemicolon(port))
 		return false;
 
-	if (port.size() > 5 && !Tools::isNumber(port))
+	if (!Tools::isValidPort(port))
 		return false;
-
-	int portStr = std::atoi(port.c_str());
-	// unsigned short max is 65535
-	if (portStr <= 0 || portStr > std::numeric_limits<unsigned short>::max())
-		return false;
-	_port = Tools::intToString(portStr);
+	
+	_port = port;
 	return true;
 }
 
@@ -276,27 +272,39 @@ void ServerBlockConfig::handleDirectiveName(const std::string& line) {
 }
 
 void ServerBlockConfig::printData() const {
-	std::clog << "port: " << _port << std::endl;
+    // 1. Port
+    LOG(DEBUG, GREEN, "Port", _port);
 
-	std::clog << "server names: ";
-	std::set<std::string>::const_iterator it = _serverNames.begin();
-	for (; it != _serverNames.end(); it++) {
-		std::clog << *it << ", ";
-	}
-	std::clog << std::endl;
+    // 2. Server Names (Joined List)
+    std::string names;
+    for (std::set<std::string>::const_iterator it = _serverNames.begin(); it != _serverNames.end(); ++it) {
+        if (!names.empty()) names += ", ";
+        names += *it;
+    }
+    LOG(DEBUG, GREEN, "Server Names", (names.empty() ? "none" : names));
 
-	ConfigBase::printData();
-	std::clog << std::endl;
+    // 3. Parent Class Data
+    // This will print Root, Indexes, Autoindex, etc., using the logic we just wrote.
+    ConfigBase::printData();
 
-	std::map<std::string, LocationConfig>::const_iterator mit = _locationConfigs.begin();
-	std::clog << "LocationCondig data" << std::endl;
-	for (; mit != _locationConfigs.end(); mit++) {
-		std::clog << "location path: " << mit->first << std::endl;
-		mit->second.printData();
-		std::clog << std::endl;
-	}
-	std::clog << std::endl;
-	
+    // 4. Location Configurations
+    if (!_locationConfigs.empty()) {
+        LOG(DEBUG, GREEN, "--- LocationConfig Data ---", "");
+        
+        std::map<std::string, LocationConfig>::const_iterator mit = _locationConfigs.begin();
+        for (; mit != _locationConfigs.end(); ++mit) {
+            // Highlight the specific path for this location block
+            LOG(DEBUG, GREEN, "Location Path", mit->first);
+            
+            // Recurse into the LocationConfig's own printData
+            mit->second.printData();
+            
+            // Visual separator between different location blocks
+            LOG(DEBUG, GREEN, "----------------------------");
+        }
+    } else {
+        LOG(DEBUG, GREEN, "LocationConfigs", "none");
+    }
 }
 
 void ServerBlockConfig::initWithDefaultData() {

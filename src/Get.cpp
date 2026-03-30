@@ -5,7 +5,7 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Get::Get(const HttpRequest &request, const ConfigBase *config) : _request(request), _config(config) {}
+Get::Get(const HttpRequest &request, const ConfigBase *config) : _request(request), _config(config), _rootDir(ROOT_DIR) {}
 
 Get::~Get() {}
 
@@ -36,19 +36,16 @@ Get::~Get() {}
 
 void Get::checkRequest()
 {
-	std::clog << YELLOW_BRIGHT << "checkRequest" << RESET << std::endl;
-	std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("Host");
+	LOG(INFO, YELLOW_BRIGHT, "checkRequest");
+	std::map<std::string, std::string>::const_iterator it = _request.getHeader().find("host");
 	if (it == _request.getHeader().end())
 		throw Tools::Exception(400, "GET: host not found.");
 	_host = it->second;
 }
 
-void Get::checkAndSetFile(const std::string &path)
+int openFile(const std::string &path)
 {
-	std::clog << YELLOW_BRIGHT << "checkAndSetFile" << RESET << std::endl;
-	_path = _config->getRoot() + path;
-	std::clog << YELLOW_BRIGHT << "fullpath = " << _path << RESET << std::endl;
-	int fd = open(_path.c_str(), O_RDONLY);
+	int fd = open(path.c_str(), O_RDONLY);
 	if (fd < 0)
 	{
 		if (errno == ENOENT)
@@ -58,7 +55,30 @@ void Get::checkAndSetFile(const std::string &path)
 		else
 			throw Tools::Exception(500, "GET: unknown error, cannot open the file");
 	}
-	std::clog << YELLOW_BRIGHT << "Before reading file"<< RESET << std::endl;
+	return fd;
+}
+
+void Get::setIndexFile()
+{
+	for (std::vector<std::string>::const_iterator it = _config->getIndex().begin(); it != _config->getIndex().end(); it++)
+	{
+		std::string currIndex = _path + "/" + *it;
+		if (Tools::fileExists(currIndex.c_str()))
+		{
+			_path.append(*it);
+			return ;
+		}
+	}
+}
+
+void Get::checkAndSetFile(const std::string &path)
+{
+	_path = _config->getRoot() + path;
+	if (_path.size() >= _rootDir.size() &&
+    _path.compare(_path.size() - _rootDir.size(), _rootDir.size(), _rootDir) == 0)
+		setIndexFile();
+	LOG(INFO, YELLOW_BRIGHT, "file path = " + _path);
+	int fd = openFile(_path);
 	char buffer[BUFFERSIZE];
 	ssize_t bytesRead = 0;
 	while ((bytesRead = read(fd, buffer, BUFFERSIZE)) > 0)
@@ -71,7 +91,7 @@ void Get::checkAndSetFile(const std::string &path)
 		else
 			throw Tools::Exception(500, "GET: read error");
 	}
-	std::clog << YELLOW_BRIGHT << "File = " << _file << RESET << std::endl;
+	LOG(DEBUG, "File = " + path);
 }
 
 const std::string Get::getExtension() const
@@ -86,7 +106,7 @@ const std::string Get::getExtension() const
 
 const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *config)
 {
-	std::clog << YELLOW_BRIGHT << "executeGET" << RESET << std::endl;
+	LOG(INFO, YELLOW_BRIGHT, "executeGET");
 	Get get(request, config);
 	get.checkRequest();
 	get.checkAndSetFile(request.getPurePath());
@@ -97,6 +117,12 @@ const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *
 	response.addHeader("Content-length", Tools::intToString(get._file.size()));
 	std::string extension = get.getExtension();
 	if (!extension.empty())
+	{
+		if (extension == ".ico")
+			extension = ".png"; // Hardcoded fix for icons
+		else if (extension == ".jpeg")
+			extension = ".jpg";
 		response.addHeader("Content-Type", extension);
+	}
 	return response.getFinalResponse();
 }
