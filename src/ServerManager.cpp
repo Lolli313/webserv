@@ -435,7 +435,9 @@ void ServerManager::existingClient(int eventFD)
 		try
 		{
 			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
+			// LOG(DEBUG, PURPLE, tmpClient->getBuffer());
 			std::string tmpRequest = tmpClient->bufferManager();
+			// LOG(DEBUG, PURPLE, tmpClient->getBuffer());
 			// std::string tmpRequest =
 			// 	"GET /ascii/body.txt HTTP/1.1\r\n"
 			// 	"Host: localhost:8080\r\n"
@@ -446,7 +448,9 @@ void ServerManager::existingClient(int eventFD)
 			{
 				HttpRequest request;
 				request.parse(tmpRequest);
-				request.print();
+				request.cookie(_cookie);
+				_cookie.printCookie();
+				// request.print();
 
 				// Ideally we would call this function after the headers are parsed, for now it is here
 				config = findConfigBase(*tmpClient, request, eventFD);

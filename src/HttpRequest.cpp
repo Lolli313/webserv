@@ -87,7 +87,7 @@ void HttpRequest::parse(const std::string &request) {
 		LOG(WARNING, LIGHT_BLUE, "HttpRequest: Unknown method");
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
-	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty()) {
+	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty() || _path[0] != '/') {
 		throw Tools::Exception(403, "HttpRequest: Wrong path request");
 	}
 	if (_httpVersion != "HTTP/1.0" && _httpVersion != "HTTP/1.1") {
@@ -114,7 +114,9 @@ void HttpRequest::parse(const std::string &request) {
 			if (tools.isValidHttpRequestHeader(key)) {
 				std::string value = line.substr(pos + 1);
 				value.erase(0, value.find_first_not_of(" \t"));
-				_header[key] = value;
+				if (!value.empty()) {
+					_header[key] = value;
+				}
 			}
 		}
 	}
@@ -146,24 +148,6 @@ void HttpRequest::cookie(Cookie &cookie) {
 		cookie.setCookie(itCookie->second);
 	}
 }
-
-// void HttpRequest::executeMethod() {
-// 	if (_methodStr == "GET") {
-// 		std::clog << "code pour get" << std::endl;
-// 	} else if (_methodStr == "POST") {
-// 		Post post(*this);
-// 		post.parseBody();
-// 		post.saveInFile();
-// 	} else if (_methodStr == "DELETE") {
-// 		int fd = open(_path.c_str(), O_RDONLY);
-// 		if (fd == -1) {
-// 			throw Tools::Exception(500, "existe pas ou pas accessible");
-// 		} else {
-// 			std::remove(_path.c_str());
-// 		}
-// 		close(fd);
-// 	}
-// }
 
 void HttpRequest::executeScript() {
 	if (_purePath != "cgi-bin/hello.py" && _purePath != "cgi-bin/info.php") {
@@ -212,34 +196,6 @@ void HttpRequest::executeScript() {
 		LOG(INFO, YELLOW, "CGI output: " + output);
     }
 }
-
-// void HttpRequest::executeResponse() {
-// 	HttpResponse response;
-// 	if (_methodStr == "GET") {
-// 		response.setReturnCode(200);
-// 		response.setReturnMessage("Ok");
-// 	} else if (_methodStr == "POST") {
-// 		response.setReturnCode(201);
-// 		response.setReturnMessage("Created");
-// 	} else if (_methodStr == "DELETE") {
-// 		response.setReturnCode(204);
-// 		response.setReturnMessage("No Content");
-// 	}
-// 	response.setHttpVersion(_httpVersion);
-// 	for (std::map<std::string, std::string>::const_iterator it = _header.begin(); it != _header.end(); ++it) {
-// 		if (it->first == "Content-Length" || it->first == "Content-Type" || it->first == "Connection"
-// 			|| it->first == "Server" || it->first == "Cache-Control" || it->first == "Cookie") {
-// 				if (it->first == "Cookie") {
-// 					response.addHeader("Set-Cookie", it->second);
-// 				} else {
-// 					response.addHeader(it->first, it->second);
-// 				}
-// 			}
-// 	}
-// 	response.addDateHeader();
-// 	response.setBody(_body);
-// 	std::clog << RED << response.getFinalResponse() << RESET << std::endl;
-// }
 
 void HttpRequest::print() const {
     // Single line Key/Value pairs
