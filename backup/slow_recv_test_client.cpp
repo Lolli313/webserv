@@ -1,34 +1,31 @@
 #include <arpa/inet.h>
 #include <cerrno>
 #include <cstring>
-#include <fcntl.h>
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
-#include <chrono>
 #include <thread>
-
-int set_recvbuf(int fd, int size) {
-    return setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size));
-}
+#include <chrono>
 
 int main(int argc, char* argv[]) {
     // Usage:
-    // ./slow_recv_test_client <ip> <port> <read_size> <sleep_ms_between_reads>
-    if (argc < 5) {
+    // ./slow_backpressure_client <ip> <port> <read_size> <initial_sleep_ms> <sleep_between_reads_ms>
+    if (argc < 6) {
         std::cerr << "Usage: " << argv[0]
-                  << " <ip> <port> <read_size> <sleep_ms_between_reads>\n";
+                  << " <ip> <port> <read_size> <initial_sleep_ms> <sleep_between_reads_ms>\n";
         return 1;
     }
 
     std::string ip = argv[1];
     int port = std::stoi(argv[2]);
-    int read_size = std::stoi(argv[3]);       // e.g. 1, 16, 64
-    int sleep_ms = std::stoi(argv[4]);        // e.g. 100, 300, 1000
+    int read_size = std::stoi(argv[3]);
+    int initial_sleep_ms = std::stoi(argv[4]);
+    int sleep_between_reads_ms = std::stoi(argv[5]);
 
-    if (port <= 0 || port > 65535 || read_size <= 0 || sleep_ms < 0) {
+    if (port <= 0 || port > 65535 || read_size <= 0 ||
+        initial_sleep_ms < 0 || sleep_between_reads_ms < 0) {
         std::cerr << "Invalid arguments\n";
         return 1;
     }
@@ -39,10 +36,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Make receive buffer small to amplify backpressure.
-    // Kernel may clamp/adjust, that's fine.
-    int wanted_rcvbuf = 1024;
-    if (set_recvbuf(fd, wanted_rcvbuf) < 0) {
+    // Make receive buffer tiny to increase pressure.
+    int rcvbuf = 1024;
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf)) < 0) {
         std::cerr << "setsockopt(SO_RCVBUF) failed: " << std::strerror(errno) << "\n";
     }
 
@@ -61,42 +57,32 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::cout << "Connected to " << ip << ":" << port
-              << " read_size=" << read_size
-              << " sleep_ms=" << sleep_ms << "\n";
-
-    // Trigger a response from server (adjust path as needed).
     std::string req =
-        "GET / HTTP/1.1\r\n"
-        "Host: localhost:8080\r\n"
+        "GET /imgs/pexels-souvenirpixels-417074.jpg HTTP/1.1\r\n"
+        "Host: localhost:" + std::to_string(port) + "\r\n"
         "Connection: close\r\n\r\n";
-    ssize_t s = send(fd, req.c_str(), req.size(), MSG_NOSIGNAL);
-    if (s < 0) {
-        std::cerr << "send request failed: " << std::strerror(errno) << "\n";
+
+    if (send(fd, req.c_str(), req.size(), MSG_NOSIGNAL) < 0) {
+        std::cerr << "request send failed: " << std::strerror(errno) << "\n";
         close(fd);
         return 1;
     }
 
+    std::cout << "Request sent. Sleeping " << initial_sleep_ms
+              << "ms before reading...\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(initial_sleep_ms));
+
     std::vector<char> buf(static_cast<size_t>(read_size));
     size_t total = 0;
-    int recv_calls = 0;
 
     while (true) {
         ssize_t n = recv(fd, buf.data(), buf.size(), 0);
-        recv_calls++;
-
         if (n > 0) {
             total += static_cast<size_t>(n);
-            std::cout << "[recv call " << recv_calls << "] got " << n
-                      << " bytes (total=" << total << ")\n";
-
-            // Intentionally slow down consumption
-            if (sleep_ms > 0) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(sleep_ms));
-            }
+            std::cout << "recv " << n << " bytes, total=" << total << "\n";
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleep_between_reads_ms));
         } else if (n == 0) {
-            std::cout << "Server closed connection. Total received=" << total
-                      << ", recv calls=" << recv_calls << "\n";
+            std::cout << "server closed connection, total=" << total << "\n";
             break;
         } else {
             if (errno == EINTR) continue;

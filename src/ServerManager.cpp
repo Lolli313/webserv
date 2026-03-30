@@ -220,6 +220,10 @@ void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &met
 
 void ServerManager::sendResponse(Client *client)
 {
+	if (!client)
+		throw Tools::Exception("sendResponse: no client, undefined behavior");
+	else if (client->getBytesSent() > client->getResponseBuff().size())
+		throw Tools::Exception("sendResponse: incorrect response size");
 	int sent = send(client->getFD(), client->getResponseBuff().c_str() + client->getBytesSent(), client->getResponseBuff().size() - client->getBytesSent(), MSG_NOSIGNAL);
 	LOG(DEBUG, "SEND " + Tools::intToString(sent));
 
@@ -388,6 +392,7 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 			responseString = handleOtherCodes(config, e.getReturnCode());
 
 		LOG(DEBUG, responseString);
+		tmpClient->refreshClient();
 		tmpClient->setResponseBuff(responseString);
 		try
 		{
