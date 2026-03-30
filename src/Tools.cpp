@@ -266,3 +266,12 @@ bool Tools::isValidPort(const std::string& port) {
 		return false;
 	return true;
 }
+
+bool Tools::isDirectory(const char* path) {
+    struct stat info;
+
+    if (stat(path, &info) != 0) {
+        return false;
+    }
+    return (info.st_mode & S_IFDIR) != 0;
+}

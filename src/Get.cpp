@@ -5,7 +5,7 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Get::Get(const HttpRequest &request, const ConfigBase *config) : _request(request), _config(config), _rootDir(config->getRoot()) {}
+Get::Get(const HttpRequest &request, const ConfigBase *config) : _request(request), _config(config) {}
 
 Get::~Get() {}
 
@@ -58,29 +58,28 @@ int openFile(const std::string &path)
 	return fd;
 }
 
-void Get::setIndexFile()
+bool Get::setIndexFile(const std::string &path)
 {
 	for (std::vector<std::string>::const_iterator it = _config->getIndex().begin(); it != _config->getIndex().end(); it++)
 	{
-		std::string currIndex = _path + "/" + *it;
+		std::string currIndex = path + *it;
 		if (Tools::fileExists(currIndex.c_str()))
 		{
 			_path.append(*it);
-			return ;
+			return true;
 		}
 	}
+	return false;
 }
 
 void Get::checkAndSetFile(const std::string &path)
 {
-	_path = _rootDir;
 	LOG(DEBUG, "ROOT = " + _config->getRoot());
 	// Check if it is a directory
-	// if it is, check if auto index is on
-	// if it is, return the files of the directory
-	// if not autoindex, check if there is a index.html in this directory.
-	// if there is one, return it
-	// else, throw the 404 error.
+	// 1. check setIndexFile()
+	// 2. check if there is a index.html in the given path
+	// 3. check autoindex
+	// 4. else, throw the 404 error.
 		setIndexFile();
 	LOG(INFO, YELLOW_BRIGHT, "file path = " + _path);
 	int fd = openFile(_path);

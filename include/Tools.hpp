@@ -4,6 +4,7 @@
 
 class Logger;
 
+#include <sys/stat.h>
 #include <exception>
 #include <iostream>
 #include <sstream>
@@ -71,4 +72,5 @@ public:
 	static std::string getTimeOfDay();
 	static std::string getExtendedTimeOfDay();
 	static bool isValidPort(const std::string& port);
+	static bool isDirectory(const char* path);
 };
