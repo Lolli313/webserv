@@ -208,7 +208,7 @@ void Tools::findAndReplaceAllOccurences(std::string& input, const std::string& r
 
 /**
  * @brief Checks if a string is empty or is a # comment
- * @attention Ignores whitespace
+ * @attention Counts whitespace as empty
  */
 bool Tools::lineIsEmptyOrComment(std::string& str) {
 	std::string::size_type pos = str.find_first_not_of(" \t\n\r\f\v");

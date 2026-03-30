@@ -113,8 +113,11 @@ void HttpRequest::parse(const std::string &request) {
 			std::string key = line.substr(0, pos);
 			if (tools.isValidHttpRequestHeader(key)) {
 				std::string value = line.substr(pos + 1);
-				value.erase(0, value.find_first_not_of(" \t"));
+				value.erase(0, value.find_first_not_of(" \t\r"));
+				value.erase(value.find_last_not_of(" \t\r") + 1);
 				if (!value.empty()) {
+					if (key == "host")
+						Tools::transformStringToLowecase(value);
 					_header[key] = value;
 				}
 			}
