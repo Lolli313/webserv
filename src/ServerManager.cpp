@@ -498,7 +498,7 @@ void ServerManager::existingClient(int eventFD)
 	{
 		// Keep going boi
 	}
-	LOG(INFO, tmpClient->getResponseBuff());
+	// LOG(INFO, tmpClient->getResponseBuff());
 	// exit(1);
 }
 
