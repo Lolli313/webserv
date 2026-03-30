@@ -42,7 +42,6 @@
     X(".ico", "image/vnd.microsoft.icon")                                                   \
     X(".ics", "text/calendar")                                                              \
     X(".jar", "application/java-archive")                                                   \
-    X(".jpeg", "image/jpeg")                                                                \
     X(".jpg", "image/jpeg")                                                                 \
     X(".js", "text/javascript")                                                             \
     X(".json", "application/json")                                                          \

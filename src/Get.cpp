@@ -117,6 +117,12 @@ const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *
 	response.addHeader("Content-length", Tools::intToString(get._file.size()));
 	std::string extension = get.getExtension();
 	if (!extension.empty())
+	{
+		if (extension == ".ico")
+			extension = ".png"; // Hardcoded fix for icons
+		else if (extension == ".jpeg")
+			extension = ".jpg";
 		response.addHeader("Content-Type", extension);
+	}
 	return response.getFinalResponse();
 }
