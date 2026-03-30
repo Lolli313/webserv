@@ -224,5 +224,5 @@ void HttpRequest::print() const {
     
     // Body is usually a large block, so we use the standard LOG for the content
     LOG(DEBUG, YELLOW, "Body", "");
-    LOG(DEBUG, RESET, _body); 
+    // LOG(DEBUG, RESET, _body); 
 }
