@@ -5,7 +5,7 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Get::Get(const HttpRequest &request, const ConfigBase *config) : _fd(-1), _request(request), _config(config) {}
+Get::Get(const HttpRequest &request, const ConfigBase *config) : _fd(-1), _request(request), _config(config), _autoindex(false) {}
 
 Get::~Get() { closeAndResetFD(); }
 
@@ -27,6 +27,8 @@ Get::~Get() { closeAndResetFD(); }
 ===== GETTERS / SETTERS  ========================================
 =================================================================
 */
+
+const std::string &Get::getPath() const { return _path; }
 
 /*
 =================================================================
@@ -69,6 +71,7 @@ void Get::closeAndResetFD()
 
 bool Get::setIndexFile(const std::string &path)
 {
+	LOG(DEBUG, "setIndexFile");
 	for (std::vector<std::string>::const_iterator it = _config->getIndex().begin(); it != _config->getIndex().end(); it++)
 	{
 		std::string currIndex = path + *it;
@@ -81,60 +84,120 @@ bool Get::setIndexFile(const std::string &path)
 	return false;
 }
 
-const std::vector<Directory> Get::handleAutoindex(const std::string &path) const
+const std::string Get::autoIndexToJson(const std::vector<Directory> &currDir) const
 {
+	LOG(DEBUG, "autoIndexToJson");
+	std::string output("[\n");
+	std::ostringstream oss;
 
+	for (std::vector<Directory>::const_iterator it = currDir.begin(); it != currDir.end(); it++)
+	{
+		oss << "{\n";
+
+		oss << "	\"name\": \"" << it->name << "\",\n"
+			<< "	\"type\": \"" << it->type << "\",\n"
+			<< "	\"size\": \"" << it->size << "\",\n"
+			<< "	\"mtime\": \"" << it->date << "\"\n"
+			<< "}";
+		if (it != currDir.end() - 1)
+			oss << ",\n";
+		else
+			oss << "\n";
+	}
+	output.append(oss.str());
+	output.append("]");
+	return output;
 }
 
-const std::string Get::autoIndexToHTML(const std::vector<Directory> &currDir) const
+const std::vector<Directory> Get::handleAutoindex(const std::string &path) const
 {
+	LOG(DEBUG, "handleAutoIndex");
+	std::vector<Directory> dirVector;
+	DIR *dir = opendir(path.c_str());
+	if (dir == NULL)
+		throw Tools::Exception(500, "GET: handleAutoIndex cannot open requested directory (opendir)");
 
+	struct dirent *entry;
+	while ((entry = readdir(dir)) != NULL)
+	{
+		Directory dirObject;
+
+		dirObject.name = entry->d_name;
+		if (dirObject.name == "." || dirObject.name == "..")
+			continue;
+
+		std::string fullPath = path + "/" + dirObject.name;
+
+		struct stat info;
+		if (stat(fullPath.c_str(), &info) != 0)
+		{
+			LOG(ERROR, "GET: handleAutoIndex stat failed for " + fullPath);
+			continue;
+		}
+
+		dirObject.type = S_ISDIR(info.st_mode) ? "directory" : "file";
+
+		dirObject.size = Tools::size_tToString(info.st_size);
+
+		char timeBuff[64];
+		std::strftime(timeBuff, sizeof(timeBuff), "%d-%b-%Y %H:%M",
+					  std::localtime(&info.st_mtime));
+		dirObject.date = timeBuff;
+
+		dirVector.push_back(dirObject);
+	}
+	closedir(dir);
+	return dirVector;
 }
 
 /**
  * @brief First check if the config file has an index for the given path, then check if a index.html exists in the given path, then check and handle autoindex, and if none of the previous, throws an error.
  * @return false if the _fd is set and thus need to be open following the normal logic.
- * True if the _file is already being handled by the function and it doesn't have to follow the normal logic. 
+ * True if the _file is already being handled by the function and it doesn't have to follow the normal logic.
  */
 bool Get::handleIndexFile()
 {
+	LOG(DEBUG, "handleIndexFile");
 	if (setIndexFile(_path))
 		return false;
-	
-	std::string indexHtml = _fd + "/index.html";
-	if (_fd = open(indexHtml.c_str(), O_RDONLY) >= 0)
+
+	std::string indexHtml = _path + "/index.html";
+	if ((_fd = open(indexHtml.c_str(), O_RDONLY)) >= 0)
 		return false;
-	
+
 	if (_config->getAutoIndex())
 	{
 		std::vector<Directory> currDir = handleAutoindex(_path);
-		_file = autoIndexToHTML(currDir);
+		_file = autoIndexToJson(currDir);
+		_autoindex = true;
 		return true;
 	}
 	throw Tools::Exception(403, "GET: cannot read a directory");
-	return false;	
+	return false;
 }
 
 void Get::checkAndSetFile(const std::string &path)
 {
+	LOG(DEBUG, "checkAndSetFile");
 	_path = _config->getRoot() + path;
 	LOG(DEBUG, "ROOT = " + _config->getRoot());
+	LOG(DEBUG, "PATH = " + _path);
 
 	if (Tools::isDirectory(_path.c_str()))
 	{
 		if (handleIndexFile())
-			return ;
+			return;
 	}
 	LOG(INFO, YELLOW_BRIGHT, "file path = " + _path);
 	if (_fd == -1)
 		_fd = openFile(_path);
-	
+
 	char buffer[BUFFERSIZE];
 	ssize_t bytesRead = 0;
 
 	while ((bytesRead = read(_fd, buffer, BUFFERSIZE)) > 0)
 		_file.append(buffer, bytesRead);
-	
+
 	closeAndResetFD();
 
 	if (bytesRead < 0)
@@ -147,14 +210,14 @@ void Get::checkAndSetFile(const std::string &path)
 	LOG(DEBUG, "File = " + path);
 }
 
-const std::string Get::getExtension() const
+const std::string Get::getExtension(const std::string &path) const
 {
-	std::string::size_type pos = _path.rfind(".");
+	std::string::size_type pos = path.rfind(".");
 
 	if (pos == std::string::npos || pos == 0)
-    	return "";
-	
-	return HttpTools::getContentType(_path.substr(pos));
+		return "";
+
+	return HttpTools::getContentType(path.substr(pos));
 }
 
 const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *config)
@@ -169,7 +232,11 @@ const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *
 	response.addDateHeader();
 	response.setBody(get._file);
 	response.addHeader("Content-length", Tools::intToString(get._file.size()));
-	std::string extension = get.getExtension();
+	std::string extension;
+	if (get._autoindex)
+		extension = get.getExtension("file.json");
+	else
+		extension = get.getExtension(get.getPath());
 	if (!extension.empty())
 	{
 		if (extension == ".ico")

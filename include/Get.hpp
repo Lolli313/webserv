@@ -8,6 +8,8 @@
 #include "fcntl.h"
 #include "ConfigBase.hpp"
 #include "Polling.hpp"
+#include <sys/stat.h>
+#include <dirent.h>
 
 struct Directory
 {
@@ -26,6 +28,7 @@ private:
 	std::string _host;
 	std::string _file;
 	std::string _path;
+	bool _autoindex;
 	Get(const HttpRequest &request, const ConfigBase *config);
 
 public:
@@ -33,14 +36,15 @@ public:
 	// Get &operator=(const Get &obj);
 	~Get();
 
+	const std::string &getPath() const;
 	void checkRequest();
 	void checkAndSetFile(const std::string &path);
-	const std::string getExtension() const;
+	const std::string getExtension(const std::string &path) const;
 	bool setIndexFile(const std::string &path);
 	bool handleIndexFile();
 	void closeAndResetFD();
 	const std::vector<Directory> handleAutoindex(const std::string &path) const;
-	const std::string autoIndexToHTML(const std::vector<Directory> &currDir) const;
+	const std::string autoIndexToJson(const std::vector<Directory> &currDir) const;
 
 	static const std::string executeGet(const HttpRequest &request, const ConfigBase *config);
 };

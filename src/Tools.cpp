@@ -193,6 +193,15 @@ std::string Tools::intToString(int nbr)
 	return oss.str();
 }
 
+std::string Tools::size_tToString(std::size_t nbr)
+{
+	std::ostringstream oss;
+	oss << nbr;
+	return oss.str();
+}
+
+
+
 std::string Tools::boolToString(bool b) {
 	return b ? "true" : "false";
 }

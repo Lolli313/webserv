@@ -62,6 +62,7 @@ public:
 	static bool isValidBraceFormat(const std::string &targetToken, const std::vector<std::string> &tokens, std::ifstream *infile);
 	static bool checkAndRemoveSemicolon(std::string &str);
 	static std::string intToString(int nbr);
+	static std::string size_tToString(std::size_t nbr);
 	static std::string boolToString(bool b);
 	static bool checkPath(const std::string &path);
 	static void findAndReplaceAllOccurences(std::string& input, const std::string& replaceWord, const std::string& replaceBy);
