@@ -242,6 +242,12 @@ void ServerManager::sendResponse(Client *client)
 		client->setResponseSent(true);
 }
 
+void checkBodySize(std::size_t size, std::size_t max)
+{
+	if (size > max)
+		throw Tools::Exception(413, "body above max body size");	
+}
+
 /**
  * @brief execute the HTTP method and return the formatted HTTP response.
  * @return the formatted HTTP response in case of success
@@ -252,11 +258,14 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
 	if (request.getMethodStr() == "GET")
+	{
+		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
 		return response = Get::executeGet(request, config);
+	}
 
 	else if (request.getMethodStr() == "POST")
 	{
-		LOG(INFO, YELLOW_BRIGHT, "post");
+		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
 		return response = Post::executePost(request);
 	}
 
