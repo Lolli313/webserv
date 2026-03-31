@@ -92,3 +92,35 @@ button {
     border-radius: 10px;
     border: 3px solid green;
 }
+
+.toggle {
+    position: relative;
+    width: 85px;
+    height: 40px;
+    background: rgb(8, 0, 15);
+    border-radius: 55px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+
+.toggle .toggle-btn {
+    position: relative;
+    top: 5px;
+    left: 5px;
+    width: 40px;
+    height: 30px;
+    background: rgb(132, 115, 148);
+    border-radius: 25px;
+    transition: 0.3s;
+}
+
+.toggle.active {
+    background:whitesmoke;
+
+}
+
+.toggle.active .toggle-btn {
+    left: 45%;
+
+}

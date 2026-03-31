@@ -72,3 +72,16 @@ async function validateAndSend() {
         }, 150);
     }
 }
+
+let toggle = document.querySelector(".toggle");
+let text = document.querySelector(".toggle-txt");
+function Animatedtoggle(){
+    toggle.classList.toggle('active');
+
+    if(toggle.classList.contains('active')){
+        text.innerHTML = "ON";
+    }
+    else { 
+        text.innerHTML = "OFF";
+    }
+}
