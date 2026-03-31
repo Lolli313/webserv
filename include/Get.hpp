@@ -8,18 +8,27 @@
 #include "fcntl.h"
 #include "ConfigBase.hpp"
 #include "Polling.hpp"
+#include <sys/stat.h>
+#include <dirent.h>
 
-#define ROOT_DIR "/webserv/files/"
+struct Directory
+{
+	std::string name;
+	std::string type;
+	std::string date;
+	std::string size;
+};
 
 class Get
 {
 private:
+	int _fd;
 	const HttpRequest &_request;
 	const ConfigBase *_config;
 	std::string _host;
 	std::string _file;
 	std::string _path;
-	const std::string _rootDir;
+	bool _autoindex;
 	Get(const HttpRequest &request, const ConfigBase *config);
 
 public:
@@ -27,10 +36,15 @@ public:
 	// Get &operator=(const Get &obj);
 	~Get();
 
+	const std::string &getPath() const;
 	void checkRequest();
 	void checkAndSetFile(const std::string &path);
-	const std::string getExtension() const;
-	void setIndexFile();
+	const std::string getExtension(const std::string &path) const;
+	bool setIndexFile(const std::string &path);
+	bool handleIndexFile();
+	void closeAndResetFD();
+	const std::vector<Directory> handleAutoindex(const std::string &path) const;
+	const std::string autoIndexToJson(const std::vector<Directory> &currDir) const;
 
 	static const std::string executeGet(const HttpRequest &request, const ConfigBase *config);
 };

@@ -193,6 +193,15 @@ std::string Tools::intToString(int nbr)
 	return oss.str();
 }
 
+std::string Tools::size_tToString(std::size_t nbr)
+{
+	std::ostringstream oss;
+	oss << nbr;
+	return oss.str();
+}
+
+
+
 std::string Tools::boolToString(bool b) {
 	return b ? "true" : "false";
 }
@@ -265,4 +274,13 @@ bool Tools::isValidPort(const std::string& port) {
 	if (portInt <= 0 || portInt > std::numeric_limits<unsigned short>::max())
 		return false;
 	return true;
+}
+
+bool Tools::isDirectory(const char* path) {
+    struct stat info;
+
+    if (stat(path, &info) != 0) {
+        return false;
+    }
+    return (info.st_mode & S_IFDIR) != 0;
 }
