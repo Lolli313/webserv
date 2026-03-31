@@ -1,6 +1,6 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: green;
+    background-color: var(--body-c);
     margin: 0;
     padding: 30px;
     color: #333;
@@ -9,14 +9,18 @@ body {
 .container {
     max-width: 700px;
     margin: 0 auto;
-    background-color: greenyellow;
+    background-color: var(--cont-bg);
     padding: 30px;
     border: 3px solid lightseagreen;
     border-radius: 30px;
 }
 
 h1, h2, h3 {
-    color: green;
+    color: var(--header-c);
+}
+
+p {
+    color: var(--text);
 }
 
 .head {
@@ -32,9 +36,10 @@ h1, h2, h3 {
 }
 
 .uploads {
-    border: 3px solid green;
+    border: var(--box-bord);
     border-radius: 30px;
-    background-color: white;
+    background-color: var(--bg);
+    color: var(--text);
     height: 70%;
     width: 100%;
 }
@@ -44,9 +49,11 @@ select,
 textarea {
     width: 100%;
     padding: 10px;
-    border: 3px solid green;
+    border: var(--box-bord);
     border-radius: 10px;
     box-sizing: border-box;
+    background-color: var(--bg);
+    color: var(--text)
 }
 
 textarea {
@@ -55,10 +62,16 @@ textarea {
 }
 
 .method-button.active {
-    background-color: green;
-    color: lightseagreen;
-    border: 3px solid lightseagreen;
+    background-color: var(--button-c);
+    color: var(--button-bg);
+    border: var(--button-bord) var(--button-bord-c);
 }
+
+/* .dark-mode .method-button.active {
+    background-color: var(--button-c);
+    color: var(--button-bg);
+    border: var(--button-bord) var(--button-bord-c);
+} */
 
 .button {
     display: flex;
@@ -68,9 +81,9 @@ textarea {
 
 button {
     cursor: pointer;
-    background-color: lightseagreen;
-    color: green;
-    border: 3px solid green;
+    background-color: var(--button-bg);
+    color: var(--button-c);
+    border: var(--button-bord) var(--button-bord-c);
     border-radius: 10px;
     padding: 10px 15px;
     border-radius: 10px;
@@ -88,9 +101,19 @@ button {
     justify-content: center;
     margin-top: 20px;
     padding: 30px;
-    background-color: white;
+    background-color: var(--bg);
+    color: var(--text);
     border-radius: 10px;
-    border: 3px solid green;
+    border: var(--box-bord);
+}
+
+input[type=file]::file-selector-button {
+    color: var(--text);
+    background-color: var(--bg);
+}
+
+::placeholder {
+    color: var(--text);
 }
 
 .toggle {
