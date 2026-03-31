@@ -9,9 +9,18 @@
 #include "ConfigBase.hpp"
 #include "Polling.hpp"
 
+struct Directory
+{
+	std::string name;
+	std::string type;
+	std::string date;
+	std::string size;
+};
+
 class Get
 {
 private:
+	int _fd;
 	const HttpRequest &_request;
 	const ConfigBase *_config;
 	std::string _host;
@@ -28,6 +37,10 @@ public:
 	void checkAndSetFile(const std::string &path);
 	const std::string getExtension() const;
 	bool setIndexFile(const std::string &path);
+	bool handleIndexFile();
+	void closeAndResetFD();
+	const std::vector<Directory> handleAutoindex(const std::string &path) const;
+	const std::string autoIndexToHTML(const std::vector<Directory> &currDir) const;
 
 	static const std::string executeGet(const HttpRequest &request, const ConfigBase *config);
 };

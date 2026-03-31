@@ -5,9 +5,9 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Get::Get(const HttpRequest &request, const ConfigBase *config) : _request(request), _config(config) {}
+Get::Get(const HttpRequest &request, const ConfigBase *config) : _fd(-1), _request(request), _config(config) {}
 
-Get::~Get() {}
+Get::~Get() { closeAndResetFD(); }
 
 // Get::Get(const Get &obj) { *this = obj; }
 
@@ -58,6 +58,15 @@ int openFile(const std::string &path)
 	return fd;
 }
 
+void Get::closeAndResetFD()
+{
+	if (_fd >= 0)
+	{
+		close(_fd);
+		_fd = -1;
+	}
+}
+
 bool Get::setIndexFile(const std::string &path)
 {
 	for (std::vector<std::string>::const_iterator it = _config->getIndex().begin(); it != _config->getIndex().end(); it++)
@@ -72,27 +81,66 @@ bool Get::setIndexFile(const std::string &path)
 	return false;
 }
 
+const std::vector<Directory> Get::handleAutoindex(const std::string &path) const
+{
+
+}
+
+const std::string Get::autoIndexToHTML(const std::vector<Directory> &currDir) const
+{
+
+}
+
+/**
+ * @brief First check if the config file has an index for the given path, then check if a index.html exists in the given path, then check and handle autoindex, and if none of the previous, throws an error.
+ * @return false if the _fd is set and thus need to be open following the normal logic.
+ * True if the _file is already being handled by the function and it doesn't have to follow the normal logic. 
+ */
+bool Get::handleIndexFile()
+{
+	if (setIndexFile(_path))
+		return false;
+	
+	std::string indexHtml = _fd + "/index.html";
+	if (_fd = open(indexHtml.c_str(), O_RDONLY) >= 0)
+		return false;
+	
+	if (_config->getAutoIndex())
+	{
+		std::vector<Directory> currDir = handleAutoindex(_path);
+		_file = autoIndexToHTML(currDir);
+		return true;
+	}
+	throw Tools::Exception(403, "GET: cannot read a directory");
+	return false;	
+}
+
 void Get::checkAndSetFile(const std::string &path)
 {
 	_path = _config->getRoot() + path;
 	LOG(DEBUG, "ROOT = " + _config->getRoot());
-	// Check if it is a directory
-	// 1. check setIndexFile()
-	// 2. check if there is a index.html in the given path
-	// 3. check autoindex
-	// 4. else, throw the 404 error.
-		setIndexFile();
+
+	if (Tools::isDirectory(_path.c_str()))
+	{
+		if (handleIndexFile())
+			return ;
+	}
 	LOG(INFO, YELLOW_BRIGHT, "file path = " + _path);
-	int fd = openFile(_path);
+	if (_fd == -1)
+		_fd = openFile(_path);
+	
 	char buffer[BUFFERSIZE];
 	ssize_t bytesRead = 0;
-	while ((bytesRead = read(fd, buffer, BUFFERSIZE)) > 0)
+
+	while ((bytesRead = read(_fd, buffer, BUFFERSIZE)) > 0)
 		_file.append(buffer, bytesRead);
-	close(fd);
+	
+	closeAndResetFD();
+
 	if (bytesRead < 0)
 	{
 		if (errno == EISDIR)
-			throw Tools::Exception(404, "GET: cannot read a directory");
+			throw Tools::Exception(403, "GET: cannot read a directory");
 		else
 			throw Tools::Exception(500, "GET: read error");
 	}
