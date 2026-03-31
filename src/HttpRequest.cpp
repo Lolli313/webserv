@@ -75,6 +75,17 @@ void HttpRequest::parseQueryParams() {
 	}
 }
 
+void HttpRequest::cleanPath()
+{
+	static const std::vector<std::pair<std::string, std::string> > list = HttpTools::getDecodedCharVec();
+	std::size_t pos;	
+	for (std::vector<std::pair<std::string, std::string> >::const_iterator it = list.begin(); it != list.end(); it++)
+	{
+		if ((pos = _path.find(it->first)) != std::string::npos)
+			_path.replace(pos, 3, it->second);
+	}
+}
+
 void HttpRequest::parse(const std::string &request) {
 
 	// parse la methode, le path et la version du http
@@ -91,6 +102,7 @@ void HttpRequest::parse(const std::string &request) {
 	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty() || _path[0] != '/') {
 		throw Tools::Exception(403, "HttpRequest: Wrong path request");
 	}
+	cleanPath();
 	if (_httpVersion != "HTTP/1.0" && _httpVersion != "HTTP/1.1") {
     	throw Tools::Exception(505, "HttpRequest: Neither http1.0 nor http1.1");
 	}

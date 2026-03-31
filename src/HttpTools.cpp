@@ -76,6 +76,20 @@ void HttpTools::initContentType(std::map<std::string, std::string> &contentType,
     }
 }
 
+void HttpTools::initPercentEncoding(std::vector<std::pair<std::string, std::string> > &list)
+{
+    #define X(key, value) list.push_back(std::make_pair(std::string(key), std::string(1, value)));
+        PERCENT_ENCODING
+    #undef X
+} 
+
+const std::vector<std::pair<std::string, std::string> > &HttpTools::getDecodedCharVec()
+{
+    static std::vector<std::pair<std::string, std::string> > list;
+    if (list.empty())
+        initPercentEncoding(list);
+    return list; 
+}
 
 const HttpTools::MapType &HttpTools::getHttpCodes()
 {

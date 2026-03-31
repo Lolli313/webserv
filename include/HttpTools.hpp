@@ -2,10 +2,12 @@
 #define HTTPTOOLS_HPP
 
 #include "TerminalColors.hpp"
+#include "Tools.hpp"
 
 #include <iostream>
 #include <string>
 #include <map>
+#include <vector>
 #include <set>
 
 #define DEFAULT_PORT 80
@@ -93,6 +95,29 @@
     X(".3g2", "video/3gpp2")                                                                \
     X(".7z", "application/x-7z-compressed")
 
+#define PERCENT_ENCODING \
+    X("%3A", ':')        \
+    X("%2F", '/')        \
+    X("%3F", '?')        \
+    X("%23", '#')        \
+    X("%5B", '[')        \
+    X("%5D", ']')        \
+    X("%40", '@')        \
+    X("%21", '!')        \
+    X("%24", '$')        \
+    X("%26", '&')        \
+    X("%27", '\'')       \
+    X("%28", '(')        \
+    X("%29", ')')        \
+    X("%2A", '*')        \
+    X("%2B", '+')        \
+    X("%2C", ',')        \
+    X("%3B", ';')        \
+    X("%3D", '=')        \
+    X("%25", '%')        \
+    X("%20", ' ')        \
+    X("+", ' ')
+
 enum httpMethods
 {
     OPTIONS,
@@ -128,7 +153,10 @@ public:
     static const std::set<std::string> &getHttpRequestHeaders();
     static bool isValidHttpRequestHeader(const std::string &header);
 
+    static const std::vector<std::pair<std::string, std::string> > &getDecodedCharVec();
+
 private:
+    static void initPercentEncoding(std::vector<std::pair<std::string, std::string> > &list);
     static void initContentType(std::map<std::string, std::string> &contentType, bool isKey);
     static void initHttpCodes(HttpTools::MapType &httpCodes);
     static void initMethods(std::set<std::string> &methods);
