@@ -153,6 +153,8 @@ const std::string &ServerManager::findPort(int eventFD)
 std::pair<std::string, std::string> buildHostPair(const std::string &str, const std::string &port)
 {
 	std::vector<std::string> split = Tools::splitString(str, ":");
+	if (split[0] == "127.0.0.1")
+		split[0] = "localhost";
 	if (split.size() == 1)
 		return std::make_pair(split[0], port);
 
@@ -441,16 +443,7 @@ void ServerManager::existingClient(int eventFD)
 		tmpClient->updateTimestamp();
 		try
 		{
-			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
-			// LOG(DEBUG, PURPLE, tmpClient->getBuffer());
 			std::string tmpRequest = tmpClient->bufferManager();
-			// LOG(DEBUG, PURPLE, tmpClient->getBuffer());
-			// std::string tmpRequest =
-			// 	"GET /ascii/body.txt HTTP/1.1\r\n"
-			// 	"Host: localhost:8080\r\n"
-			// 	"\r\n";
-			// tmpClient->setDoneReceiving(true);
-			// tmpClient->setDoneReceiving(true);
 			if (tmpClient->doneReceiving())
 			{
 				HttpRequest request;
@@ -465,10 +458,6 @@ void ServerManager::existingClient(int eventFD)
 				tmpClient->setResponseBuff(execute(request, config));
 				tmpClient->setResponseToBeSent(true);
 				// exit(1);
-				// cookies
-				// /uploads/images/img.png
-
-				//	request.execute();
 
 				if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 				{
