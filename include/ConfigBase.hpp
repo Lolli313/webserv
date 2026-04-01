@@ -64,7 +64,7 @@ struct CGIPaths {
 	std::string _scriptFolderPath;
 	std::string _pythonPath;
 	std::string _phpPath;
-}
+};
 
 /**
  * @brief Base class that holds variables for ServerBlockConfig,

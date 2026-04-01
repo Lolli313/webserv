@@ -548,12 +548,12 @@ void ServerManager::router(int eventFD)
 	Client *client = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
 	if (client)
 		existingClient(client);
-	else
-	{
-		std::map<int, CGI>::iterator it = _CGImap.find(eventFD);
-		if (it != _CGImap.end())
-			it->second.handleCGI(eventFD);
-	}
+	// else
+	// {
+	// 	std::map<int, CGI>::iterator it = _CGImap.find(eventFD);
+	// 	if (it != _CGImap.end())
+	// 		it->second.handleCGI(eventFD);
+	// }
 }
 
 void ServerManager::eventLoop()

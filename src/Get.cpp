@@ -189,7 +189,7 @@ void Get::checkAndSetFile(const std::string &path)
 	while ((bytesRead = read(_fd, buffer, BUFFERSIZE)) > 0)
 		_file.append(buffer, bytesRead);
 
-	closeAndResetFD();
+	Tools::closeAndResetFD(_fd);
 
 	if (bytesRead < 0)
 	{

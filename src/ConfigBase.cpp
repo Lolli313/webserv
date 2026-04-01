@@ -491,6 +491,8 @@ void ConfigBase::printData() const {
     std::string returnVal = Tools::intToString(getReturnDirective().first) + 
                             (getReturnDirective().second.empty() ? "" : " -> " + getReturnDirective().second);
     LOG(DEBUG, YELLOW_BRIGHT, "Return Directive", returnVal);
+
+	
 }
 
 /**
