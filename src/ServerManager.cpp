@@ -241,8 +241,8 @@ void ServerManager::sendResponse(Client *client)
  */
 const std::string execute(const HttpRequest &request, const ConfigBase *config)
 {
-	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
+	LOG(INFO, YELLOW_BRIGHT, "execute");
 
 	if (request.getPurePath() == "/cgi-bin/hello.py" || request.getPurePath() == "/cgi-bin/info.php" || request.getPurePath() == "/cgi-bin/getTime.py") {
 		response = CGI::executeScript(request);
@@ -266,7 +266,7 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 	{
 		return response = Delete::executeDelete(request, config);
 	}
-
+	
 	return response;
 }
 
@@ -444,20 +444,10 @@ void ServerManager::existingClient(int eventFD)
 			// LOG(DEBUG, PURPLE, tmpClient->getBuffer());
 			std::string tmpRequest = tmpClient->bufferManager();
 			// LOG(DEBUG, PURPLE, tmpClient->getBuffer());
-			// std::string tmpRequest =
-			// 	"GET /ascii/body.txt HTTP/1.1\r\n"
-			// 	"Host: localhost:8080\r\n"
-			// 	"\r\n";
-			// tmpClient->setDoneReceiving(true);
-			// tmpClient->setDoneReceiving(true);
 			if (tmpClient->doneReceiving())
 			{
 				HttpRequest request;
 				request.parse(tmpRequest);
-				// request.executeScript();
-				// request.cookie(_cookie);
-				// request.print();
-				// _cookie.printCookie();
 
 				// Ideally we would call this function after the headers are parsed, for now it is here
 				config = findConfigBase(*tmpClient, request, eventFD);

@@ -71,7 +71,7 @@ const std::string CGI::executeScript(const HttpRequest &request) {
 
     int pipefd[2];
     if (pipe(pipefd) == -1) {
-		throw Tools::Exception(500, "SCRIPT : Failed to create pipe");
+		  throw Tools::Exception(500, "SCRIPT : Failed to create pipe");
     }
     pid_t pid = fork();
 
@@ -82,18 +82,16 @@ const std::string CGI::executeScript(const HttpRequest &request) {
         close(pipefd[0]);
         dup2(pipefd[1], STDOUT_FILENO);
         close(pipefd[1]);
-        LOG(DEBUG, "CHILD");
         if (request.getPurePath() == "/cgi-bin/hello.py") {
           execl("/usr/bin/python3", "python3", exec.c_str(), NULL);
         } else if (request.getPurePath() == "/cgi-bin/info.php") {
           execl("/usr/bin/php", "php", exec.c_str(), NULL);
-        }
-        else if (request.getPurePath() == "/cgi-bin/getTime.py")
+        } else if (request.getPurePath() == "/cgi-bin/getTime.py") {
           execl("/usr/bin/python3", "python3", exec.c_str(), NULL);
+        }
 		    exit(1);
 
     } else {
-        LOG(DEBUG, "PAPA");
         close(pipefd[1]);
 
 		char buffer[4096];
@@ -103,13 +101,6 @@ const std::string CGI::executeScript(const HttpRequest &request) {
 		}
 
         close(pipefd[0]);
-
-        int status;
-        waitpid(pid, &status, 0);
-        if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
-			throw Tools::Exception(500, "SCRIPT : Execution failed");
-        }
     }
-    LOG(DEBUG, "FINISH");
 	return output;
 }
