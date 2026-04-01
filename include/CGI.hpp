@@ -36,5 +36,5 @@ public:
 
 	void initCGI();
 	static const std::string executeScript(const HttpRequest &request);
-
+	void handleCGI(int eventFD);
 };

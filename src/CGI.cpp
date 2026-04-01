@@ -113,3 +113,10 @@ const std::string CGI::executeScript(const HttpRequest &request) {
     LOG(DEBUG, "FINISH");
 	return output;
 }
+
+void CGI::handleCGI(int eventFD)
+{
+  // Event can be the read or write part of the pipe
+  // It need to read from the pipe (the child is writing from the other side), and append this to the CGI _buffer
+  // Then, once it has been determined that the CGI is finished, it will set a response and call handleResponse()
+}
