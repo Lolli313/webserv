@@ -1,5 +1,4 @@
 #include "Get.hpp"
-#include "Script.hpp"
 
 /*
 =================================================================
@@ -233,8 +232,6 @@ const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *
 	response.addDateHeader();
 
 	response.setBody(get._file);
-
-	// TEST SCRIPT
 
 	response.addHeader("Content-length", Tools::intToString(get._file.size()));
 	std::string extension;
