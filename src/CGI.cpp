@@ -1,5 +1,10 @@
 #include "CGI.hpp"
 
+#include <sys/wait.h>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+
 /*
 =================================================================
 ===== CONSTRUCTORS / DESTRUCTORS ================================
@@ -57,4 +62,54 @@ void CGI::initCGI() {
 	setPythonPath("");
 	setPhpPath("");
 	setHasCGI(false);
+}
+
+const std::string CGI::executeScript(const HttpRequest &request) {
+	LOG(DEBUG, "SCRIPT");
+	std::string output;
+	std::string exec = "files" + request.getPurePath();
+
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+		throw Tools::Exception(500, "SCRIPT : Failed to create pipe");
+    }
+    pid_t pid = fork();
+
+    if (pid == -1) {
+		throw Tools::Exception(500, "SCRIPT : Failed to fork");
+
+    } else if (pid == 0) {
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+        LOG(DEBUG, "CHILD");
+        if (request.getPurePath() == "/cgi-bin/hello.py") {
+          execl("/usr/bin/python3", "python3", exec.c_str(), NULL);
+        } else if (request.getPurePath() == "/cgi-bin/info.php") {
+          execl("/usr/bin/php", "php", exec.c_str(), NULL);
+        }
+        else if (request.getPurePath() == "/cgi-bin/getTime.py")
+          execl("/usr/bin/python3", "python3", exec.c_str(), NULL);
+		    exit(1);
+
+    } else {
+        LOG(DEBUG, "PAPA");
+        close(pipefd[1]);
+
+		char buffer[4096];
+		ssize_t bytesRead;
+		while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+			output.append(buffer, bytesRead);
+		}
+
+        close(pipefd[0]);
+
+        int status;
+        waitpid(pid, &status, 0);
+        if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
+			throw Tools::Exception(500, "SCRIPT : Execution failed");
+        }
+    }
+    LOG(DEBUG, "FINISH");
+	return output;
 }

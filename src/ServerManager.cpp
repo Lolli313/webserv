@@ -1,7 +1,7 @@
 
 #include "ServerManager.hpp"
 #include "HttpMethod.hpp"
-#include "Script.hpp"
+#include "CGI.hpp"
 
 std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 
@@ -244,27 +244,28 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
 
-	(void) config;
-	response = Script::executeScript(request);
-	LOG(DEBUG, YELLOW, response);
-	return response;
+	if (request.getPurePath() == "/cgi-bin/hello.py" || request.getPurePath() == "/cgi-bin/info.php" || request.getPurePath() == "/cgi-bin/getTime.py") {
+		response = CGI::executeScript(request);
+		// LOG(DEBUG, YELLOW, response);
+		return response;
+	}
 	
-	// if (request.getMethodStr() == "GET")
-	// {
-	// 	response = Get::executeGet(request, config);
-	// 	LOG(DEBUG, YELLOW, response);
-	// 	return response;
-	// }
+	if (request.getMethodStr() == "GET")
+	{
+		response = Get::executeGet(request, config);
+		// LOG(DEBUG, YELLOW, response);
+		return response;
+	}
 
-	// else if (request.getMethodStr() == "POST")
-	// {
-	// 	return response = Post::executePost(request);
-	// }
+	else if (request.getMethodStr() == "POST")
+	{
+		return response = Post::executePost(request);
+	}
 
-	// else if (request.getMethodStr() == "DELETE")
-	// {
-	// 	return response = Delete::executeDelete(request, config);
-	// }
+	else if (request.getMethodStr() == "DELETE")
+	{
+		return response = Delete::executeDelete(request, config);
+	}
 
 	return response;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ConfigBase.hpp"
+#include "HttpRequest.hpp"
 
 #include <string>
 
@@ -34,5 +35,6 @@ public:
 	void setHasCGI(bool src);
 
 	void initCGI();
+	static const std::string executeScript(const HttpRequest &request);
 
 };
