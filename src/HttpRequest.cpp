@@ -113,7 +113,8 @@ void HttpRequest::parse(const std::string &request) {
 			std::string key = line.substr(0, pos);
 			if (tools.isValidHttpRequestHeader(key)) {
 				std::string value = line.substr(pos + 1);
-				value.erase(0, value.find_first_not_of(" \t"));
+				value.erase(0, value.find_first_not_of(" \t\r"));
+				value.erase(value.find_last_not_of(" \t\r") + 1);
 				if (!value.empty()) {
 					_header[key] = value;
 				}
@@ -149,54 +150,6 @@ void HttpRequest::cookie(Cookie &cookie) {
 	}
 }
 
-void HttpRequest::executeScript() {
-	if (_purePath != "cgi-bin/hello.py" && _purePath != "cgi-bin/info.php") {
-		LOG(ERROR, "Script not found");
-		return;
-	}
-
-    int pipefd[2];
-    if (pipe(pipefd) == -1) {
-		LOG(CRITICAL, "Failed to pipe");
-        // throw std::runtime_error("Failed to create pipe");
-    }
-    pid_t pid = fork();
-    if (pid == -1) {
-		LOG(CRITICAL, "Failed to fork");
-        // throw std::runtime_error("Failed to fork");
-    } else if (pid == 0) {
-        close(pipefd[0]);
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[1]);
-
-        // for (const auto &[key, value] : env) {
-        //     setenv(key.c_str(), value.c_str(), 1);
-        // }
-
-        execl(_purePath.c_str(), _purePath.c_str(), NULL);
-		LOG(CRITICAL, "Failed to execl");
-        exit(1);
-    } else { 
-        close(pipefd[1]);
-
-        char buffer[4096];
-        std::string output;
-        ssize_t bytesRead;
-        while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
-            output.append(buffer, bytesRead);
-        }
-        close(pipefd[0]);
-
-        // int status;
-        // waitpid(pid, &status, 0);
-        // if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
-		// 	std::clog << "NULL4" << std::endl; 
-        //     // throw std::runtime_error("CGI script execution failed");
-        // }
-		LOG(INFO, YELLOW, "CGI output: " + output);
-    }
-}
-
 void HttpRequest::print() const {
     // Single line Key/Value pairs
     LOG(DEBUG, YELLOW, "Method", _methodStr);
@@ -226,3 +179,5 @@ void HttpRequest::print() const {
     LOG(DEBUG, YELLOW, "Body", "");
     LOG(DEBUG, RESET, _body); 
 }
+
+

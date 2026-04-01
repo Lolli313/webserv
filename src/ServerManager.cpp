@@ -1,6 +1,7 @@
 
 #include "ServerManager.hpp"
 #include "HttpMethod.hpp"
+#include "Script.hpp"
 
 std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 
@@ -242,27 +243,31 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 {
 	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
-	if (request.getMethodStr() == "GET")
-		return response = Get::executeGet(request, config);
 
-	else if (request.getMethodStr() == "POST")
-	{
-		LOG(INFO, YELLOW_BRIGHT, "post");
-		return response = Post::executePost(request);
-	}
+	(void) config;
+	response = Script::executeScript(request);
+	LOG(DEBUG, YELLOW, response);
+	return response;
+	
+	// if (request.getMethodStr() == "GET")
+	// {
+	// 	response = Get::executeGet(request, config);
+	// 	LOG(DEBUG, YELLOW, response);
+	// 	return response;
+	// }
 
-	else if (request.getMethodStr() == "DELETE")
-	{
-		return response = Delete::executeDelete(request, config);
-	}
+	// else if (request.getMethodStr() == "POST")
+	// {
+	// 	return response = Post::executePost(request);
+	// }
+
+	// else if (request.getMethodStr() == "DELETE")
+	// {
+	// 	return response = Delete::executeDelete(request, config);
+	// }
+
 	return response;
 }
-
-// std::map<std::string, std::string>::const_iterator itCookie = request.getHeader().find("Cookie");
-// if (itCookie != request.getHeader().end()) {
-// 	_cookie.setCookie(itCookie->second);
-// 	// _cookie.printCookie();
-// }
 
 /**
  * @brief If using the Config file error page and opening the ERROR_PAGE_TEMPLATE_PATH both fail for whatever reason,
@@ -448,9 +453,10 @@ void ServerManager::existingClient(int eventFD)
 			{
 				HttpRequest request;
 				request.parse(tmpRequest);
+				// request.executeScript();
 				// request.cookie(_cookie);
+				// request.print();
 				// _cookie.printCookie();
-				request.print();
 
 				// Ideally we would call this function after the headers are parsed, for now it is here
 				config = findConfigBase(*tmpClient, request, eventFD);

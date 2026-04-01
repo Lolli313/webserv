@@ -32,19 +32,26 @@
             <button class="method-button" onclick="selectMethod('DELETE', event)">DELETE</button>
         </div>
 
-        <div class="path">
-            <h3>Path</h3>
-            <input type="text" id="path" placeholder="/fichier.txt" required>
+        <div class="pathName">
+            <div class="path">
+                <h3>Path</h3>
+                <input type="text" id="path" placeholder="/" required>
+            </div>
+            <div class="name">
+                <h3>Name</h3>
+                <input type="text" id="name" placeholder="fichier.txt" required>
+            </div>
         </div>
 
-        <div class="body">
-            <h3>Body.json</h3>
-            <textarea id="body" placeholder='{key: value}'></textarea>
-        </div>
-
-        <div class="file">
-            <h3>File</h3>
-            <input type="file" id="file">
+        <div class="jsonFile">
+            <div class="json">
+                <h3>Body.json</h3>
+                <textarea id="json" placeholder='{key: value}'></textarea>
+            </div>
+            <div class="file">
+                <h3>File</h3>
+                <input type="file" id="file">
+            </div>
         </div><br>
 
         <div class="send">

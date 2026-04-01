@@ -10,7 +10,7 @@ class Tools;
 #include <ctime>
 #include <map>
 
-#define ENABLE_INFO_LOGGING true
+#define ENABLE_INFO_LOGGING false
 
 #define LOG_LEVEL					\
 	X(DEBUG, GREEN_BRIGHT, 8)		\

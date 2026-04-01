@@ -175,5 +175,6 @@ const std::string Post::executePost(const HttpRequest &request)
 	}
 	response.addDateHeader();
 	response.setBody(request.getBody());
+    // LOG(DEBUG, PINK, response.getFinalResponse());
     return response.getFinalResponse();
 }

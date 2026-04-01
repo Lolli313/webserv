@@ -9,7 +9,7 @@
 #include "ConfigBase.hpp"
 #include "Polling.hpp"
 
-#define ROOT_DIR "/webserv/files/"
+#define ROOT_DIR "/WEBSERV/git/files/"
 
 class Get
 {

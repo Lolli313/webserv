@@ -140,7 +140,7 @@ std::string Client::clientReceive() {
 
     const size_t bufferSize = 1024;
     char buffer[bufferSize];
-    std::string message;
+    std::string message = "";
     ssize_t bytesReceived;
 
     int flags = fcntl(_clientSocket, F_GETFL, 0);
@@ -148,11 +148,12 @@ std::string Client::clientReceive() {
 
     while ((bytesReceived = recv(_clientSocket, buffer, bufferSize - 1, 0)) > 0) {
         buffer[bytesReceived] = '\0';
-        message += buffer;
+        std::cout << buffer << std::endl;
+        // message += buffer;
     }
 
     if (bytesReceived == 0) {
-        std::clog << GRN << "[client] connection closed by server" << RST << std::endl;
+        // std::clog << GRN << "[client] connection closed by server" << RST << std::endl;
         return "";
     } else if (bytesReceived < 0) {
         // std::cerr << RED << "CLIENT RECV ERROR" << RST << std::endl;
