@@ -258,8 +258,8 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 {
 	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
-	response = Script::executeScript(request);
-	LOG(DEBUG, YELLOW, response);
+	// response = Script::executeScript(request);
+	// LOG(DEBUG, YELLOW, response);
 	if (request.getMethodStr() == "GET")
 	{
 		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
