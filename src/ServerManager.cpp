@@ -122,7 +122,7 @@ std::set<int> ServerManager::setupServSockFDs()
 }
 
 // Just a test response that directly sends to the client.
-void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
+void TEST_RESPONSE(Client *client, int code, const std::string &message, const std::string &path)
 {
 	(void)message;
 	(void)path;
@@ -137,7 +137,7 @@ void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, cons
 	// response.setResponseHeaders(tmp);
 	response.addDateHeader();
 	response.addHeader("Content-length", "0");
-	send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
+	send(client->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
 }
 
 const std::string &ServerManager::findPort(int eventFD)
@@ -190,9 +190,9 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 	throw Tools::Exception(500, "Error finding server");
 }
 
-const ConfigBase *ServerManager::findConfigBase(Client &client, const HttpRequest &request, int eventFD)
+const ConfigBase *ServerManager::findConfigBase(Client &client, const HttpRequest &request)
 {
-	std::string port = findPort(eventFD);
+	std::string port = findPort(client.getFD());
 	(void)client;
 	std::map<std::string, std::string>::const_iterator it = request.getHeader().find("host");
 	if (it == request.getHeader().end())
@@ -246,7 +246,7 @@ void ServerManager::sendResponse(Client *client)
 void checkBodySize(std::size_t size, std::size_t max)
 {
 	if (size > max)
-		throw Tools::Exception(413, "body above max body size");	
+		throw Tools::Exception(413, "body above max body size");
 }
 
 /**
@@ -258,24 +258,27 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 {
 	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
+
 	// response = Script::executeScript(request);
 	// LOG(DEBUG, YELLOW, response);
 	if (request.getMethodStr() == "GET")
 	{
 		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
-		return response = Get::executeGet(request, config);
+		response = Get::executeGet(request, config);
 	}
 
 	else if (request.getMethodStr() == "POST")
 	{
 		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
-		return response = Post::executePost(request);
+		response = Post::executePost(request);
 	}
 
-	// else if (request.getMethodStr() == "DELETE")
-	// {
-	// 	return response = Delete::executeDelete(request, config);
-	// }
+	else if (request.getMethodStr() == "DELETE")
+	{
+		response = Delete::executeDelete(request, config);
+	}
+	else
+		return "";
 
 	return response;
 }
@@ -382,9 +385,9 @@ const std::string handleOtherCodes(const ConfigBase *config, const int httpCode)
 	return response.getFinalResponse();
 }
 
-void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config, bool reThrow)
+void ServerManager::throwHandler(Client *client, Tools::Exception &e, const ConfigBase *config, bool reThrow)
 {
-	if (!tmpClient)
+	if (!client)
 	{
 		if (reThrow)
 			throw;
@@ -404,106 +407,101 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 			responseString = handleOtherCodes(config, e.getReturnCode());
 
 		LOG(DEBUG, responseString);
-		tmpClient->refreshClient();
-		tmpClient->setResponseBuff(responseString);
+		client->refreshClient();
+		client->setResponseBuff(responseString);
 		try
 		{
-			sendResponse(tmpClient);
+			sendResponse(client);
 		}
 		catch (Tools::Exception &e)
 		{
-			if (tmpClient->toBeClosed())
+			if (client->toBeClosed())
 			{
-				if (!_polling->deleteCLient(tmpClient))
+				if (!_polling->deleteCLient(client))
 					throw Tools::Exception("Error at deleting client");
-				tmpClient = NULL;
+				client = NULL;
 			}
 			LOG(CRITICAL, "Response THROWS in throwHandler");
 		}
 	}
 
-	if (tmpClient && tmpClient->toBeClosed())
+	if (client && client->toBeClosed())
 	{
-		if (!_polling->deleteCLient(tmpClient))
+		if (!_polling->deleteCLient(client))
 			throw Tools::Exception("Error at deleting client");
-		tmpClient = NULL;
+		client = NULL;
 	}
 
 	// ============================================================================
 	// NOT SURE IF WE SHOULD REFRECH THE CLIENT HERE
-	if (tmpClient)
+	if (client)
 	{
-		_polling->setClientEPOLLOUT(tmpClient, false);
-		tmpClient->refreshClient();
+		_polling->setClientEPOLLOUT(client, false);
+		client->refreshClient();
 	}
 	// ============================================================================
 	if (reThrow)
 		throw;
 }
 
-void ServerManager::existingClient(int eventFD)
+void ServerManager::handleResponse(Client *client)
 {
-	Client *tmpClient = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
+	if (!client)
+		return;
+	if (client->doneReceiving())
+	{
+		if (client->responseToBeSent() && !client->readyToReceive())
+		{
+			// Set the EPOLLOUT event to be monitored.
+			_polling->setClientEPOLLOUT(client, true);
+			client->setReadyToReceive(true);
+		}
+		LOG(INFO, PURPLE, "toReceive", Tools::boolToString(client->readyToReceive()));
+		LOG(INFO, PURPLE, "toBeSent", Tools::boolToString(client->responseToBeSent()));
+		if (client->readyToReceive() && client->responseToBeSent())
+		{
+			sendResponse(client);
+		}
+		if (client->responseSent())
+		{
+			// Remove the EPOLLOUT event
+			_polling->setClientEPOLLOUT(client, false);
+			client->refreshClient();
+		}
+	}
+}
+
+void ServerManager::existingClient(Client *client)
+{
 	const ConfigBase *config = NULL;
-	if (tmpClient)
+	try
 	{
-		tmpClient->updateTimestamp();
-		try
+		client->updateTimestamp();
+		std::string tmpRequest = client->bufferManager();
+		if (client->doneReceiving())
 		{
-			std::string tmpRequest = tmpClient->bufferManager();
-			if (tmpClient->doneReceiving())
-			{
-				HttpRequest request;
-				request.parse(tmpRequest);
-				// request.executeScript();
-				// request.cookie(_cookie);
-				// request.print();
-				// _cookie.printCookie();
+			HttpRequest request;
+			request.parse(tmpRequest);
 
-				// Ideally we would call this function after the headers are parsed, for now it is here
-				config = findConfigBase(*tmpClient, request, eventFD);
-				handleReturnAndAllowMethod(config, request.getMethodStr());
-				tmpClient->setResponseBuff(execute(request, config));
-				tmpClient->setResponseToBeSent(true);
-				// exit(1);
+			// Ideally we would call this function after the headers are parsed, for now it is here
+			config = findConfigBase(*client, request);
+			handleReturnAndAllowMethod(config, request.getMethodStr());
 
-				if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
-				{
-					// Set the EPOLLOUT event to be monitored.
-					_polling->setClientEPOLLOUT(tmpClient, true);
-					tmpClient->setReadyToReceive(true);
-				}
-				LOG(INFO, PURPLE, "toReceive", Tools::boolToString(tmpClient->readyToReceive()));
-				LOG(INFO, PURPLE, "toBeSent", Tools::boolToString(tmpClient->responseToBeSent()));
-				if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
-				{
-					sendResponse(tmpClient);
-				}
-				if (tmpClient->responseSent())
-				{
-					// Remove the EPOLLOUT event
-					_polling->setClientEPOLLOUT(tmpClient, false);
-					tmpClient->refreshClient();
-				}
-			}
-			// tmpClient->printStatus();
-			if (tmpClient->toBeClosed())
-			{
-				_polling->deleteCLient(tmpClient);
-				return;
-			}
+			client->setResponseBuff(execute(request, config));
+			client->setResponseToBeSent(true);
+			handleResponse(client);
 		}
-		catch (Tools::Exception &e)
+		// client->printStatus();
+		if (client->toBeClosed())
 		{
-			throwHandler(tmpClient, e, config, true);
+			_polling->deleteCLient(client);
+			return;
 		}
 	}
-	else
+	catch (Tools::Exception &e)
 	{
-		// Keep going boi
+		throwHandler(client, e, config, true);
 	}
-	// LOG(INFO, tmpClient->getResponseBuff());
-	// exit(1);
 }
 
 bool ServerManager::matchServerFD(int eventFD) const
@@ -545,6 +543,15 @@ void ServerManager::handleTimeout()
 	}
 }
 
+void ServerManager::router(int eventFD)
+{
+	Client *client = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
+	if (client)
+		existingClient(client);
+	else
+		handleCGI(eventFD);
+}
+
 void ServerManager::eventLoop()
 {
 	while (!_sigStop)
@@ -564,7 +571,7 @@ void ServerManager::eventLoop()
 			if (matchServerFD(eventFD))
 				_polling->registerNewClient(eventFD);
 			else
-				existingClient(eventFD);
+				router(eventFD);
 		}
 	}
 }

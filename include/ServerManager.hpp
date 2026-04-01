@@ -59,13 +59,16 @@ public:
 	const std::string& findPort(int eventFD);
 	Server* findServer(const std::string& host, const std::string& port);
 	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
-	const ConfigBase *findConfigBase(Client &client, const HttpRequest &request, int eventFD);
-	void existingClient(int eventFD);
+	const ConfigBase *findConfigBase(Client &client, const HttpRequest &request);
+	void existingClient(Client *client);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();
 	void mainLoop();
 	void sendResponse(Client *client);
-	void throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config, bool reThrow);
+	void throwHandler(Client *client, Tools::Exception &e, const ConfigBase *config, bool reThrow);
+	void handleResponse(Client *client);
+	void router(int eventFD);
+
 	void handleTimeout();
 };
 
