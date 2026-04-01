@@ -14,6 +14,7 @@ class Logger;
 #include <string>
 #include <vector>
 #include <ctime>
+#include <unistd.h>
 
 class Tools
 {
@@ -84,4 +85,5 @@ public:
 	static std::string getExtendedTimeOfDay();
 	static bool isValidPort(const std::string &port);
 	static bool isDirectory(const char *path);
+	static bool closeAndResetFD(int &fd);
 };

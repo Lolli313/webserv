@@ -8,33 +8,33 @@
 
 /**
  * @brief A custom exception for the webserver.
- * @param returnCode 
- * If not set, the base value is 0, and do not send a response to the client.   
+ * @param returnCode
+ * If not set, the base value is 0, and do not send a response to the client.
  * If set, it can have several purposes:
- * 1. from 100 to 599, it is used as a HTTP returnCode and send a response to the client with the corresponding reason phrase (the message that comes with the return code).  
- * 2. other codes can be used for custom logics.  
+ * 1. from 100 to 599, it is used as a HTTP returnCode and send a response to the client with the corresponding reason phrase (the message that comes with the return code).
+ * 2. other codes can be used for custom logics.
  *
  * @param msgLog is a log used for internal purpose / debugging only and won't be send to the client.
  */
 Tools::Exception::Exception() {};
 /**
  * @brief A custom exception for the webserver.
- * @param returnCode 
- * If not set, the base value is 0, and do not send a response to the client.   
+ * @param returnCode
+ * If not set, the base value is 0, and do not send a response to the client.
  * If set, it can have several purposes:
- * 1. from 100 to 599, it is used as a HTTP returnCode and send a response to the client with the corresponding reason phrase (the message that comes with the return code).  
- * 2. other codes can be used for custom logics.  
+ * 1. from 100 to 599, it is used as a HTTP returnCode and send a response to the client with the corresponding reason phrase (the message that comes with the return code).
+ * 2. other codes can be used for custom logics.
  *
  * @param msgLog is a log used for internal purpose / debugging only and won't be send to the client.
  */
 Tools::Exception::Exception(int returnCode, const std::string &msgLog) : _returnCode(returnCode), _msgLog(msgLog) {}
 /**
  * @brief A custom exception for the webserver.
- * @param returnCode 
- * If not set, the base value is 0, and do not send a response to the client.   
+ * @param returnCode
+ * If not set, the base value is 0, and do not send a response to the client.
  * If set, it can have several purposes:
- * 1. from 100 to 599, it is used as a HTTP returnCode and send a response to the client with the corresponding reason phrase (the message that comes with the return code).  
- * 2. other codes can be used for custom logics.  
+ * 1. from 100 to 599, it is used as a HTTP returnCode and send a response to the client with the corresponding reason phrase (the message that comes with the return code).
+ * 2. other codes can be used for custom logics.
  *
  * @param msgLog is a log used for internal purpose / debugging only and won't be send to the client.
  */
@@ -107,18 +107,20 @@ const char &Tools::getLastCharacter(const std::string &str)
 	return *str.rbegin();
 }
 
-void Tools::removeLastCharacter(std::string& str) {
+void Tools::removeLastCharacter(std::string &str)
+{
 	if (!str.empty())
 		str.resize(str.size() - 1);
 }
 
-void Tools::eraseAfterLastCharacter(std::string& str, char c) {
+void Tools::eraseAfterLastCharacter(std::string &str, char c)
+{
 	std::string::size_type pos = str.find_last_of(c);
-	if (pos != std::string::npos) {
+	if (pos != std::string::npos)
+	{
 		str.erase(pos + 1);
 	}
 }
-
 
 const std::string::const_iterator Tools::getLastIterator(const std::string &str)
 {
@@ -152,11 +154,11 @@ bool Tools::isNumber(const std::string &str)
  * OR
  *
  * targetToken {
- * 
+ *
  * @param targetToken Name of the directive to look for (for ex "listen")
  * @param tokens Vector of whitespace-split words from the current input line
  * @param infile Pointer to the opened config file
- * 
+ *
  * @returns Whether tokens have a valid brace format
  */
 bool Tools::isValidBraceFormat(const std::string &targetToken, const std::vector<std::string> &tokens, std::ifstream *infile)
@@ -200,16 +202,16 @@ std::string Tools::size_tToString(std::size_t nbr)
 	return oss.str();
 }
 
-
-
-std::string Tools::boolToString(bool b) {
+std::string Tools::boolToString(bool b)
+{
 	return b ? "true" : "false";
 }
 
-
-void Tools::findAndReplaceAllOccurences(std::string& input, const std::string& replaceWord, const std::string& replaceBy) {
+void Tools::findAndReplaceAllOccurences(std::string &input, const std::string &replaceWord, const std::string &replaceBy)
+{
 	std::size_t pos = input.find(replaceWord);
-	while (pos != std::string::npos) {
+	while (pos != std::string::npos)
+	{
 		input.replace(pos, replaceWord.size(), replaceBy);
 		pos = input.find(replaceWord, pos + replaceBy.size());
 	}
@@ -219,53 +221,60 @@ void Tools::findAndReplaceAllOccurences(std::string& input, const std::string& r
  * @brief Checks if a string is empty or is a # comment
  * @attention Counts whitespace as empty
  */
-bool Tools::lineIsEmptyOrComment(std::string& str) {
+bool Tools::lineIsEmptyOrComment(std::string &str)
+{
 	std::string::size_type pos = str.find_first_not_of(" \t\n\r\f\v");
 	if (pos == std::string::npos)
 		return true;
-	
+
 	return (str[pos] == '#');
 }
 
-void Tools::transformStringToLowecase(std::string& str) {
+void Tools::transformStringToLowecase(std::string &str)
+{
 	for (std::size_t i = 0; i < str.size(); i++)
 		str[i] = std::tolower(str[i]);
 }
 
-bool Tools::stringStartsWithCharacter(const std::string& str, char c) {
+bool Tools::stringStartsWithCharacter(const std::string &str, char c)
+{
 	return (!str.empty() && str[0] == c);
 }
 
-bool Tools::fileExists(const char* filename) {
-    std::ifstream file(filename);
-    return file.good();
+bool Tools::fileExists(const char *filename)
+{
+	std::ifstream file(filename);
+	return file.good();
 }
 
-std::string Tools::getTimeOfDay() {
+std::string Tools::getTimeOfDay()
+{
 	std::time_t now = std::time(NULL);
 
-    // Convert to UTC (GMT)
-    std::tm *gmt = std::gmtime(&now);
+	// Convert to UTC (GMT)
+	std::tm *gmt = std::gmtime(&now);
 
-    char buffer[100];
-    std::strftime(buffer, sizeof(buffer), "%H:%M:%S GMT", gmt);
+	char buffer[100];
+	std::strftime(buffer, sizeof(buffer), "%H:%M:%S GMT", gmt);
 
 	return std::string(buffer);
 }
 
-std::string Tools::getExtendedTimeOfDay() {
+std::string Tools::getExtendedTimeOfDay()
+{
 	std::time_t now = std::time(NULL);
 
-    // Convert to UTC (GMT)
-    std::tm *gmt = std::gmtime(&now);
+	// Convert to UTC (GMT)
+	std::tm *gmt = std::gmtime(&now);
 
-    char buffer[100];
-    std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", gmt);
+	char buffer[100];
+	std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", gmt);
 
 	return std::string(buffer);
 }
 
-bool Tools::isValidPort(const std::string& port) {
+bool Tools::isValidPort(const std::string &port)
+{
 	if (port.size() > 5 && !Tools::isNumber(port))
 		return false;
 
@@ -276,11 +285,28 @@ bool Tools::isValidPort(const std::string& port) {
 	return true;
 }
 
-bool Tools::isDirectory(const char* path) {
-    struct stat info;
+bool Tools::isDirectory(const char *path)
+{
+	struct stat info;
 
-    if (stat(path, &info) != 0) {
-        return false;
-    }
-    return (info.st_mode & S_IFDIR) != 0;
+	if (stat(path, &info) != 0)
+	{
+		return false;
+	}
+	return (info.st_mode & S_IFDIR) != 0;
+}
+
+/**
+ * @brief if the fd is higher than -1, close it and set it to -1.
+ * @return true if it closes, false if not
+ */
+bool Tools::closeAndResetFD(int &fd)
+{
+	if (fd >= 0)
+	{
+		close(fd);
+		fd = -1;
+		return true;
+	}
+	return false;
 }

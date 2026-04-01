@@ -26,8 +26,8 @@ CGI::CGI(const std::string &path, const std::string &pythonPath, const std::stri
 }
 
 CGI::~CGI() {
-  cleanClose(&_pipeFDs[0]);
-  cleanClose(&_pipeFDs[1]);
+  Tools::closeAndResetFD(_pipeFDs[0]);
+  Tools::closeAndResetFD(_pipeFDs[1]);
 }
 
 CGI::CGI(const CGI &obj) { *this = obj; }
@@ -69,17 +69,7 @@ void CGI::setPhpPath(const std::string &src) { _phpPath = src; }
 =================================================================
 */
 
-/**
- * @brief if the fd is higher than -1, close it and set it to -1.
- */
-void CGI::cleanClose(int *fd)
-{
- if (*fd >= 0)
- {
-  close(*fd);
-  *fd = -1;
- } 
-}
+
 
 void CGI::initCGI()
 {
@@ -105,9 +95,9 @@ const std::string CGI::executeScript(const HttpRequest &request)
   }
   else if (pid == 0)
   {
-    cleanClose(&pipefd[0]);
+    Tools::closeAndResetFD(pipefd[0]);
     dup2(pipefd[1], STDOUT_FILENO);
-    cleanClose(&pipefd[1]);
+    Tools::closeAndResetFD(pipefd[1]);
     LOG(DEBUG, "CHILD");
     if (request.getPurePath() == "/cgi-bin/hello.py")
     {
@@ -127,7 +117,7 @@ const std::string CGI::executeScript(const HttpRequest &request)
   else
   {
     LOG(DEBUG, "PAPA");
-    cleanClose(&pipefd[1]);
+    Tools::closeAndResetFD(pipefd[1]);
 
     char buffer[4096];
     ssize_t bytesRead;
@@ -136,7 +126,7 @@ const std::string CGI::executeScript(const HttpRequest &request)
       output.append(buffer, bytesRead);
     }
 
-    cleanClose(&pipefd[0]);
+    Tools::closeAndResetFD(pipefd[0]);
 
     int status;
     waitpid(pid, &status, 0);

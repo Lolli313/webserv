@@ -51,7 +51,7 @@ const std::map<int, std::string> &ConfigBase::getErrorPages() const { return _er
 const std::set<std::string> &ConfigBase::getAllowMethods() const { return _allowedMethods; }
 const std::pair<int, std::string> &ConfigBase::getReturnDirective() const { return _returnDirective; }
 bool ConfigBase::hasCGI() const { return _hasCGI; }
-const struct CGIPaths& ConfigBase::getCGIPaths() const { return _cgiPaths };
+const struct CGIPaths& ConfigBase::getCGIPaths() const { return _cgiPaths; }
 
 void ConfigBase::setRoot(const std::string &src) { _root = src; }
 void ConfigBase::setIndex(std::vector<std::string>::const_iterator start, std::vector<std::string>::const_iterator end) {

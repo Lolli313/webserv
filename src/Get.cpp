@@ -7,7 +7,7 @@
 */
 Get::Get(const HttpRequest &request, const ConfigBase *config) : _fd(-1), _request(request), _config(config), _autoindex(false) {}
 
-Get::~Get() { closeAndResetFD(); }
+Get::~Get() { Tools::closeAndResetFD(_fd); }
 
 // Get::Get(const Get &obj) { *this = obj; }
 
@@ -58,15 +58,6 @@ int openFile(const std::string &path)
 			throw Tools::Exception(500, "GET: unknown error, cannot open the file");
 	}
 	return fd;
-}
-
-void Get::closeAndResetFD()
-{
-	if (_fd >= 0)
-	{
-		close(_fd);
-		_fd = -1;
-	}
 }
 
 bool Get::setIndexFile(const std::string &path)
