@@ -1,7 +1,7 @@
 
 #include "ServerManager.hpp"
 #include "HttpMethod.hpp"
-#include "Script.hpp"
+#include "CGI.hpp"
 
 std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 
@@ -272,10 +272,10 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 		return response = Post::executePost(request);
 	}
 
-	// else if (request.getMethodStr() == "DELETE")
-	// {
-	// 	return response = Delete::executeDelete(request, config);
-	// }
+	else if (request.getMethodStr() == "DELETE")
+	{
+		return response = Delete::executeDelete(request, config);
+	}
 
 	return response;
 }
