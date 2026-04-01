@@ -60,6 +60,12 @@ enum ValidChars
 	MASK_G = 1 << 2
 };
 
+struct CGIPaths {
+	std::string _scriptFolderPath;
+	std::string _pythonPath;
+	std::string _phpPath;
+}
+
 /**
  * @brief Base class that holds variables for ServerBlockConfig,
  * LocationConfig and Server classes
@@ -74,6 +80,8 @@ private:
 	std::map<int, std::string> _errorPages; // map<error code, path>
 	std::set<std::string> _allowedMethods;
 	std::pair<int, std::string> _returnDirective; //
+	bool _hasCGI;
+	struct CGIPaths _cgiPaths;
 
 	static const bitmask_t _allowedBits = MASK_K | MASK_M | MASK_G;
 	static const UnitConversion _conversionTable[];
@@ -104,6 +112,8 @@ public:
 	const std::map<int, std::string> &getErrorPages() const;
 	const std::set<std::string> &getAllowMethods() const;
 	const std::pair<int, std::string> &getReturnDirective() const;
+	bool hasCGI() const;
+	const struct CGIPaths& getCGIPaths() const;
 
 	void setRoot(const std::string &src);
 	void setIndex(std::vector<std::string>::const_iterator start, std::vector<std::string>::const_iterator end);
@@ -120,6 +130,7 @@ public:
 	bool handleErrorPage(std::vector<std::string> &tokens, std::ifstream *infile);
 	bool handleAllowMethods(std::vector<std::string> &tokens, std::ifstream *infile);
 	bool handleReturn(std::vector<std::string> &tokens, std::ifstream *infile);
+	bool handleCgi(std::vector<std::string> &tokens, std::ifstream *infile);
 
 	bool handleErrorOneLiner(std::vector<std::string> &tokens);
 	bool handleErrorMultiLiner(std::vector<std::string> &tokens, std::ifstream *infile);

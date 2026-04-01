@@ -250,7 +250,7 @@ void checkBodySize(std::size_t size, std::size_t max)
 }
 
 /**
- * @brief execute the HTTP method and return the formatted HTTP response.
+ * @brief execute the HTTP method or the CGI and return the formatted HTTP response.
  * @return the formatted HTTP response in case of success
  * @throw in case of error
  */
@@ -498,6 +498,8 @@ void ServerManager::existingClient(Client *client)
 	}
 	catch (Tools::Exception &e)
 	{
+		if (e.getReturnCode() == 42)
+			throw;
 		throwHandler(client, e, config, true);
 	}
 }
@@ -547,7 +549,11 @@ void ServerManager::router(int eventFD)
 	if (client)
 		existingClient(client);
 	else
-		handleCGI(eventFD);
+	{
+		std::map<int, CGI>::iterator it = _CGImap.find(eventFD);
+		if (it != _CGImap.end())
+			it->second.handleCGI(eventFD);
+	}
 }
 
 void ServerManager::eventLoop()
@@ -584,6 +590,8 @@ void ServerManager::mainLoop()
 		}
 		catch (Tools::Exception &e)
 		{
+			if (e.getReturnCode() == 42)
+				throw;
 			LOG(ERROR, RED_BRIGHT, "mainLoop", e.getMsgLog());
 		}
 		catch (std::exception &e)

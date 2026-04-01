@@ -34,6 +34,8 @@ private:
 
 	std::vector<ServerSocket *> _serverSocketArray;
 
+	std::map<int /*pipe fd*/, CGI> _CGImap;
+
 	// map<pair<port, serverName &>, Server &> : We create a new key, value for each serverName of a server.
 	// If it has 3 names, them the map will have 3 entries for each of its combination <port, serverName>
 	//
