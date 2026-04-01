@@ -59,7 +59,7 @@ public:
 	const std::string& findPort(int eventFD);
 	Server* findServer(const std::string& host, const std::string& port);
 	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
-	const ConfigBase *findConfigBase(const Client &client, const HttpRequest &request, int eventFD);
+	const ConfigBase *findConfigBase(Client &client, const HttpRequest &request, int eventFD);
 	void existingClient(int eventFD);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();

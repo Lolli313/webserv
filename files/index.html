@@ -5,9 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WEBSERV</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --bg: white;
+            --text: initial;
+            --cont-bg: greenyellow;
+            --header-c: green;
+            --body-c: green;
+            --button-c: green;
+            --button-bg: lightseagreen;
+            --button-bord: 3px solid;
+            --button-bord-c: green;
+            --input-bg: initial;
+            --box-bord: 3px solid green;
+        }
+        .dark-mode {
+            --bg: black;
+            --text: white;
+            --cont-bg: #326620;
+            --header-c: rgb(25, 206, 25);
+            --body-c: rgb(7, 63, 7);
+            --button-c: greenyellow;
+            --button-bg: rgb(23, 136, 130);
+            --button-bord-c: lightseagreen;
+            --input-bg: #cac8c8;
+            --box-bord: 3px solid lightseagreen;
+        }
+    </style>
 </head>
 <body>
-
     <div class="container">
 
         <div class="head">
@@ -21,6 +47,9 @@
                 <div class="uploads">
                     <pre id="uploads"></pre>
                 </div>
+            </div>
+            <div class="toggle" onclick="Animatedtoggle()">
+                <div class="toggle-btn"></div>
             </div>
         </div>
         
@@ -61,7 +90,6 @@
         <div class="response">
             <pre id="response"></pre>
         </div>
-
     </div>
 
     <script src="script.js"></script>

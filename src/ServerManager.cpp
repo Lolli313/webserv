@@ -154,6 +154,8 @@ const std::string &ServerManager::findPort(int eventFD)
 std::pair<std::string, std::string> buildHostPair(const std::string &str, const std::string &port)
 {
 	std::vector<std::string> split = Tools::splitString(str, ":");
+	if (split[0] == "127.0.0.1")
+		split[0] = "localhost";
 	if (split.size() == 1)
 		return std::make_pair(split[0], port);
 
@@ -188,7 +190,7 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 	throw Tools::Exception(500, "Error finding server");
 }
 
-const ConfigBase *ServerManager::findConfigBase(const Client &client, const HttpRequest &request, int eventFD)
+const ConfigBase *ServerManager::findConfigBase(Client &client, const HttpRequest &request, int eventFD)
 {
 	std::string port = findPort(eventFD);
 	(void)client;
@@ -196,6 +198,7 @@ const ConfigBase *ServerManager::findConfigBase(const Client &client, const Http
 	if (it == request.getHeader().end())
 	{
 		// LOG(ERROR, "Host header missing");
+		client.setToBeClosed(true);
 		throw Tools::Exception(400, "Host header missing");
 	}
 	Server *server = findServer(it->second, port);
@@ -217,10 +220,16 @@ void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &met
 		// LOG(INFO, LIGHT_BLUE, method + " method not allowed");
 		throw Tools::Exception(405, "Method not allowed");
 	}
+	if (method != "GET" && method != "POST" && method != "DELETE")
+		throw Tools::Exception(501, "Method " + method + " not implemented");
 }
 
 void ServerManager::sendResponse(Client *client)
 {
+	if (!client)
+		throw Tools::Exception("sendResponse: no client, undefined behavior");
+	else if (client->getBytesSent() > client->getResponseBuff().size())
+		throw Tools::Exception("sendResponse: incorrect response size");
 	int sent = send(client->getFD(), client->getResponseBuff().c_str() + client->getBytesSent(), client->getResponseBuff().size() - client->getBytesSent(), MSG_NOSIGNAL);
 	LOG(DEBUG, "SEND " + Tools::intToString(sent));
 
@@ -234,6 +243,12 @@ void ServerManager::sendResponse(Client *client)
 		client->setResponseSent(true);
 }
 
+void checkBodySize(std::size_t size, std::size_t max)
+{
+	if (size > max)
+		throw Tools::Exception(413, "body above max body size");	
+}
+
 /**
  * @brief execute the HTTP method and return the formatted HTTP response.
  * @return the formatted HTTP response in case of success
@@ -243,23 +258,19 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 {
 	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
-
-	(void) config;
 	response = Script::executeScript(request);
 	LOG(DEBUG, YELLOW, response);
-	return response;
-	
-	// if (request.getMethodStr() == "GET")
-	// {
-	// 	response = Get::executeGet(request, config);
-	// 	LOG(DEBUG, YELLOW, response);
-	// 	return response;
-	// }
+	if (request.getMethodStr() == "GET")
+	{
+		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
+		return response = Get::executeGet(request, config);
+	}
 
-	// else if (request.getMethodStr() == "POST")
-	// {
-	// 	return response = Post::executePost(request);
-	// }
+	else if (request.getMethodStr() == "POST")
+	{
+		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
+		return response = Post::executePost(request);
+	}
 
 	// else if (request.getMethodStr() == "DELETE")
 	// {
@@ -393,6 +404,7 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 			responseString = handleOtherCodes(config, e.getReturnCode());
 
 		LOG(DEBUG, responseString);
+		tmpClient->refreshClient();
 		tmpClient->setResponseBuff(responseString);
 		try
 		{
@@ -412,7 +424,6 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 
 	if (tmpClient && tmpClient->toBeClosed())
 	{
-		LOG(DEBUG, PINK, "WTFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 		if (!_polling->deleteCLient(tmpClient))
 			throw Tools::Exception("Error at deleting client");
 		tmpClient = NULL;
@@ -439,16 +450,7 @@ void ServerManager::existingClient(int eventFD)
 		tmpClient->updateTimestamp();
 		try
 		{
-			// TEST_RESPONSE(tmpClient, 404, "actually", "files/ascii/dog.html");
-			// LOG(DEBUG, PURPLE, tmpClient->getBuffer());
 			std::string tmpRequest = tmpClient->bufferManager();
-			// LOG(DEBUG, PURPLE, tmpClient->getBuffer());
-			// std::string tmpRequest =
-			// 	"GET /ascii/body.txt HTTP/1.1\r\n"
-			// 	"Host: localhost:8080\r\n"
-			// 	"\r\n";
-			// tmpClient->setDoneReceiving(true);
-			// tmpClient->setDoneReceiving(true);
 			if (tmpClient->doneReceiving())
 			{
 				HttpRequest request;
@@ -464,10 +466,6 @@ void ServerManager::existingClient(int eventFD)
 				tmpClient->setResponseBuff(execute(request, config));
 				tmpClient->setResponseToBeSent(true);
 				// exit(1);
-				// cookies
-				// /uploads/images/img.png
-
-				//	request.execute();
 
 				if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
 				{
@@ -504,7 +502,7 @@ void ServerManager::existingClient(int eventFD)
 	{
 		// Keep going boi
 	}
-	LOG(INFO, tmpClient->getResponseBuff());
+	// LOG(INFO, tmpClient->getResponseBuff());
 	// exit(1);
 }
 

@@ -75,6 +75,17 @@ void HttpRequest::parseQueryParams() {
 	}
 }
 
+void HttpRequest::cleanPath()
+{
+	static const std::vector<std::pair<std::string, std::string> > list = HttpTools::getDecodedCharVec();
+	std::size_t pos;	
+	for (std::vector<std::pair<std::string, std::string> >::const_iterator it = list.begin(); it != list.end(); it++)
+	{
+		if ((pos = _path.find(it->first)) != std::string::npos)
+			_path.replace(pos, 3, it->second);
+	}
+}
+
 void HttpRequest::parse(const std::string &request) {
 
 	// parse la methode, le path et la version du http
@@ -83,13 +94,15 @@ void HttpRequest::parse(const std::string &request) {
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
-	if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
+	// if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
+	if (!HttpTools::isValidMethod(_methodStr)) {
 		LOG(WARNING, LIGHT_BLUE, "HttpRequest: Unknown method");
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
 	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty() || _path[0] != '/') {
 		throw Tools::Exception(403, "HttpRequest: Wrong path request");
 	}
+	cleanPath();
 	if (_httpVersion != "HTTP/1.0" && _httpVersion != "HTTP/1.1") {
     	throw Tools::Exception(505, "HttpRequest: Neither http1.0 nor http1.1");
 	}
@@ -116,6 +129,8 @@ void HttpRequest::parse(const std::string &request) {
 				value.erase(0, value.find_first_not_of(" \t\r"));
 				value.erase(value.find_last_not_of(" \t\r") + 1);
 				if (!value.empty()) {
+					if (key == "host")
+						Tools::transformStringToLowecase(value);
 					_header[key] = value;
 				}
 			}
@@ -177,7 +192,7 @@ void HttpRequest::print() const {
     
     // Body is usually a large block, so we use the standard LOG for the content
     LOG(DEBUG, YELLOW, "Body", "");
-    LOG(DEBUG, RESET, _body); 
+    // LOG(DEBUG, RESET, _body); 
 }
 
 

@@ -193,6 +193,15 @@ std::string Tools::intToString(int nbr)
 	return oss.str();
 }
 
+std::string Tools::size_tToString(std::size_t nbr)
+{
+	std::ostringstream oss;
+	oss << nbr;
+	return oss.str();
+}
+
+
+
 std::string Tools::boolToString(bool b) {
 	return b ? "true" : "false";
 }
@@ -208,7 +217,7 @@ void Tools::findAndReplaceAllOccurences(std::string& input, const std::string& r
 
 /**
  * @brief Checks if a string is empty or is a # comment
- * @attention Ignores whitespace
+ * @attention Counts whitespace as empty
  */
 bool Tools::lineIsEmptyOrComment(std::string& str) {
 	std::string::size_type pos = str.find_first_not_of(" \t\n\r\f\v");
@@ -265,4 +274,13 @@ bool Tools::isValidPort(const std::string& port) {
 	if (portInt <= 0 || portInt > std::numeric_limits<unsigned short>::max())
 		return false;
 	return true;
+}
+
+bool Tools::isDirectory(const char* path) {
+    struct stat info;
+
+    if (stat(path, &info) != 0) {
+        return false;
+    }
+    return (info.st_mode & S_IFDIR) != 0;
 }

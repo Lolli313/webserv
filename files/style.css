@@ -1,38 +1,26 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: green;
+    background-color: var(--body-c);
+    margin: 0;
     padding: 30px;
 }
 
 .container {
     max-width: 700px;
     margin: 0 auto;
-    background-color: greenyellow;
+    background-color: var(--cont-bg);
     padding: 30px;
     border: 3px solid lightseagreen;
     border-radius: 30px;
 }
 
 h1, h2, h3 {
-    color: green;
+    color: var(--header-c);
 }
 
-input[type="text"],
-select,
-textarea {
-    width: 100%;
-    padding: 10px;
-    border: 3px solid green;
-    border-radius: 10px;
-    box-sizing: border-box;
+p {
+    color: var(--text);
 }
-
-textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-
 
 .head {
     display: flex;
@@ -47,14 +35,42 @@ textarea {
 }
 
 .uploads {
-    border: 3px solid green;
+    border: var(--box-bord);
     border-radius: 30px;
-    background-color: white;
+    background-color: var(--bg);
+    color: var(--text);
     height: 70%;
     width: 100%;
 }
 
+input[type="text"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: var(--box-bord);
+    border-radius: 10px;
+    box-sizing: border-box;
+    background-color: var(--bg);
+    color: var(--text)
+}
 
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.method-button.active {
+    background-color: var(--button-c);
+    color: var(--button-bg);
+    border: var(--button-bord) var(--button-bord-c);
+}
+
+/* .dark-mode .method-button.active {
+    background-color: var(--button-c);
+    color: var(--button-bg);
+    border: var(--button-bord) var(--button-bord-c);
+} */
 
 .button {
     display: flex;
@@ -64,9 +80,9 @@ textarea {
 
 button {
     cursor: pointer;
-    background-color: lightseagreen;
-    color: green;
-    border: 3px solid green;
+    background-color: var(--button-bg);
+    color: var(--button-c);
+    border: var(--button-bord) var(--button-bord-c);
     border-radius: 10px;
     padding: 10px 15px;
     border-radius: 10px;
@@ -118,7 +134,49 @@ button {
     justify-content: center;
     margin-top: 20px;
     padding: 30px;
-    background-color: white;
+    background-color: var(--bg);
+    color: var(--text);
     border-radius: 10px;
-    border: 3px solid green;
+    border: var(--box-bord);
+}
+
+input[type=file]::file-selector-button {
+    color: var(--text);
+    background-color: var(--bg);
+}
+
+::placeholder {
+    color: var(--text);
+}
+
+.toggle {
+    position: relative;
+    width: 85px;
+    height: 40px;
+    background: rgb(8, 0, 15);
+    border-radius: 55px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+
+.toggle .toggle-btn {
+    position: relative;
+    top: 5px;
+    left: 5px;
+    width: 40px;
+    height: 30px;
+    background: rgb(132, 115, 148);
+    border-radius: 25px;
+    transition: 0.3s;
+}
+
+.toggle.active {
+    background:whitesmoke;
+
+}
+
+.toggle.active .toggle-btn {
+    left: 45%;
+
 }
