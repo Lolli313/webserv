@@ -13,19 +13,22 @@ private:
 	std::string _pythonPath;
 	std::string _phpPath;
 	std::string _buffer;
-	int _pipeFDs[2];
+	int _pipeOut;
 
 public:
+	CGI() {};
 	CGI(const std::string &path, const std::string &pythonPath, const std::string &phpPath);
 	CGI(const CGI &obj);
 	CGI &operator=(const CGI &obj);
-	~CGI();
+	// ~CGI();
 
 	// Getters
+	int getPipeOut() const {return _pipeOut;}
 	const std::string& getPath() const;
 	// const ConfigBase *getConfig() const;
 	const std::string& getPythonPath() const;
 	const std::string& getPhpPath() const;
+	const std::string& getBuffer() const {return _buffer;}
 	// bool hasCGI() const;
 
 	// Setters
@@ -35,8 +38,8 @@ public:
 	void setPhpPath(const std::string& src);
 	// void setHasCGI(bool src);
 
-	void cleanClose(int *fd);
+	// void cleanClose(int *fd);
 	void initCGI();
-	static const std::string executeScript(const HttpRequest &request);
-	void handleCGI(int pipeFD);
+	void executeScript(const HttpRequest &request);
+	bool handleCGI();
 };

@@ -24,9 +24,9 @@ int main(int ac, char **av)
 
 	try {
 		ParseConfig pc((std::string(av[1])));
-		pc.printData();
-		// ServerManager sm(pc.getServerConfig());
-		// sm.mainLoop();
+		// pc.printData();
+		ServerManager sm(pc.getServerConfig());
+		sm.mainLoop();
 	}
 	catch (Tools::Exception &e) {
 		if (e.getReturnCode() == 0)

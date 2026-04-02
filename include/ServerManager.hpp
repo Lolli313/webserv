@@ -17,6 +17,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <map>
 
 #define ERROR_PAGE_TEMPLATE_PATH "/files/error_pages/ErrorTemplate.html"
 #define TEMPLATE_ERROR_CODE "{(CODE)}"
@@ -34,7 +35,7 @@ private:
 
 	std::vector<ServerSocket *> _serverSocketArray;
 
-	std::map<int /*pipe fd*/, CGI> _CGImap;
+	std::map<CGI*, Client*> _CGImap;
 
 	// map<pair<port, serverName &>, Server &> : We create a new key, value for each serverName of a server.
 	// If it has 3 names, them the map will have 3 entries for each of its combination <port, serverName>
@@ -54,6 +55,7 @@ public:
 	// ServerManager(ParseConfig); // Constructor with
 	~ServerManager();
 
+	const std::string execute(const HttpRequest &request, const ConfigBase *config, Client *client);
 
 	void setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 	std::map<std::pair<int, std::string>, Server*> setupServersMap();

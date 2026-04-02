@@ -13,10 +13,13 @@ body = f"""
     <p>Ce contenu est genere par un script Python CGI.</p>
 </body>
 </html>
+EOF
 """
 
 content_length = len(body.encode('utf-8'))
 current_date = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
+
+time.sleep(3)
 
 print("HTTP/1.1 200 OK")
 print(f"Date: {current_date}")

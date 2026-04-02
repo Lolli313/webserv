@@ -254,13 +254,14 @@ void checkBodySize(std::size_t size, std::size_t max)
  * @return the formatted HTTP response in case of success
  * @throw in case of error
  */
-const std::string execute(const HttpRequest &request, const ConfigBase *config)
+const std::string ServerManager::execute(const HttpRequest &request, const ConfigBase *config, Client *client) // client *
 {
 	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
 
 	// response = Script::executeScript(request);
 	// LOG(DEBUG, YELLOW, response);
+	// bool cgi = false;
 	if (request.getMethodStr() == "GET")
 	{
 		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
@@ -275,7 +276,18 @@ const std::string execute(const HttpRequest &request, const ConfigBase *config)
 
 	else if (request.getMethodStr() == "DELETE")
 	{
-		return response = Delete::executeDelete(request, config);
+		response = Delete::executeDelete(request, config);
+	}
+
+	LOG(DEBUG, PINK, request.getPurePath());
+	LOG(DEBUG, PINK, config->getCGIPaths()._scriptFolderPath);
+	// if (request.getPurePath() == config->getCGIPaths()._scriptFolderPath) {
+	if (request.getPurePath() == "/cgi-bin/hello.py") {
+		CGI *cgi = new CGI;
+		cgi->executeScript(request);
+		_CGImap[cgi] = client;
+		_polling->addFdToEpoll(cgi->getPipeOut() , EPOLLIN);
+		return "";
 	}
 
 	return response;
@@ -485,7 +497,7 @@ void ServerManager::existingClient(Client *client)
 			config = findConfigBase(*client, request);
 			handleReturnAndAllowMethod(config, request.getMethodStr());
 
-			client->setResponseBuff(execute(request, config));
+			client->setResponseBuff(execute(request, config, client)); // on envoie le client
 			client->setResponseToBeSent(true);
 			handleResponse(client);
 		}
@@ -545,15 +557,35 @@ void ServerManager::handleTimeout()
 
 void ServerManager::router(int eventFD)
 {
-	Client *client = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
+	Client *client = NULL;
+
+	client = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
+	// si il est dans la map, le client est a NULL et va dans le else
 	if (client)
-		existingClient(client);
-	// else
-	// {
-	// 	std::map<int, CGI>::iterator it = _CGImap.find(eventFD);
-	// 	if (it != _CGImap.end())
-	// 		it->second.handleCGI(eventFD);
-	// }
+		existingClient(client); //eventFD
+	else
+	{
+		std::map<CGI*, Client*>::const_iterator it = _CGImap.begin();
+		for(; it != _CGImap.end(); ++it) {
+			if (it->first->getPipeOut() == eventFD) {
+				break;
+			}
+		}
+		
+		if (it->first->handleCGI()) {
+			_polling->deleteFdFromEpoll(eventFD);
+			it->second->setResponseBuff(it->first->getBuffer());
+			it->second->setDoneReceiving(true);
+			it->second->setResponseToBeSent(true);
+			handleResponse(it->second);
+			_CGImap.erase(it->first);
+		}
+		// SI EOF de handleCGI
+			// pour la reponse on cherche si c'est GET POST OU DELETE dans _buffer de client
+			// retirer de la map le eventFD finit donc le parent
+			// on envoie la reponse
+		
+	}
 }
 
 void ServerManager::eventLoop()

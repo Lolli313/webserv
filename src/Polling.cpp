@@ -119,6 +119,11 @@ void Polling::addFdToEpoll(int targetFD, int eventFlags)
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
 }
 
+void Polling::deleteFdFromEpoll(int targetFD) {
+	LOG(INFO, GREEN, "deleting fd from epoll", Tools::intToString(targetFD));
+	epollEventAction(_epollFD, targetFD, EPOLL_CTL_DEL, 0);
+}
+
 // Exception on failure
 void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
 {
@@ -226,7 +231,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 
 	if (_clientMap.find(clientFD) == _clientMap.end())
 	{
-		LOG(CRITICAL, "Unexpectedly no match for existing client");
+		LOG(INFO, "founf a CGI pipe");
 		return NULL;
 	}
 	LOG(INFO, ORANGE, "Found clientFD match for FD", Tools::intToString(clientFD));

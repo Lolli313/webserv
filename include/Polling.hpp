@@ -59,6 +59,7 @@ public:
 	
 	void addFdToEpoll(int targetFD, int eventFlags);
 	void addClientToEpoll(Client &client);
+	void deleteFdFromEpoll(int targetFD);
 	bool deleteCLient(Client *client);
 	void registerNewClient(int eventFD);
 	Client *handleExistingClient(int eventFD, uint32_t currEvent);
