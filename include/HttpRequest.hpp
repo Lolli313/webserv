@@ -46,7 +46,7 @@ public:
 
   // GETTERS
 
-  const std::string &getMethodStr() const { return _methodStr; }
+  const std::string &getMethod() const { return _methodStr; }
   const std::string &getPath() const { return _path; }
   const std::string &getPurePath() const { return _purePath; }
   const std::map<std::string, std::string> &getQueryParams() const { return _queryParams; }

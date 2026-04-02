@@ -10,24 +10,31 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-CGI::CGI(const std::string &path, const std::string &pythonPath, const std::string &phpPath) : 
-  _path(path),
-  _pythonPath(pythonPath),
-  _phpPath(phpPath)
+CGI::CGI(const HttpRequest &request, const ConfigBase *config) : _cgiBinPath(config->getCGIPaths()._scriptFolderPath),
+																 _pythonPath(config->getCGIPaths()._pythonPath),
+																 _phpPath(config->getCGIPaths()._phpPath)
 {
-  try {
-    initCGI();
-  }
-  catch (Tools::Exception &e)
-  {
-    // Close clean here.
-    throw;
-  }
+	try
+	{
+		setCGI(request, config);
+		executeCGI(request, config);
+	}
+	catch (Tools::Exception &e)
+	{
+		Tools::closeAndResetFD(_postPipesFDs[0]);
+		Tools::closeAndResetFD(_postPipesFDs[1]);
+		Tools::closeAndResetFD(_pipeFDs[0]);
+		Tools::closeAndResetFD(_pipeFDs[1]);
+		throw;
+	}
 }
 
-CGI::~CGI() {
-  // Tools::closeAndResetFD(_pipeFDs[0]);
-  // Tools::closeAndResetFD(_pipeFDs[1]);
+CGI::~CGI()
+{
+	Tools::closeAndResetFD(_postPipesFDs[0]);
+	Tools::closeAndResetFD(_postPipesFDs[1]);
+	Tools::closeAndResetFD(_pipeFDs[0]);
+	Tools::closeAndResetFD(_pipeFDs[1]);
 }
 
 CGI::CGI(const CGI &obj) { *this = obj; }
@@ -39,10 +46,10 @@ CGI::CGI(const CGI &obj) { *this = obj; }
 */
 CGI &CGI::operator=(const CGI &obj)
 {
-  if (this != &obj)
-  {
-  }
-  return (*this);
+	if (this != &obj)
+	{
+	}
+	return (*this);
 }
 
 /*
@@ -51,17 +58,13 @@ CGI &CGI::operator=(const CGI &obj)
 =================================================================
 */
 
-const std::string &CGI::getPath() const { return _path; }
-// const ConfigBase *CGI::getConfig() const { return _config; }
+const std::string &CGI::getPath() const { return _cgiBinPath; }
 const std::string &CGI::getPythonPath() const { return _pythonPath; }
 const std::string &CGI::getPhpPath() const { return _phpPath; }
-// bool CGI::hasCGI() const { return _hasCGI; }
 
-void CGI::setPath(const std::string &src) { _path = src; }
-// void CGI::setConfig(ConfigBase *src) { _config = src; }
+void CGI::setPath(const std::string &src) { _cgiBinPath = src; }
 void CGI::setPythonPath(const std::string &src) { _pythonPath = src; }
 void CGI::setPhpPath(const std::string &src) { _phpPath = src; }
-// void CGI::setHasCGI(bool src) { _hasCGI = src; }
 
 /*
 =================================================================
@@ -69,87 +72,95 @@ void CGI::setPhpPath(const std::string &src) { _phpPath = src; }
 =================================================================
 */
 
-
-
-void CGI::initCGI()
+/**
+ * @brief set the pipe of the CGI and fork.
+ * @return the pid fork return value, to know if we are in the child or parent.
+ */
+void CGI::pipeAndFork()
 {
-  
+	if (pipe(_pipeFDs) == -1)
+		throw Tools::Exception(500, "CGI: Failed to create pipe");
+	if ((_pid = fork()) == -1)
+		throw Tools::Exception(500, "CGI: Failed to create pipe");
 }
 
-void CGI::executeScript(const HttpRequest &request)
+void CGI::handlePostCGI()
 {
-  LOG(DEBUG, "SCRIPT");
-  std::string output;
-  std::string exec = "files" + request.getPurePath();
+	LOG(DEBUG, "CGI: POST");
+	if (pipe(_postPipesFDs) == -1)
+		throw Tools::Exception(500, "CGI: Failed to create pipe in POST");
+	Tools::closeAndResetFD(_postPipesFDs[1]);
+	if (dup2(_postPipesFDs[0], STDIN_FILENO) < 0)
+		throw Tools::Exception(500, "CGI: Failed to dup2");
+	// SHOULD WE CLOSE IT ???? I DON'T THINK SO, WE NEED TO USE IT IN execute() TO ADD IT TO EPOLL
+	Tools::closeAndResetFD(_postPipesFDs[0]);
+}
 
-  int pipefd[2];
-  if (pipe(pipefd) == -1)
-  {
-    throw Tools::Exception(500, "SCRIPT : Failed to create pipe");
-  }
-  pid_t pid = fork();
-  if (pid == -1)
-  {
-    throw Tools::Exception(500, "SCRIPT : Failed to fork");
-  }
-  else if (pid == 0)
-  {
-    LOG(DEBUG, "CHILD");
+void CGI::executeCGI(const HttpRequest &request, const ConfigBase *config)
+{
+	LOG(DEBUG, "SCRIPT");
+	std::string output;
+	std::string exec = request.getPurePath();
 
-    Tools::closeAndResetFD(pipefd[0]);
-    dup2(pipefd[1], STDOUT_FILENO);
-    Tools::closeAndResetFD(pipefd[1]);
+	pipeAndFork();
+	if (_pid == 0)
+	{
+		LOG(DEBUG, "CHILD");
+		Tools::closeAndResetFD(_pipeFDs[0]);
+		if (dup2(_pipeFDs[1], STDOUT_FILENO) < 0)
+			throw Tools::Exception(500, "CGI: Failed to dup2");
+		Tools::closeAndResetFD(_pipeFDs[1]);
 
-    if (request.getPurePath() == "/cgi-bin/hello.py")
-    {
-      execl("/usr/bin/python3", "python3", exec.c_str(), NULL);
-    }
-    else if (request.getPurePath() == "/cgi-bin/info.php")
-    {
-      execl("/usr/bin/php", "php", exec.c_str(), NULL);
-    }
-    else if (request.getPurePath() == "/cgi-bin/getTime.py")
-    {
-      execl("/usr/bin/python3", "python3", exec.c_str(), NULL);
-    }
-
-    throw Tools::Exception(42, "CGI: child failed to execute");
-
-  }
-  else
-  {
-    LOG(DEBUG, "PAPA");
-    Tools::closeAndResetFD(pipefd[1]);
-    _pipeOut = pipefd[0];
-    // LOG(DEBUG, PINK, Tools::intToString(pipefd[0]));
-    // LOG(DEBUG, PINK, Tools::intToString(pipefd[1]));
-    // LOG(DEBUG, PINK, Tools::intToString(_pipeOut));
-  }
+		if (request.getMethod() == "POST") {
+			handlePostCGI();
+		}
+		char **param = buildParam();
+		char **env = buildEnv();
+		execve(_pythonPath.c_str(), param, env);
+		throw Tools::Exception(42, "CGI: child failed to execute");
+	}
+	else
+	{
+		LOG(DEBUG, "PARENT");
+		Tools::closeAndResetFD(_pipeFDs[1]);
+	}
 }
 bool CGI::handleCGI()
 {
-  char buffer[4096];
-  std::memset(buffer, '\0', 4096);
-  ssize_t bytesRead;
-  bytesRead = read(_pipeOut, buffer, sizeof(buffer));
-  _buffer += buffer;
-  if (_buffer.find("EOF")) {
-    std::cout << _buffer << std::endl;
-    // LOG(DEBUG, PINK, Tools::intToString(_pipeOut));
-    Tools::closeAndResetFD(_pipeOut);
-    // LOG(DEBUG, PINK, Tools::intToString(_pipeOut));
-    return (true);
-  }
-  return (false);
-
-  
+	char buffer[BUFFERSIZE];
+	std::memset(buffer, '\0', BUFFERSIZE);
+	ssize_t bytesRead;
+	bytesRead = read(_pipeFDs[0], buffer, BUFFERSIZE);
+	if (bytesRead > 0)
+	{
+		_buffer.append(buffer);
+		return false;
+	}
+	else if (bytesRead < 0)
+	{
+		// Should we destroy the CGI object ?
+		Tools::closeAndResetFD(_pipeFDs[0]);
+		Tools::Exception(500, "CGI: Error reading output");
+		return false;
+	}
+	else
+	{
+		Tools::closeAndResetFD(_pipeFDs[0]);
+		return true;
+	}
+	return false;
 	// le parent lit le pipe out a chaque fois et remplit le buffer
 	// si il lit EOF a la fin
-		// on remplit le buffer une derniere fois
-		// on construit la reponse et la return
-	
+	// on remplit le buffer une derniere fois
+	// on construit la reponse et la return
 
-  // Event can be the read or write part of the pipe
-  // It need to read from the pipe (the child is writing from the other side), and append this to the CGI _buffer
-  // Then, once it has been determined that the CGI is finished, it will set a response and call handleResponse()
+	// Event can be the read or write part of the pipe
+	// It need to read from the pipe (the child is writing from the other side), and append this to the CGI _buffer
+	// Then, once it has been determined that the CGI is finished, it will set a response and call handleResponse()
+}
+
+void CGI::setCGI(const HttpRequest &request, const ConfigBase *config)
+{
+	if (!Tools::fileExists(request.getPurePath().c_str()))
+		throw Tools::Exception(404, "CGI: file not found");
 }

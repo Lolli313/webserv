@@ -21,7 +21,6 @@
 
 #define MAX_EVENTS 5
 #define TIMEOUT 60
-#define BUFFERSIZE 4096
 
 class Polling
 {

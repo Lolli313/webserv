@@ -201,15 +201,7 @@ void Get::checkAndSetFile(const std::string &path)
 	LOG(DEBUG, "File = " + path);
 }
 
-const std::string Get::getExtension(const std::string &path) const
-{
-	std::string::size_type pos = path.rfind(".");
 
-	if (pos == std::string::npos || pos == 0)
-		return "";
-
-	return HttpTools::getContentType(path.substr(pos));
-}
 
 const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *config)
 {
@@ -227,9 +219,9 @@ const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *
 	response.addHeader("Content-length", Tools::intToString(get._file.size()));
 	std::string extension;
 	if (get._autoindex)
-		extension = get.getExtension("file.json");
+		extension = Tools::getExtension("file.json");
 	else
-		extension = get.getExtension(get.getPath());
+		extension = Tools::getExtension(get.getPath());
 	if (!extension.empty())
 	{
 		if (extension == ".ico")

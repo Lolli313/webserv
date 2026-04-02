@@ -20,7 +20,8 @@ ServerManager::~ServerManager()
 		delete (*it);
 	if (_polling)
 		delete _polling;
-	for (std::map<CGI*, Client*>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it) {
+	for (std::map<CGI *, Client *>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it)
+	{
 		delete it->first;
 	}
 }
@@ -262,37 +263,33 @@ const std::string ServerManager::execute(const HttpRequest &request, const Confi
 	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
 
-	// response = Script::executeScript(request);
-	// LOG(DEBUG, YELLOW, response);
-	// bool cgi = false;
-	if (request.getMethodStr() == "GET")
+	if (config->hasCGI() && !request.getPurePath().compare(0, config->getCGIPaths()._scriptFolderPath.size(), config->getCGIPaths()._scriptFolderPath))
+	{
+		CGI *cgi = new CGI(request, config);
+		_CGImap[cgi] = client;
+		_polling->addFdToEpoll(cgi->getPipeOut(), EPOLLIN);
+		if (cgi->getPostPipeIn() >= 0)
+		{
+			_polling->addFdToEpoll(cgi->getPostPipeIn(), EPOLLOUT);
+		}
+		return "";
+	}
+
+	if (request.getMethod() == "GET")
 	{
 		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
 		response = Get::executeGet(request, config);
 	}
 
-	else if (request.getMethodStr() == "POST")
+	else if (request.getMethod() == "POST")
 	{
 		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
 		response = Post::executePost(request);
 	}
 
-	else if (request.getMethodStr() == "DELETE")
+	else if (request.getMethod() == "DELETE")
 	{
 		response = Delete::executeDelete(request, config);
-	}
-
-	// LOG(DEBUG, PINK, request.getPurePath());
-	// LOG(DEBUG, PINK, config->getCGIPaths()._scriptFolderPath);
-	// LOG(DEBUG, PINK, Tools::intToString(request.getPurePath().size()));
-	// LOG(DEBUG, PINK, Tools::intToString(config->getCGIPaths()._scriptFolderPath.size()));
-	
-	if (!request.getPurePath().compare(0, config->getCGIPaths()._scriptFolderPath.size(), config->getCGIPaths()._scriptFolderPath)) {
-		CGI *cgi = new CGI;
-		_CGImap[cgi] = client;
-		cgi->executeScript(request);
-		_polling->addFdToEpoll(cgi->getPipeOut() , EPOLLIN);
-		return "";
 	}
 
 	return response;
@@ -500,10 +497,11 @@ void ServerManager::existingClient(Client *client)
 
 			// Ideally we would call this function after the headers are parsed, for now it is here
 			config = findConfigBase(*client, request);
-			handleReturnAndAllowMethod(config, request.getMethodStr());
+			handleReturnAndAllowMethod(config, request.getMethod());
 
 			client->setResponseBuff(execute(request, config, client)); // on envoie le client
-			client->setResponseToBeSent(true);
+			if(client->getResponseBuff().empty())
+				client->setResponseToBeSent(true);
 			handleResponse(client);
 		}
 		// client->printStatus();
@@ -560,60 +558,30 @@ void ServerManager::handleTimeout()
 	}
 }
 
-#include <dirent.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <iostream>
-
-void listOpenPipes() {
-    DIR *dir = opendir("/proc/self/fd");
-    if (!dir) {
-        std::cerr << "Impossible d'ouvrir /proc/self/fd" << std::endl;
-        return;
-    }
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_name[0] == '.') continue;
-        int fd = atoi(entry->d_name);
-        struct stat st;
-        if (fstat(fd, &st) == 0) {
-            if (S_ISFIFO(st.st_mode)) {
-                std::cout << "Pipe ouvert : fd " << fd << std::endl;
-            }
-        }
-    }
-    closedir(dir);
-}
-
 void ServerManager::router(int eventFD)
 {
 	Client *client = NULL;
 
 	client = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
 	// si il est dans la map, le client est a NULL et va dans le else
-	if (client) {
-		std::cout << "=== Pipes ouverts AVANT EXISTING CLIENT ===" << std::endl;
-        listOpenPipes();
-		existingClient(client); //eventFD
-		std::cout << "=== Pipes ouverts APRES EXISTING CLIENT ===" << std::endl;
-        listOpenPipes();
-
-	}
+	if (client)
+		existingClient(client); // eventFD
 	else
 	{
-		std::cout << "=== Pipes ouverts AVANT HANDLE CGI ===" << std::endl;
-        listOpenPipes();
-
-		std::map<CGI*, Client*>::const_iterator it = _CGImap.begin();
-		for(; it != _CGImap.end(); ++it) {
-			if (it->first->getPipeOut() == eventFD) {
+		std::map<CGI *, Client *>::const_iterator it = _CGImap.begin();
+		for (; it != _CGImap.end(); ++it)
+		{
+			if (it->first->getPipeOut() == eventFD)
+			{
 				break;
 			}
 		}
-		
-		if (it->first->handleCGI()) {
-			close(eventFD);
-			// _polling->deleteFdFromEpoll(eventFD);
+
+		if (it->first->handleCGI())
+		{
+			// Make all of this in one function.
+			_polling->deleteFdFromEpoll(eventFD);
+			Tools::closeAndResetFD(eventFD);
 			it->second->setResponseBuff(it->first->getBuffer());
 			it->second->setDoneReceiving(true);
 			it->second->setResponseToBeSent(true);
@@ -622,13 +590,10 @@ void ServerManager::router(int eventFD)
 			_CGImap.erase(it->first);
 		}
 
-		std::cout << "=== Pipes ouverts APRES HANDLE CGI ===" << std::endl;
-        listOpenPipes();
 		// SI EOF de handleCGI
-			// pour la reponse on cherche si c'est GET POST OU DELETE dans _buffer de client
-			// retirer de la map le eventFD finit donc le parent
-			// on envoie la reponse
-		
+		// pour la reponse on cherche si c'est GET POST OU DELETE dans _buffer de client
+		// retirer de la map le eventFD finit donc le parent
+		// on envoie la reponse
 	}
 }
 

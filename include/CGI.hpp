@@ -8,22 +8,29 @@
 class CGI
 {
 private:
-	std::string _path;
+	std::string _cgiBinPath;
 	// ConfigBase* _config;
 	std::string _pythonPath;
 	std::string _phpPath;
 	std::string _buffer;
-	int _pipeOut;
+	std::string _responseBuffer;
+	int _pid;
+	int _pipeFDs[2];
+	int _postPipesFDs[2];
 
 public:
 	CGI() {};
-	CGI(const std::string &path, const std::string &pythonPath, const std::string &phpPath);
+	CGI(const HttpRequest& request, const ConfigBase *config);
 	CGI(const CGI &obj);
 	CGI &operator=(const CGI &obj);
 	~CGI();
 
 	// Getters
-	int getPipeOut() const {return _pipeOut;}
+	// CGI POST INPUT PIPE FD
+	int getPostPipeIn() const { return _postPipesFDs[1]; }
+
+	// CGI OUTPUT PIPE FD
+	int getPipeOut() const { return _pipeFDs[0]; }
 	const std::string& getPath() const;
 	// const ConfigBase *getConfig() const;
 	const std::string& getPythonPath() const;
@@ -39,7 +46,9 @@ public:
 	// void setHasCGI(bool src);
 
 	// void cleanClose(int *fd);
-	void initCGI();
-	void executeScript(const HttpRequest &request);
+	void executeCGI(const HttpRequest &request, const ConfigBase* config);
 	bool handleCGI();
+	void setCGI(const HttpRequest &request, const ConfigBase* config);
+	void pipeAndFork();
+	void handlePostCGI();
 };

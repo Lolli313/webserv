@@ -16,6 +16,8 @@ class Logger;
 #include <ctime>
 #include <unistd.h>
 
+#define BUFFERSIZE 4096
+
 class Tools
 {
 	/* Tools Orthodox Canonical Form is in private so that it cannot be used from outside of this class
@@ -86,4 +88,5 @@ public:
 	static bool isValidPort(const std::string &port);
 	static bool isDirectory(const char *path);
 	static bool closeAndResetFD(int &fd);
+	static const std::string getExtension(const std::string &path);
 };

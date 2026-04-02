@@ -310,3 +310,13 @@ bool Tools::closeAndResetFD(int &fd)
 	}
 	return false;
 }
+
+const std::string Tools::getExtension(const std::string &path)
+{
+	std::string::size_type pos = path.rfind(".");
+
+	if (pos == std::string::npos || pos == 0)
+		return "";
+
+	return HttpTools::getContentType(path.substr(pos));
+}
