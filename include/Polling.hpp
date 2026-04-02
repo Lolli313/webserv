@@ -5,6 +5,7 @@
 #include "ServerSocket.hpp"
 #include "HttpResponse.hpp"
 #include "Client.hpp"
+#include "Tools.hpp"
 
 #include <netinet/in.h>
 #include <algorithm>

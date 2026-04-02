@@ -20,6 +20,9 @@ ServerManager::~ServerManager()
 		delete (*it);
 	if (_polling)
 		delete _polling;
+	for (std::map<CGI*, Client*>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it) {
+		delete it->first;
+	}
 }
 
 ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs) : _polling(NULL)
@@ -279,13 +282,15 @@ const std::string ServerManager::execute(const HttpRequest &request, const Confi
 		response = Delete::executeDelete(request, config);
 	}
 
-	LOG(DEBUG, PINK, request.getPurePath());
-	LOG(DEBUG, PINK, config->getCGIPaths()._scriptFolderPath);
-	// if (request.getPurePath() == config->getCGIPaths()._scriptFolderPath) {
-	if (request.getPurePath() == "/cgi-bin/hello.py") {
+	// LOG(DEBUG, PINK, request.getPurePath());
+	// LOG(DEBUG, PINK, config->getCGIPaths()._scriptFolderPath);
+	// LOG(DEBUG, PINK, Tools::intToString(request.getPurePath().size()));
+	// LOG(DEBUG, PINK, Tools::intToString(config->getCGIPaths()._scriptFolderPath.size()));
+	
+	if (!request.getPurePath().compare(0, config->getCGIPaths()._scriptFolderPath.size(), config->getCGIPaths()._scriptFolderPath)) {
 		CGI *cgi = new CGI;
-		cgi->executeScript(request);
 		_CGImap[cgi] = client;
+		cgi->executeScript(request);
 		_polling->addFdToEpoll(cgi->getPipeOut() , EPOLLIN);
 		return "";
 	}
@@ -325,7 +330,7 @@ const std::string readErrorFile(const std::string &errorPath, int code, bool isP
 	ssize_t bytesRead = 0;
 	while ((bytesRead = read(fd, buffer, BUFFERSIZE)) > 0)
 		finalString.append(buffer, bytesRead);
-	close(fd);
+	Tools::closeAndResetFD(fd);
 	if (bytesRead == -1)
 		return "";
 	return finalString;
@@ -555,16 +560,50 @@ void ServerManager::handleTimeout()
 	}
 }
 
+#include <dirent.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <iostream>
+
+void listOpenPipes() {
+    DIR *dir = opendir("/proc/self/fd");
+    if (!dir) {
+        std::cerr << "Impossible d'ouvrir /proc/self/fd" << std::endl;
+        return;
+    }
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_name[0] == '.') continue;
+        int fd = atoi(entry->d_name);
+        struct stat st;
+        if (fstat(fd, &st) == 0) {
+            if (S_ISFIFO(st.st_mode)) {
+                std::cout << "Pipe ouvert : fd " << fd << std::endl;
+            }
+        }
+    }
+    closedir(dir);
+}
+
 void ServerManager::router(int eventFD)
 {
 	Client *client = NULL;
 
 	client = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
 	// si il est dans la map, le client est a NULL et va dans le else
-	if (client)
+	if (client) {
+		std::cout << "=== Pipes ouverts AVANT EXISTING CLIENT ===" << std::endl;
+        listOpenPipes();
 		existingClient(client); //eventFD
+		std::cout << "=== Pipes ouverts APRES EXISTING CLIENT ===" << std::endl;
+        listOpenPipes();
+
+	}
 	else
 	{
+		std::cout << "=== Pipes ouverts AVANT HANDLE CGI ===" << std::endl;
+        listOpenPipes();
+
 		std::map<CGI*, Client*>::const_iterator it = _CGImap.begin();
 		for(; it != _CGImap.end(); ++it) {
 			if (it->first->getPipeOut() == eventFD) {
@@ -573,13 +612,18 @@ void ServerManager::router(int eventFD)
 		}
 		
 		if (it->first->handleCGI()) {
-			_polling->deleteFdFromEpoll(eventFD);
+			close(eventFD);
+			// _polling->deleteFdFromEpoll(eventFD);
 			it->second->setResponseBuff(it->first->getBuffer());
 			it->second->setDoneReceiving(true);
 			it->second->setResponseToBeSent(true);
 			handleResponse(it->second);
+
 			_CGImap.erase(it->first);
 		}
+
+		std::cout << "=== Pipes ouverts APRES HANDLE CGI ===" << std::endl;
+        listOpenPipes();
 		// SI EOF de handleCGI
 			// pour la reponse on cherche si c'est GET POST OU DELETE dans _buffer de client
 			// retirer de la map le eventFD finit donc le parent

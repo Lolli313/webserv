@@ -20,7 +20,7 @@ public:
 	CGI(const std::string &path, const std::string &pythonPath, const std::string &phpPath);
 	CGI(const CGI &obj);
 	CGI &operator=(const CGI &obj);
-	// ~CGI();
+	~CGI();
 
 	// Getters
 	int getPipeOut() const {return _pipeOut;}

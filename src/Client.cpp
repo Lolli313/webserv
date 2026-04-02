@@ -69,6 +69,7 @@ Client &Client::operator=(const Client &obj)
 */
 
 int Client::getFD() const { return _clientFD; }
+int &Client::getRefFD() { return _clientFD; }
 
 std::string &Client::getBuffer() { return _buffer; }
 void Client::setBuffer(const std::string &input) { _buffer = input; }

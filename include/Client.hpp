@@ -12,7 +12,7 @@ class Client
 {
 private:
 
-	const int _clientFD;
+	int _clientFD;
 	std::string _buffer; // Receives the input
 	char _tmpBuff[BUFFERSIZE];
 
@@ -40,6 +40,8 @@ public:
 	~Client();
 
 	int getFD() const;
+	int &getRefFD();
+
 	std::string &getBuffer();
 	void setBuffer(const std::string &input);
 	

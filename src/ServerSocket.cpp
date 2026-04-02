@@ -25,7 +25,7 @@ ServerSocket::ServerSocket(std::string port) : _port(port), _servSockFD(-1), _ne
 	catch (Tools::Exception &e)
 	{
 		if (_servSockFD != -1)
-			close(_servSockFD); 
+			Tools::closeAndResetFD(_servSockFD); 
 		throw;
 	}
 }
@@ -33,7 +33,7 @@ ServerSocket::ServerSocket(std::string port) : _port(port), _servSockFD(-1), _ne
 ServerSocket::~ServerSocket() { 
 	LOG(INFO, RED_BRIGHT, "ServerSocket destructor");
 	if (_servSockFD != -1)
-		close(_servSockFD); 
+		Tools::closeAndResetFD(_servSockFD); 
 	}
 
 ServerSocket::ServerSocket(const ServerSocket &obj) :

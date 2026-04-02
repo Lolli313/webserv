@@ -28,7 +28,7 @@ Polling::~Polling()
 		std::map<const unsigned int, Client *>::iterator curr = it++;
 		deleteCLient(curr->second);
 	}
-	close(_epollFD);
+	Tools::closeAndResetFD(_epollFD);
 }
 
 Polling::Polling(const Polling &obj) : _newClientFlags(obj._newClientFlags) { *this = obj; };
@@ -148,7 +148,7 @@ bool Polling::deleteCLient(Client *client)
 {
 	LOG(INFO, BLUE, "DELETE CLIENT");
 	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
-	close(client->getFD());
+	Tools::closeAndResetFD(client->getRefFD());
 	if ((_clientMap.erase(client->getFD())) != 1)
 		return (false);
 	for (std::vector<Client *>::iterator it = _clientVector.begin(); it != _clientVector.end(); it++)

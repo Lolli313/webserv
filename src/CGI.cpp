@@ -25,10 +25,10 @@ CGI::CGI(const std::string &path, const std::string &pythonPath, const std::stri
   }
 }
 
-// CGI::~CGI() {
-//   Tools::closeAndResetFD(_pipeFDs[0]);
-//   Tools::closeAndResetFD(_pipeFDs[1]);
-// }
+CGI::~CGI() {
+  // Tools::closeAndResetFD(_pipeFDs[0]);
+  // Tools::closeAndResetFD(_pipeFDs[1]);
+}
 
 CGI::CGI(const CGI &obj) { *this = obj; }
 
@@ -88,7 +88,6 @@ void CGI::executeScript(const HttpRequest &request)
     throw Tools::Exception(500, "SCRIPT : Failed to create pipe");
   }
   pid_t pid = fork();
-
   if (pid == -1)
   {
     throw Tools::Exception(500, "SCRIPT : Failed to fork");
@@ -97,9 +96,9 @@ void CGI::executeScript(const HttpRequest &request)
   {
     LOG(DEBUG, "CHILD");
 
-    close(pipefd[0]);
+    Tools::closeAndResetFD(pipefd[0]);
     dup2(pipefd[1], STDOUT_FILENO);
-    close(pipefd[1]);
+    Tools::closeAndResetFD(pipefd[1]);
 
     if (request.getPurePath() == "/cgi-bin/hello.py")
     {
@@ -120,8 +119,11 @@ void CGI::executeScript(const HttpRequest &request)
   else
   {
     LOG(DEBUG, "PAPA");
-    close(pipefd[1]);
+    Tools::closeAndResetFD(pipefd[1]);
     _pipeOut = pipefd[0];
+    // LOG(DEBUG, PINK, Tools::intToString(pipefd[0]));
+    // LOG(DEBUG, PINK, Tools::intToString(pipefd[1]));
+    // LOG(DEBUG, PINK, Tools::intToString(_pipeOut));
   }
 }
 bool CGI::handleCGI()
@@ -133,6 +135,9 @@ bool CGI::handleCGI()
   _buffer += buffer;
   if (_buffer.find("EOF")) {
     std::cout << _buffer << std::endl;
+    // LOG(DEBUG, PINK, Tools::intToString(_pipeOut));
+    Tools::closeAndResetFD(_pipeOut);
+    // LOG(DEBUG, PINK, Tools::intToString(_pipeOut));
     return (true);
   }
   return (false);
