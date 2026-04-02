@@ -122,6 +122,7 @@ public:
 	void setErrorPages(const std::map<int, std::string> &src);
 	void setAllowMethods(const std::set<std::string> &src);
 	void setReturnDirective(const std::pair<int, std::string> &src);
+	void setHasCgi(bool src);
 
 	bool handleRoot(std::vector<std::string> &tokens, std::ifstream *infile);
 	bool handleIndex(std::vector<std::string> &tokens, std::ifstream *infile);

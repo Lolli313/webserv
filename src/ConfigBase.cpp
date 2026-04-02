@@ -33,6 +33,8 @@ ConfigBase &ConfigBase::operator=(const ConfigBase &obj)
 		_errorPages = obj._errorPages;
 		_allowedMethods = obj._allowedMethods;
 		_returnDirective = obj._returnDirective;
+		_hasCGI = obj._hasCGI;
+		_cgiPaths = obj._cgiPaths;
 	}
 	return *this;
 }
@@ -62,6 +64,7 @@ void ConfigBase::setClientMaxBodySize(long src) { _clientMaxBodySize = src; }
 void ConfigBase::setErrorPages(const std::map<int, std::string> &src) { _errorPages = src; }
 void ConfigBase::setAllowMethods(const std::set<std::string> &src) { _allowedMethods = src; }
 void ConfigBase::setReturnDirective(const std::pair<int, std::string> &src) { _returnDirective = src; }
+void ConfigBase::setHasCgi(bool src) { _hasCGI = src; }
 
 /*
 =================================================================
@@ -431,7 +434,7 @@ bool ConfigBase::handleCgi(std::vector<std::string> &tokens, std::ifstream *infi
 
 		tokens = Tools::splitString(line);
 		if (tokens[0] == "}")
-			return true;
+			break;
 		
 		if (!checkCgiDirectiveValidity(tokens))
 			return false;
@@ -451,7 +454,7 @@ bool ConfigBase::handleCgi(std::vector<std::string> &tokens, std::ifstream *infi
 		else
 			return false;
 	}
-	_hasCGI = true;
+	setHasCgi(true);
 	return true;
 }
 
@@ -492,7 +495,11 @@ void ConfigBase::printData() const {
                             (getReturnDirective().second.empty() ? "" : " -> " + getReturnDirective().second);
     LOG(DEBUG, YELLOW_BRIGHT, "Return Directive", returnVal);
 
-	
+	if (hasCGI()) {
+		LOG(DEBUG, YELLOW_BRIGHT, "Script Folder Path", _cgiPaths._scriptFolderPath);
+		LOG(DEBUG, YELLOW_BRIGHT, "Python Folder Path", _cgiPaths._pythonPath);
+		LOG(DEBUG, YELLOW_BRIGHT, "PHP Folder Path", _cgiPaths._phpPath);
+	}
 }
 
 /**
@@ -518,7 +525,7 @@ void ConfigBase::initWithDefaultData() {
 	setClientMaxBodySize(expandMaskedString(temp, MASK_M));
 	_allowedMethods.insert("GET");
 	setReturnDirective(std::make_pair(0, ""));
-	_hasCGI = false;
+	setHasCgi(false);
 }
 
 void ConfigBase::initRoot() {
