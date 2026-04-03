@@ -15,10 +15,10 @@ private:
 	// ConfigBase* _config;
 	std::string _executablePath;
 	std::string _buffer;
-	std::string _responseBuffer;
 	int _pid;
 	int _pipeFDs[2];
 	int _postPipesFDs[2];
+	int _responseStatus;
 
 	std::size_t _postPos;
 

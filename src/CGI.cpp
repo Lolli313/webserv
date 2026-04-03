@@ -12,7 +12,8 @@
 */
 CGI::CGI(const HttpRequest &request, const ConfigBase *config) : _request(request),
 																 _config(config),
-																 _cgiBinPath(config->getCGIPaths()._scriptFolderPath)
+																 _cgiBinPath(config->getCGIPaths()._scriptFolderPath),
+																 _responseStatus(200)
 {
 	try
 	{
@@ -247,22 +248,24 @@ void CGI::setCGI()
 		throw Tools::Exception(404, "CGI: file not found");
 }
 
+/**
+ * @brief Extract the headers of the CGI output.
+ */
 std::vector<std::pair<std::string, std::string> > CGI::parseOutput()
 {
+	// IT NEED TO SET THE _status as well
+	// BUT NOT ADD IT TO THE VECTOR
 
 }
 
-int getAndEraseStatus(std::vector<std::pair<std::string, std::string> > &headers)
+std::pair<std::string, std::string> *getPairFromHeaders(std::vector<std::pair<std::string, std::string> > &headers, const std::string &target)
 {
-	for (std::vector<std::pair<std::string, std::string> >::const_iterator it = headers.begin(); it != headers.end(); it++)
+	for (std::vector<std::pair<std::string, std::string> >::iterator it = headers.begin(); it != headers.end(); it++)
 	{
-		if (it->first == "Status")
-		{
-			headers.erase(it);
-			return std::atoi(it->second.c_str());
-		}
+		if (it->first == target)
+			return &(*it);
 	}
-	return 0;
+	return NULL;
 }
 
 /**
@@ -271,14 +274,16 @@ int getAndEraseStatus(std::vector<std::pair<std::string, std::string> > &headers
  */
 const std::string CGI::getResponse()
 {
-	int status = 0;
+	std::pair<std::string, std::string> *oneHeader;
 	std::vector<std::pair<std::string, std::string> > headers = parseOutput();
 
-	status = getAndEraseStatus(headers);
-	if (!status)
-		throw Tools::Exception(500, "CGI: no header Status in response");
-	
-	HttpResponse response(HttpTools::getReturnPair(status));
+	oneHeader = getPairFromHeaders(headers, "Content-Type");
+	if (!oneHeader)
+		throw Tools::Exception(500, "CGI: no Content-Type header");
+
+	HttpResponse response(HttpTools::getReturnPair(_responseStatus));
+	response.addDateHeader();
 	response.setResponseHeaders(headers);
+	response.setBody(_buffer);
 	return response.getFinalResponse();
 }
