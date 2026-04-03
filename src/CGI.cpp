@@ -10,10 +10,11 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-CGI::CGI(const HttpRequest &request, const ConfigBase *config) : _request(request),
-																 _config(config),
-																 _cgiBinPath(config->getCGIPaths()._scriptFolderPath),
-																 _responseStatus(200)
+CGI::CGI(const HttpRequest &request, const ConfigBase *config) :
+	_request(request),
+	_config(config),
+	_cgiBinPath(config->getCGIPaths()._scriptFolderPath),
+	_responseStatus(200)
 {
 	try
 	{
@@ -127,27 +128,37 @@ void CGI::setChildPipe()
 	Tools::closeAndResetFD(_pipeFDs[1]);
 }
 
-char **CGI::buildParam(std::string &fullScriptPath)
+/**
+ * @brief Builds the arguments to be used later in execve
+ * @param fullScriptPath Full absolute path to the script
+ * @param param[2] The char* array to be filled with the arguments
+ */
+void CGI::buildParam(std::string &fullScriptPath, char* param[2])
 {
-	char *result[2];
-	std::memset(result[0], '\0', _executablePath.size() + 1);
-	std::memset(result[1], '\0', fullScriptPath.size() + 1);
+	std::memset(param[0], '\0', _executablePath.size() + 1);
+	std::memset(param[1], '\0', fullScriptPath.size() + 1);
 
 	std::vector<char> temp(_executablePath.begin(), _executablePath.end());
 	temp.push_back('\0');
-	result[0] = &temp[0];
+	param[0] = &temp[0];
 
 	temp.assign(fullScriptPath.begin(), fullScriptPath.end());
 	temp.push_back('\0');
-	result[1] = &temp[0];
-
-	return result;
+	param[1] = &temp[0];
 }
 
-char **CGI::buildEnv() {
-	
+/**
+ * @brief Builds the environment to be used later in execve
+ * @param env The char** reference to be filled with the environment
+ */
+void CGI::buildEnv(char**& env) {
+	(void)env;
 }
 
+/**
+ * @brief Checks whether the requested path is valid 
+ * @returns The full absolute path to the script
+ */
 std::string CGI::checkAndExtractScript()
 {
 	const std::string &exec = _request.getPurePath();
@@ -178,6 +189,7 @@ void CGI::executeCGI()
 	std::string output;
 	std::string fullScriptPath = checkAndExtractScript();
 	const std::string &exec = _request.getPurePath();
+	(void)exec;
 
 	pipeAndFork();
 	if (_request.getMethod() == "POST")
@@ -188,9 +200,13 @@ void CGI::executeCGI()
 		setChildPipe();
 		if (_request.getMethod() == "POST")
 			setPostDup();
-		char **param = buildParam(fullScriptPath);
-		char **env = buildEnv();
-		execve(_pythonPath.c_str(), param, env);
+
+		char *param[2];
+		buildParam(fullScriptPath, param);
+
+		char **env;
+		buildEnv(env);
+		// execve(_pythonPath.c_str(), param, env);
 		throw Tools::Exception(42, "CGI: child failed to execute");
 	}
 	else
@@ -255,7 +271,8 @@ std::vector<std::pair<std::string, std::string> > CGI::parseOutput()
 {
 	// IT NEED TO SET THE _status as well
 	// BUT NOT ADD IT TO THE VECTOR
-
+	std::vector<std::pair<std::string, std::string> > result;
+	return result;
 }
 
 std::pair<std::string, std::string> *getPairFromHeaders(std::vector<std::pair<std::string, std::string> > &headers, const std::string &target)

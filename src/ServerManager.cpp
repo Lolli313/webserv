@@ -144,6 +144,9 @@ void TEST_RESPONSE(Client *client, int code, const std::string &message, const s
 	send(client->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
 }
 
+/**
+ * @brief Finds and returns the correct port based on the client's socket FD
+ */
 const std::string &ServerManager::findPort(int eventFD)
 {
 	std::vector<ServerSocket *>::const_iterator it = _serverSocketArray.begin();
@@ -155,6 +158,9 @@ const std::string &ServerManager::findPort(int eventFD)
 	return _serverSocketArray[0]->getPort();
 }
 
+/**
+ * @brief Builds an object `std::pair<std::string, std::string>` based on `Server Name` and `Port`
+ */
 std::pair<std::string, std::string> buildHostPair(const std::string &str, const std::string &port)
 {
 	std::vector<std::string> split = Tools::splitString(str, ":");
@@ -169,6 +175,9 @@ std::pair<std::string, std::string> buildHostPair(const std::string &str, const 
 	return std::make_pair(split[0], split[1]);
 }
 
+/**
+ * @brief Find the correct `Server` object based on request's `Server Name` and `Port`
+ */
 Server *ServerManager::findServer(const std::string &host, const std::string &port)
 {
 	std::pair<std::string, std::string> hostPair = buildHostPair(host, port);
@@ -194,6 +203,9 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 	throw Tools::Exception(500, "Error finding server");
 }
 
+/**
+ * @brief Find the matching `ConfigBase` object based on the client's request and return it
+ */
 const ConfigBase *ServerManager::findConfigBase(Client &client, const HttpRequest &request)
 {
 	std::string port = findPort(client.getFD());
@@ -210,20 +222,18 @@ const ConfigBase *ServerManager::findConfigBase(Client &client, const HttpReques
 	return &server->getPathConfig(modifiableString);
 }
 
+/**
+ * @brief Check if request's path has a return directive or a method that isn't allowed/implemented
+ */
 void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &method)
 {
 	if (config->getReturnDirective().first)
-	{
-		// LOG(INFO, LIGHT_BLUE, "Found return directive with code " + Tools::intToString(config->getReturnDirective().first));
 		throw Tools::Exception(config->getReturnDirective().first, config->getReturnDirective().second);
-	}
 
 	std::set<std::string>::const_iterator it = config->getAllowMethods().find(method);
 	if (it == config->getAllowMethods().end())
-	{
-		// LOG(INFO, LIGHT_BLUE, method + " method not allowed");
 		throw Tools::Exception(405, "Method not allowed");
-	}
+
 	if (method != "GET" && method != "POST" && method != "DELETE")
 		throw Tools::Exception(501, "Method " + method + " not implemented");
 }
@@ -295,6 +305,19 @@ const std::string ServerManager::execute(const HttpRequest &request, const Confi
 	return response;
 }
 
+void ServerManager::setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, Client *> &it)
+{
+	// Remove from epoll
+	_polling->deleteFdFromEpoll(eventFD);
+	Tools::closeAndResetFD(eventFD);
+	// Parse the CGI output and get the headers
+	it.second->setResponseBuff(it.first->getResponse());
+	it.second->setDoneReceiving(true);
+	it.second->setResponseToBeSent(true);
+	_CGImap.erase(it.first);
+	handleResponse(it.second);
+}
+
 /**
  * @brief If using the Config file error page and opening the ERROR_PAGE_TEMPLATE_PATH both fail for whatever reason,
  * this function generates a hardcoded, very minimal error page.
@@ -308,6 +331,13 @@ const std::string generateFallBackPage()
 
 const std::string generateErrorPage(int code);
 
+/**
+ * @brief Read error file into a string and return it
+ * @param errorPath Path of the error file
+ * @param code HTML error code
+ * @param isPredefined Whether `code` has a predefined error file path mentioned in the config file
+ * @attention May return a file with template `{(CODE)}` and `{(MESSAGE)}` strings that should to be replaced if `isPredefined` is false
+ */
 const std::string readErrorFile(const std::string &errorPath, int code, bool isPredefined)
 {
 	int fd = open(errorPath.c_str(), O_RDONLY);
@@ -333,17 +363,23 @@ const std::string readErrorFile(const std::string &errorPath, int code, bool isP
 	return finalString;
 }
 
+/**
+ * @brief Generate and return HTML error file body
+ */
 const std::string generateErrorPage(int code)
 {
 	const char *workingDirectory = std::getenv("PWD");
 	std::string errorPagePath = ERROR_PAGE_TEMPLATE_PATH;
 	std::string fullPath(std::string(workingDirectory) + errorPagePath);
 	std::string fileContent = readErrorFile(fullPath, code, false);
-	Tools::findAndReplaceAllOccurences(fileContent, TEMPLATE_ERROR_CODE, Tools::intToString(code));
-	Tools::findAndReplaceAllOccurences(fileContent, TEMPLATE_ERROR_MESSAGE, HttpTools::getHttpReturnMessage(code));
+	Tools::findAndReplaceAllOccurrences(fileContent, TEMPLATE_ERROR_CODE, Tools::intToString(code));
+	Tools::findAndReplaceAllOccurrences(fileContent, TEMPLATE_ERROR_MESSAGE, HttpTools::getHttpReturnMessage(code));
 	return fileContent;
 }
 
+/**
+ * @brief Creates and returns a HTML responses for the redirect HTML codes `300`-`308`
+ */
 const std::string handleRedirect(Tools::Exception &e)
 {
 	HttpResponse response(HttpTools::getReturnPair(302));
@@ -364,19 +400,9 @@ const std::string handleRedirect(Tools::Exception &e)
 	return response.getFinalResponse();
 }
 
-void ServerManager::setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, Client *> &it)
-{
-	// Remove from epoll
-	_polling->deleteFdFromEpoll(eventFD);
-	Tools::closeAndResetFD(eventFD);
-	// Parse the CGI output and get the headers
-	it.second->setResponseBuff(it.first->getResponse());
-	it.second->setDoneReceiving(true);
-	it.second->setResponseToBeSent(true);
-	_CGImap.erase(it.first);
-	handleResponse(it.second);
-}
-
+/**
+ * @brief Creates and returns a HTML "error" response for HTTP codes that aren't redirect codes `300` - `308`
+ */
 const std::string handleOtherCodes(const ConfigBase *config, const int httpCode)
 {
 	std::string errorBody;
@@ -410,6 +436,9 @@ const std::string handleOtherCodes(const ConfigBase *config, const int httpCode)
 	return response.getFinalResponse();
 }
 
+/**
+ * @brief HTML error code handler
+ */
 void ServerManager::throwHandler(Client *client, Tools::Exception &e, const ConfigBase *config, bool reThrow)
 {
 	if (!client)

@@ -23,7 +23,7 @@ private:
 	std::size_t _postPos;
 
 public:
-	CGI() {};
+	// CGI() {};
 	CGI(const HttpRequest& request, const ConfigBase *config);
 	CGI(const CGI &obj);
 	CGI &operator=(const CGI &obj);
@@ -56,9 +56,9 @@ public:
 	std::string checkAndExtractScript();
 	void setChildPipe();
 	void setPostDup();
-	char **buildParam(std::string& fullScriptPath);
-	char **buildEnv();
+	void buildParam(std::string& fullScriptPath, char* param[2]);
+	void buildEnv(char**& env);
 	const std::string getResponse();
 
-	std::vector<std::pair<std::string, std::string> > CGI::parseOutput();
+	std::vector<std::pair<std::string, std::string> > parseOutput();
 };

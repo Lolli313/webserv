@@ -72,7 +72,10 @@ const std::string &Tools::Exception::getMsgLog() const { return _msgLog; }
 =================================================================
 */
 
-// Split an input (string) according to any isspace() character
+/**
+ * @brief Split an input (string) according to any isspace() character
+ * @returns A vector of the split string
+ */
 std::vector<std::string> Tools::splitString(const std::string &str)
 {
 	std::vector<std::string> returnVector;
@@ -84,7 +87,10 @@ std::vector<std::string> Tools::splitString(const std::string &str)
 	return returnVector;
 }
 
-// Split an input (string) according to a separator (string)
+/**
+ * @brief Split an `input` (string) according to a `separator` (string)
+ * @returns A vector of the split string 
+ */
 std::vector<std::string> Tools::splitString(const std::string &input, const std::string &separator)
 {
 	std::vector<std::string> returnVector;
@@ -101,18 +107,26 @@ std::vector<std::string> Tools::splitString(const std::string &input, const std:
 	return (returnVector);
 }
 
-// Returns a reference of the last character of a string
+/**
+ * @brief Returns a reference to the last character of a string
+ */
 const char &Tools::getLastCharacter(const std::string &str)
 {
 	return *str.rbegin();
 }
 
+/**
+ * @brief Removes the last character of a string
+ */
 void Tools::removeLastCharacter(std::string &str)
 {
 	if (!str.empty())
 		str.resize(str.size() - 1);
 }
 
+/**
+ * @brief Erases the contents of the string after the last occurrence of character `c`
+ */
 void Tools::eraseAfterLastCharacter(std::string &str, char c)
 {
 	std::string::size_type pos = str.find_last_of(c);
@@ -123,7 +137,8 @@ void Tools::eraseAfterLastCharacter(std::string &str, char c)
 }
 
 /**
- * @attention Does not include char c in the result string 
+ * @brief Returns a substring from the position + 1 where the character `c` is found. If not found, returns an empty string
+ * @attention Does not include char c in the result string
  */
 std::string Tools::getStringAfterLastCharacter(const std::string& src, const char c) {
 	std::string::size_type pos = src.find_last_of(c);
@@ -133,6 +148,9 @@ std::string Tools::getStringAfterLastCharacter(const std::string& src, const cha
 	return src.substr(pos + 1);
 }
 
+/**
+ * @returns A const iterator of the last element of a string
+ */
 const std::string::const_iterator Tools::getLastIterator(const std::string &str)
 {
 	if (str.empty())
@@ -140,6 +158,9 @@ const std::string::const_iterator Tools::getLastIterator(const std::string &str)
 	return str.end() - 1;
 }
 
+/**
+ * @returns A non-const iterator of the last element of a string
+ */
 std::string::iterator Tools::getLastIterator(std::string &str)
 {
 	if (str.empty())
@@ -147,7 +168,9 @@ std::string::iterator Tools::getLastIterator(std::string &str)
 	return str.end() - 1;
 }
 
-// Checks whether a string contains only digits (0-9)
+/**
+ * @returns Whether a string contains only digits (0-9)
+ */
 bool Tools::isNumber(const std::string &str)
 {
 	for (std::string::const_iterator it = str.begin(); it != str.end(); it++)
@@ -160,6 +183,7 @@ bool Tools::isNumber(const std::string &str)
  * @brief Checks whether the tokens vector has one the following formats:
  *
  * targetToken
+ * 
  * {
  *
  * OR
@@ -189,6 +213,10 @@ bool Tools::isValidBraceFormat(const std::string &targetToken, const std::vector
 	return false;
 }
 
+/**
+ * @brief Checks whether a string has a semicolon as its last character and removes it
+ * @returns Whether string has a trailing semicolon
+ */
 bool Tools::checkAndRemoveSemicolon(std::string &str)
 {
 	if (Tools::getLastCharacter(str) == ';')
@@ -199,6 +227,9 @@ bool Tools::checkAndRemoveSemicolon(std::string &str)
 	return false;
 }
 
+/**
+ * @returns the string format of an int
+ */
 std::string Tools::intToString(int nbr)
 {
 	std::ostringstream oss;
@@ -206,6 +237,9 @@ std::string Tools::intToString(int nbr)
 	return oss.str();
 }
 
+/**
+ * @returns the string format of a size_t number
+ */
 std::string Tools::size_tToString(std::size_t nbr)
 {
 	std::ostringstream oss;
@@ -213,12 +247,18 @@ std::string Tools::size_tToString(std::size_t nbr)
 	return oss.str();
 }
 
+/**
+ * @returns String format of a boolean (`true` or `false`)
+ */
 std::string Tools::boolToString(bool b)
 {
 	return b ? "true" : "false";
 }
 
-void Tools::findAndReplaceAllOccurences(std::string &input, const std::string &replaceWord, const std::string &replaceBy)
+/**
+ * @brief Finds all occurrences of string `replaceWord` inside `input` and replaces them with `replaceBy`
+ */
+void Tools::findAndReplaceAllOccurrences(std::string &input, const std::string &replaceWord, const std::string &replaceBy)
 {
 	std::size_t pos = input.find(replaceWord);
 	while (pos != std::string::npos)
@@ -241,23 +281,35 @@ bool Tools::lineIsEmptyOrComment(std::string &str)
 	return (str[pos] == '#');
 }
 
+/**
+ * @brief Transforms the given string to lowercase
+ */
 void Tools::transformStringToLowecase(std::string &str)
 {
 	for (std::size_t i = 0; i < str.size(); i++)
 		str[i] = std::tolower(str[i]);
 }
 
+/**
+ * @returns Whether input string `str` starts with character `c`
+ */
 bool Tools::stringStartsWithCharacter(const std::string &str, char c)
 {
 	return (!str.empty() && str[0] == c);
 }
 
+/**
+ * @returns Whether the given file exists
+ */
 bool Tools::fileExists(const char *filename)
 {
 	std::ifstream file(filename);
 	return file.good();
 }
 
+/**
+ * @brief Format: Hour:Minute:Second GMT
+ */
 std::string Tools::getTimeOfDay()
 {
 	std::time_t now = std::time(NULL);
@@ -271,6 +323,9 @@ std::string Tools::getTimeOfDay()
 	return std::string(buffer);
 }
 
+/**
+ * @brief Format: Weekday, Day Month Year Hour:Minute:Second GMT
+ */
 std::string Tools::getExtendedTimeOfDay()
 {
 	std::time_t now = std::time(NULL);
@@ -284,6 +339,9 @@ std::string Tools::getExtendedTimeOfDay()
 	return std::string(buffer);
 }
 
+/**
+ * @returns Whether the given string is a valid socket port (0 - 65535)
+ */
 bool Tools::isValidPort(const std::string &port)
 {
 	if (port.size() > 5 && !Tools::isNumber(port))
@@ -296,6 +354,9 @@ bool Tools::isValidPort(const std::string &port)
 	return true;
 }
 
+/**
+ * @returns Whether the given path is a directory
+ */
 bool Tools::isDirectory(const char *path)
 {
 	struct stat info;
@@ -305,6 +366,9 @@ bool Tools::isDirectory(const char *path)
 	return (info.st_mode & S_IFDIR) != 0;
 }
 
+/**
+ * @returns Whether the given file path is executable
+ */
 bool Tools::isExecutable(const char *path) {
 	if (access(path, F_OK | X_OK) == 0)
 		return true;
@@ -327,6 +391,9 @@ bool Tools::closeAndResetFD(int &fd)
 	return false;
 }
 
+/**
+ * @returns The Content-Type of a given file. If not found/valid, returns an empty string
+ */
 const std::string Tools::getExtension(const std::string &path)
 {
 	std::string::size_type pos = path.rfind(".");
