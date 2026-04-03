@@ -122,6 +122,17 @@ void Tools::eraseAfterLastCharacter(std::string &str, char c)
 	}
 }
 
+/**
+ * @attention Does not include char c in the result string 
+ */
+std::string Tools::getStringAfterLastCharacter(const std::string& src, const char c) {
+	std::string::size_type pos = src.find_last_of(c);
+	if (pos == std::string::npos)
+		return "";
+
+	return src.substr(pos + 1);
+}
+
 const std::string::const_iterator Tools::getLastIterator(const std::string &str)
 {
 	if (str.empty())

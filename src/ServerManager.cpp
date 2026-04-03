@@ -364,6 +364,17 @@ const std::string handleRedirect(Tools::Exception &e)
 	return response.getFinalResponse();
 }
 
+void ServerManager::deleteCGI(int eventFD, const std::pair<CGI *, Client *> &it)
+{
+	_polling->deleteFdFromEpoll(eventFD);
+	Tools::closeAndResetFD(eventFD);
+	it.second->setResponseBuff(it.first->getBuffer());
+	it.second->setDoneReceiving(true);
+	it.second->setResponseToBeSent(true);
+	handleResponse(it.second);
+	_CGImap.erase(it.first);
+}
+
 const std::string handleOtherCodes(const ConfigBase *config, const int httpCode)
 {
 	std::string errorBody;
@@ -500,7 +511,7 @@ void ServerManager::existingClient(Client *client)
 			handleReturnAndAllowMethod(config, request.getMethod());
 
 			client->setResponseBuff(execute(request, config, client)); // on envoie le client
-			if(client->getResponseBuff().empty())
+			if (client->getResponseBuff().empty())
 				client->setResponseToBeSent(true);
 			handleResponse(client);
 		}
@@ -571,29 +582,24 @@ void ServerManager::router(int eventFD)
 		std::map<CGI *, Client *>::const_iterator it = _CGImap.begin();
 		for (; it != _CGImap.end(); ++it)
 		{
+			// It's a CGI
 			if (it->first->getPipeOut() == eventFD)
 			{
-				break;
+				if (it->first->readCgiOutput())
+					deleteCGI(eventFD, *it);
+				return;
 			}
+			// It's the POST write end of the CGI
+			else if (it->first->getPostPipeIn() == eventFD)
+			{
+				it->first->handlePostCGI();
+				return;
+			}
+			// SI EOF de handleCGI
+			// pour la reponse on cherche si c'est GET POST OU DELETE dans _buffer de client
+			// retirer de la map le eventFD finit donc le parent
+			// on envoie la reponse
 		}
-
-		if (it->first->handleCGI())
-		{
-			// Make all of this in one function.
-			_polling->deleteFdFromEpoll(eventFD);
-			Tools::closeAndResetFD(eventFD);
-			it->second->setResponseBuff(it->first->getBuffer());
-			it->second->setDoneReceiving(true);
-			it->second->setResponseToBeSent(true);
-			handleResponse(it->second);
-
-			_CGImap.erase(it->first);
-		}
-
-		// SI EOF de handleCGI
-		// pour la reponse on cherche si c'est GET POST OU DELETE dans _buffer de client
-		// retirer de la map le eventFD finit donc le parent
-		// on envoie la reponse
 	}
 }
 
