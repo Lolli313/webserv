@@ -147,7 +147,7 @@ char **CGI::buildEnv() {
 	
 }
 
-const std::string CGI::checkAndExtractScript()
+std::string CGI::checkAndExtractScript()
 {
 	const std::string &exec = _request.getPurePath();
 	const std::string &scriptName = Tools::getStringAfterLastCharacter(exec, '/');
@@ -156,8 +156,12 @@ const std::string CGI::checkAndExtractScript()
 		throw Tools::Exception(403, "Script extension is forbidden");
 
 	const std::string fullPath = _config->getRoot() + exec;
+	if (!Tools::isDirectory(fullPath.c_str()))
+		throw Tools::Exception(403, "File path is a directory");
 	if (!Tools::fileExists(fullPath.c_str()))
 		throw Tools::Exception(404, "Script not found");
+	if (!Tools::isExecutable(fullPath.c_str()))
+		throw Tools::Exception(403, "Permission mismatch");
 
 	if (extension == ".py")
 		_executablePath = _config->getCGIPaths()._pythonPath;
@@ -171,7 +175,7 @@ void CGI::executeCGI()
 {
 	LOG(DEBUG, "SCRIPT");
 	std::string output;
-	std::string &fullScriptPath = checkAndExtractScript();
+	std::string fullScriptPath = checkAndExtractScript();
 	const std::string &exec = _request.getPurePath();
 
 	pipeAndFork();
@@ -241,4 +245,13 @@ void CGI::setCGI()
 	_postPipesFDs[1] = -1;
 	if (!Tools::fileExists(_request.getPurePath().c_str()))
 		throw Tools::Exception(404, "CGI: file not found");
+}
+
+/**
+ * @brief Parse the CGI output and give a formatted HttpResponse.
+ * @return formatted and ready to send HttpResponse.
+ */
+const std::string CGI::getResponse()
+{
+
 }

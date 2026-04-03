@@ -52,9 +52,10 @@ public:
 	void pipeAndFork();
 	void setPostPipe();
 	bool handlePostCGI();
-	const std::string checkAndExtractScript();
+	std::string checkAndExtractScript();
 	void setChildPipe();
 	void setPostDup();
 	char **buildParam(std::string& fullScriptPath);
 	char **buildEnv();
+	const std::string getResponse();
 };

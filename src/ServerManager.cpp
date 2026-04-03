@@ -364,15 +364,17 @@ const std::string handleRedirect(Tools::Exception &e)
 	return response.getFinalResponse();
 }
 
-void ServerManager::deleteCGI(int eventFD, const std::pair<CGI *, Client *> &it)
+void ServerManager::setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, Client *> &it)
 {
+	// Remove from epoll
 	_polling->deleteFdFromEpoll(eventFD);
 	Tools::closeAndResetFD(eventFD);
-	it.second->setResponseBuff(it.first->getBuffer());
+	// Parse the CGI output and get the headers
+	it.second->setResponseBuff(it.first->getResponse());
 	it.second->setDoneReceiving(true);
 	it.second->setResponseToBeSent(true);
-	handleResponse(it.second);
 	_CGImap.erase(it.first);
+	handleResponse(it.second);
 }
 
 const std::string handleOtherCodes(const ConfigBase *config, const int httpCode)
@@ -586,7 +588,7 @@ void ServerManager::router(int eventFD)
 			if (it->first->getPipeOut() == eventFD)
 			{
 				if (it->first->readCgiOutput())
-					deleteCGI(eventFD, *it);
+					setResponseAndDeleteCGI(eventFD, *it);
 				return;
 			}
 			// It's the POST write end of the CGI
@@ -595,10 +597,6 @@ void ServerManager::router(int eventFD)
 				it->first->handlePostCGI();
 				return;
 			}
-			// SI EOF de handleCGI
-			// pour la reponse on cherche si c'est GET POST OU DELETE dans _buffer de client
-			// retirer de la map le eventFD finit donc le parent
-			// on envoie la reponse
 		}
 	}
 }

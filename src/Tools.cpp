@@ -301,11 +301,16 @@ bool Tools::isDirectory(const char *path)
 	struct stat info;
 
 	if (stat(path, &info) != 0)
-	{
 		return false;
-	}
 	return (info.st_mode & S_IFDIR) != 0;
 }
+
+bool Tools::isExecutable(const char *path) {
+	if (access(path, F_OK | X_OK) == 0)
+		return true;
+	return false;
+}
+
 
 /**
  * @brief if the fd is higher than -1, close it and set it to -1.

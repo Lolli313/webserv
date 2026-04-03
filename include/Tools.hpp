@@ -88,6 +88,7 @@ public:
 	static std::string getExtendedTimeOfDay();
 	static bool isValidPort(const std::string &port);
 	static bool isDirectory(const char *path);
+	static bool isExecutable(const char *path);
 	static bool closeAndResetFD(int &fd);
 	static const std::string getExtension(const std::string &path);
 };
