@@ -247,11 +247,38 @@ void CGI::setCGI()
 		throw Tools::Exception(404, "CGI: file not found");
 }
 
+std::vector<std::pair<std::string, std::string> > CGI::parseOutput()
+{
+
+}
+
+int getAndEraseStatus(std::vector<std::pair<std::string, std::string> > &headers)
+{
+	for (std::vector<std::pair<std::string, std::string> >::const_iterator it = headers.begin(); it != headers.end(); it++)
+	{
+		if (it->first == "Status")
+		{
+			headers.erase(it);
+			return std::atoi(it->second.c_str());
+		}
+	}
+	return 0;
+}
+
 /**
  * @brief Parse the CGI output and give a formatted HttpResponse.
  * @return formatted and ready to send HttpResponse.
  */
 const std::string CGI::getResponse()
 {
+	int status = 0;
+	std::vector<std::pair<std::string, std::string> > headers = parseOutput();
 
+	status = getAndEraseStatus(headers);
+	if (!status)
+		throw Tools::Exception(500, "CGI: no header Status in response");
+	
+	HttpResponse response(HttpTools::getReturnPair(status));
+	response.setResponseHeaders(headers);
+	return response.getFinalResponse();
 }

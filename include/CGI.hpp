@@ -2,6 +2,7 @@
 
 #include "ConfigBase.hpp"
 #include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 #include "Tools.hpp"
 #include <string>
 
@@ -58,4 +59,6 @@ public:
 	char **buildParam(std::string& fullScriptPath);
 	char **buildEnv();
 	const std::string getResponse();
+
+	std::vector<std::pair<std::string, std::string> > CGI::parseOutput();
 };
