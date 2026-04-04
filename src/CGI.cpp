@@ -10,10 +10,11 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-CGI::CGI(const HttpRequest &request, const ConfigBase *config) : _request(request),
-																 _config(config),
-																 _cgiBinPath(config->getCGIPaths()._scriptFolderPath),
-																 _responseStatus(200)
+CGI::CGI(const HttpRequest &request, const ConfigBase *config) :
+	_request(request),
+	_config(config),
+	_cgiBinPath(config->getCGIPaths()._scriptFolderPath),
+	_responseStatus(200)
 {
 	try
 	{
@@ -132,40 +133,61 @@ void CGI::setChildPipe()
  * @param fullScriptPath Full absolute path to the script
  * @param param[2] The char* array to be filled with the arguments
  */
-void CGI::buildParam(std::string &fullScriptPath, char *param[2])
-{
-	std::memset(param[0], '\0', _executablePath.size() + 1);
-	std::memset(param[1], '\0', fullScriptPath.size() + 1);
-
-	std::vector<char> temp(_executablePath.begin(), _executablePath.end());
-	temp.push_back('\0');
-	param[0] = &temp[0];
-
-	temp.assign(fullScriptPath.begin(), fullScriptPath.end());
-	temp.push_back('\0');
-	param[1] = &temp[0];
+void CGI::buildParam(std::string &fullScriptPath, char *param[3]) {
+	param[0] = const_cast<char*>(_executablePath.c_str());
+	param[1] = const_cast<char*>(fullScriptPath.c_str());
+	param[2] = NULL;
 }
 
-const std::string buildMetaVariable(const std::string &key, const std::string &value)
-{
+const std::string buildMetaVariable(const std::string &key, const std::string &value) {
 	return key + "=" + value;
+}
+
+const std::string transformMapToQueryString(const std::map<std::string, std::string>& queryMap) {
+	std::map<std::string, std::string>::const_iterator it = queryMap.begin();
+	std::string result;
+	for (; it != queryMap.end(); it++) {
+		if (!result.empty())
+			result += "&";
+		result += it->first + "=" + it->second;
+	}
+	return result;
 }
 
 /**
  * @brief Builds the environment to be used later in execve
- * @param env The char** reference to be filled with the environment
+ * @param env The char** reference to be filled with the environment for execve
+ * @param envVector 
  */
-void CGI::buildEnv(char **&env)
+void CGI::buildEnv(char **&env, std::vector<std::string>& envVector)
 {
-	std::vector<std::string> envBuildVector;
+	std::string temp;
 	if (!_request.getBody().empty())
 	{
-		std::string temp;
 		if ((temp = _request.findHeader("content-length")) == "")
-			throw Tools::Exception(500, "No Content-Length header not found unexcepectedly");
-		envBuildVector.push_back(buildMetaVariable("CONTENT_LENGTH", temp));
-		envBuildVector.push_back(buildMetaVariable("CONTENT_TYPE", _request.getHeader().find("content-type")->second));
+			throw Tools::Exception(500, "No Content-Length header found unexpectedly");
+		envVector.push_back(buildMetaVariable("CONTENT_LENGTH", temp));
+		if ((temp = _request.findHeader("content-type")) == "")
+			throw Tools::Exception(500, "No Content-Type header found unexpectedly");
+		envVector.push_back(buildMetaVariable("CONTENT_TYPE", temp));
 	}
+	envVector.push_back(buildMetaVariable("GATEWAY_INTERFACE", "CGI/1.1"));
+	envVector.push_back(buildMetaVariable("QUERY_STRING", transformMapToQueryString(_request.getQueryParams())));
+
+	char* ip = inet_ntoa(_request.getClientAddr().sin_addr);
+	std::string ipStr = (ip) ? ip : "127.0.0.1";
+	envVector.push_back(buildMetaVariable("REMOTE_ADDR", ipStr));
+	envVector.push_back(buildMetaVariable("REQUEST_METHOD", _request.getMethod()));
+	envVector.push_back(buildMetaVariable("SERVER_NAME", _request.getServerName()));
+	envVector.push_back(buildMetaVariable("SERVER_PORT", _request.getPort()));
+	envVector.push_back(buildMetaVariable("SERVER_PROTOCOL", _request.getHttpVersion()));
+	envVector.push_back(buildMetaVariable("SERVER_SOFTWARE", "webserv/1.1"));
+
+	env = new char*[envVector.size() + 1];
+	for (std::size_t i = 0; i < envVector.size(); i++) {
+		env[i] = const_cast<char*>(envVector[i].c_str());
+	}
+	env[envVector.size()] = NULL;
 }
 
 /**
@@ -217,12 +239,16 @@ void CGI::executeCGI()
 		if (methodIsPost)
 			setPostDup();
 
-		char *param[2];
+		char *param[3] = {0};
 		buildParam(fullScriptPath, param);
 
 		char **env;
-		buildEnv(env);
-		execve(_executablePath.c_str(), param, env);
+		std::vector<std::string> envVector;
+		buildEnv(env, envVector);
+
+		execve(param[0], param, env);
+
+		delete[] env;
 		throw Tools::Exception(42, "CGI: child failed to execute");
 	}
 	else
@@ -306,7 +332,7 @@ std::vector<std::pair<std::string, std::string> > CGI::parseOutput()
 	headers.push_back(CONTENT_TYPE);
 	headers.push_back(STATUS);
 
-	std::size_t end = _buffer.find(CRLF + std::string(CRLF));
+	std::size_t end = _buffer.rfind(CRLF);
 
 	if (end == std::string::npos)
 		throw Tools::Exception(500, "CGI: no CRLF in script output");
@@ -363,5 +389,6 @@ const std::string CGI::getResponse()
 	response.addDateHeader();
 	response.setResponseHeaders(headers);
 	response.setBody(_buffer);
+	response.addHeader(CONTENT_LENGTH, Tools::intToString(_buffer.size()));
 	return response.getFinalResponse();
 }

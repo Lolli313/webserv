@@ -172,7 +172,7 @@ void HttpRequest::parse(const std::string &request) {
     	bodyStream << line << "\n";
 	}
 	_body = bodyStream.str();
-	print();
+	// print();
 }
 
 void HttpRequest::cookie(Cookie &cookie) {

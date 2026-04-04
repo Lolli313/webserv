@@ -5,6 +5,10 @@
 #include "ConfigBase.hpp"
 #include "HttpTools.hpp"
 #include "Tools.hpp"
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <string>
 
 class CGI
@@ -16,6 +20,7 @@ private:
 	// ConfigBase* _config;
 	std::string _executablePath;
 	std::string _buffer;
+	std::string _scriptName;
 	int _pid;
 	int _pipeFDs[2];
 	int _postPipesFDs[2];
@@ -57,8 +62,8 @@ public:
 	std::string checkAndExtractScript();
 	void setChildPipe();
 	void setPostDup();
-	void buildParam(std::string& fullScriptPath, char* param[2]);
-	void buildEnv(char**& env);
+	void buildParam(std::string& fullScriptPath, char* param[3]);
+	void buildEnv(char**& env, std::vector<std::string>& envBuildVector);
 	const std::string getResponse();
 
 	std::vector<std::pair<std::string, std::string> > parseOutput();

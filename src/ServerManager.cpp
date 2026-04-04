@@ -266,6 +266,11 @@ void checkBodySize(std::size_t size, std::size_t max)
 		throw Tools::Exception(413, "body above max body size");
 }
 
+bool isValidCgiPath(const HttpRequest &request, const ConfigBase *config) {
+	LOG(DEBUG, "Config has CGI: " + Tools::boolToString(config->hasCGI()));
+	return (config->hasCGI() && !request.getPurePath().compare(0, config->getCGIPaths()._scriptFolderPath.size(), config->getCGIPaths()._scriptFolderPath));
+}
+
 /**
  * @brief execute the HTTP method or the CGI and return the formatted HTTP response.
  * @return the formatted HTTP response in case of success
@@ -276,8 +281,9 @@ const std::string ServerManager::execute(const HttpRequest &request, const Confi
 	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
 
-	if (config->hasCGI() && !request.getPurePath().compare(0, config->getCGIPaths()._scriptFolderPath.size(), config->getCGIPaths()._scriptFolderPath))
+	if (isValidCgiPath(request, config))
 	{
+		LOG(INFO, "Initiating CGI");
 		CGI *cgi = new CGI(request, config);
 		_CGImap[cgi] = client;
 		_polling->addFdToEpoll(cgi->getPipeOut(), EPOLLIN);
