@@ -61,9 +61,9 @@ public:
 	std::map<std::pair<int, std::string>, Server*> setupServersMap();
 	std::set<int> setupServSockFDs();
 	const std::string& findPort(int eventFD);
-	Server* findServer(const std::string& host, const std::string& port);
+	Server* findServer(const std::string& host, const std::string& port, HttpRequest& request);
 	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
-	const ConfigBase *findConfigBase(Client &client, const HttpRequest &request);
+	const ConfigBase *findConfigBase(Client &client, HttpRequest &request);
 	void existingClient(Client *client);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();

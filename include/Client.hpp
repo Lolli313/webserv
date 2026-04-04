@@ -4,8 +4,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <string>
 #include <cstring>
+#include <string>
 #include <ctime>
 
 #define BUFFERSIZE 4096
@@ -48,6 +48,8 @@ public:
 
 	std::string &getBuffer();
 	void setBuffer(const std::string &input);
+
+	sockaddr_in getClientAddr() const;
 	
 	char *getTmpBufferPtr();
 	

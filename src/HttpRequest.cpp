@@ -23,6 +23,17 @@ HttpRequest::HttpRequest() :
 	_boundary(""),
 	_body("") {}
 
+HttpRequest::HttpRequest(const sockaddr_in& clientAddr) :
+	_methodStr(""),
+	_path(""),
+	_purePath(""),
+	_queryParams(),
+	_httpVersion(""),
+	_header(),
+	_boundary(""),
+	_body(""),
+	_clientAddr(clientAddr) {}
+
 HttpRequest::HttpRequest(const HttpRequest &other) :
 	_methodStr(other._methodStr),
 	_path(other._path),

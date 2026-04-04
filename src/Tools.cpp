@@ -89,7 +89,7 @@ std::vector<std::string> Tools::splitString(const std::string &str)
 
 /**
  * @brief Split an `input` (string) according to a `separator` (string)
- * @returns A vector of the split string 
+ * @returns A vector of the split string, if no separator is found, return a vector containing only the input string
  */
 std::vector<std::string> Tools::splitString(const std::string &input, const std::string &separator)
 {

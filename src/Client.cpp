@@ -92,6 +92,8 @@ int &Client::getRefFD() { return _clientFD; }
 std::string &Client::getBuffer() { return _buffer; }
 void Client::setBuffer(const std::string &input) { _buffer = input; }
 
+sockaddr_in Client::getClientAddr() const { return _clientAddr; }
+
 char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
 

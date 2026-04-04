@@ -145,7 +145,7 @@ void TEST_RESPONSE(Client *client, int code, const std::string &message, const s
 }
 
 /**
- * @brief Finds and returns the correct port based on the client's socket FD
+ * @brief Find and return the correct port based on the client's socket FD
  */
 const std::string &ServerManager::findPort(int eventFD)
 {
@@ -159,7 +159,7 @@ const std::string &ServerManager::findPort(int eventFD)
 }
 
 /**
- * @brief Builds an object `std::pair<std::string, std::string>` based on `Server Name` and `Port`
+ * @brief Build an object `std::pair<std::string, std::string>` based on `Server Name` and `Port`
  */
 std::pair<std::string, std::string> buildHostPair(const std::string &str, const std::string &port)
 {
@@ -178,17 +178,19 @@ std::pair<std::string, std::string> buildHostPair(const std::string &str, const 
 /**
  * @brief Find the correct `Server` object based on request's `Server Name` and `Port`
  */
-Server *ServerManager::findServer(const std::string &host, const std::string &port)
+Server *ServerManager::findServer(const std::string &host, const std::string &port, HttpRequest& request)
 {
 	std::pair<std::string, std::string> hostPair = buildHostPair(host, port);
 
 	int targetPort = std::atoi(hostPair.second.c_str());
 	std::pair<int, std::string> exactKey(targetPort, hostPair.first);
 
+	request.setPort(port);
 	std::map<std::pair<int, std::string>, Server *>::const_iterator it = _serversMap.find(exactKey);
 	if (it != _serversMap.end())
 	{ // found exact match for Port + Server Name
 		LOG(INFO, LIGHT_BLUE, "Found exact match for ", Tools::intToString(exactKey.first) + ":" + exactKey.second);
+		request.setServerName(it->first.second);
 		return it->second;
 	}
 
@@ -196,6 +198,7 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 	it = _serversMap.lower_bound(defaultKey); // Find the first match for targetPort regardless of the Server Name
 	if (it != _serversMap.end())
 	{
+		request.setServerName(it->first.second);
 		LOG(INFO, LIGHT_BLUE, "Found match for default port " + Tools::intToString(it->first.first) + " with server name: " + it->first.second);
 		return it->second;
 	}
@@ -206,7 +209,7 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 /**
  * @brief Find the matching `ConfigBase` object based on the client's request and return it
  */
-const ConfigBase *ServerManager::findConfigBase(Client &client, const HttpRequest &request)
+const ConfigBase *ServerManager::findConfigBase(Client &client, HttpRequest &request)
 {
 	std::string port = findPort(client.getFD());
 	(void)client;
@@ -217,7 +220,7 @@ const ConfigBase *ServerManager::findConfigBase(Client &client, const HttpReques
 		client.setToBeClosed(true);
 		throw Tools::Exception(400, "Host header missing");
 	}
-	Server *server = findServer(it->second, port);
+	Server *server = findServer(it->second, port, request);
 	std::string modifiableString(request.getPath());
 	return &server->getPathConfig(modifiableString);
 }
@@ -534,7 +537,7 @@ void ServerManager::existingClient(Client *client)
 		std::string tmpRequest = client->bufferManager();
 		if (client->doneReceiving())
 		{
-			HttpRequest request;
+			HttpRequest request(client->getClientAddr());
 			request.parse(tmpRequest);
 
 			// Ideally we would call this function after the headers are parsed, for now it is here
