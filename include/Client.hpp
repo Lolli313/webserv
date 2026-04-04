@@ -1,8 +1,10 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <string>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <unistd.h>
+#include <string>
 #include <cstring>
 #include <ctime>
 
@@ -15,6 +17,7 @@ private:
 	int _clientFD;
 	std::string _buffer; // Receives the input
 	char _tmpBuff[BUFFERSIZE];
+	sockaddr_in _clientAddr;
 
 	std::string _responseBuff; // The response buffer
 	std::size_t _bytesSent; // Already sent bytes, an index for _responseBuff, waiting for client to send be ready to receive.
@@ -36,6 +39,7 @@ private:
 	
 public:
 	Client(int fd);
+	Client(int fd, sockaddr_in& clientAddr);
 	Client(const Client &obj);
 	~Client();
 

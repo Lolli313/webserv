@@ -17,6 +17,10 @@
 #define LF "\n"     // New line / linefeed
 #define CRLF "\r\n" // Use to separate blocs in HTTP messages (headers, body...)
 
+#define CONTENT_TYPE "Content-Type"
+#define CONTENT_LENGTH "Content-Length"
+#define STATUS "Status"
+
 #define CONTENT_TYPE_PAIRS                                                                  \
     X(".aac", "audio/aac")                                                                  \
     X(".abw", "application/x-abiword")                                                      \

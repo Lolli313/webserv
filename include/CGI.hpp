@@ -1,8 +1,9 @@
 #pragma once
 
-#include "ConfigBase.hpp"
-#include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "HttpRequest.hpp"
+#include "ConfigBase.hpp"
+#include "HttpTools.hpp"
 #include "Tools.hpp"
 #include <string>
 

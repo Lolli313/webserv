@@ -15,16 +15,33 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Client::Client(int fd) : _clientFD(fd), 
-						_bytesSent(0),
-						_doneReceiving(false), 
-						_responseToBeSent(0), 
-						_responseSent(false), 
-						_keepAlive(true), 
-						_readyToReceive(false), 
-						_toBeClosed(false),
-						_timestamp(std::time(0))
-						{
+
+Client::Client(int fd) :
+	_clientFD(fd), 
+	_bytesSent(0),
+	_doneReceiving(false), 
+	_responseToBeSent(0), 
+	_responseSent(false), 
+	_keepAlive(true), 
+	_readyToReceive(false), 
+	_toBeClosed(false),
+	_timestamp(std::time(0))
+{
+	LOG(INFO, CYAN_BRIGHT, "NEW CLIENT FD", Tools::intToString(fd));
+}
+
+Client::Client(int fd, sockaddr_in& clientAddr) :
+	_clientFD(fd),
+	_clientAddr(clientAddr),
+	_bytesSent(0),
+	_doneReceiving(false), 
+	_responseToBeSent(0), 
+	_responseSent(false), 
+	_keepAlive(true), 
+	_readyToReceive(false), 
+	_toBeClosed(false),
+	_timestamp(std::time(0))
+{
 	LOG(INFO, CYAN_BRIGHT, "NEW CLIENT FD", Tools::intToString(fd));
 }
 
@@ -33,16 +50,17 @@ Client::~Client() {
 	// close(_clientFD); 
 }
 
-Client::Client(const Client &obj) : _clientFD(obj._clientFD),
-								_bytesSent(obj._bytesSent),
-								_doneReceiving(obj._doneReceiving),  
-								_responseToBeSent(obj._responseToBeSent), 
-								_responseSent(obj._responseSent), 
-								_keepAlive(obj._keepAlive), 
-								_readyToReceive(obj._readyToReceive), 
-								_toBeClosed(obj._toBeClosed),
-								_timestamp(obj._timestamp)
-								{ 
+Client::Client(const Client &obj) :
+	_clientFD(obj._clientFD),
+	_bytesSent(obj._bytesSent),
+	_doneReceiving(obj._doneReceiving),  
+	_responseToBeSent(obj._responseToBeSent), 
+	_responseSent(obj._responseSent), 
+	_keepAlive(obj._keepAlive), 
+	_readyToReceive(obj._readyToReceive), 
+	_toBeClosed(obj._toBeClosed),
+	_timestamp(obj._timestamp)
+{ 
 	LOG(INFO, PINK, "Client copy constructor");
 	std::memcpy(_tmpBuff, obj._tmpBuff, BUFFERSIZE);
 	_buffer = obj._buffer;

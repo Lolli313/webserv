@@ -55,7 +55,7 @@ public:
 
 	void epollWaitEvent();
 	void createEpoll();
-	void addFDtoEpollAndClientMap(int targetFD, int eventFlags);
+	void addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in& clientAddr);
 	
 	void addFdToEpoll(int targetFD, int eventFlags);
 	void addClientToEpoll(Client &client);
@@ -65,7 +65,7 @@ public:
 	Client *handleExistingClient(int eventFD, uint32_t currEvent);
 	void readClientInput(Client &client);
 
-	void successfulNewSocket(int newSocket);
+	void successfulNewSocket(int newSocket, sockaddr_in& clientAddr);
 	void failedNewSocket();
 
 	void setClientEPOLLOUT(Client *client, bool add);

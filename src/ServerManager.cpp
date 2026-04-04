@@ -137,7 +137,7 @@ void TEST_RESPONSE(Client *client, int code, const std::string &message, const s
 	// body << file.rdbuf();
 	// //response.setBody(body.str());
 	// std::vector<std::pair<std::string, std::string> > tmp;
-	// tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
+	// tmp.push_back(std::make_pair<std::string, std::string>(CONTENT_LENGTH, Tools::intToString(body.str().size())));
 	// response.setResponseHeaders(tmp);
 	response.addDateHeader();
 	response.addHeader("Content-length", "0");
@@ -285,7 +285,7 @@ const std::string ServerManager::execute(const HttpRequest &request, const Confi
 		return "";
 	}
 
-	if (request.getMethod() == "GET")
+	else if (request.getMethod() == "GET")
 	{
 		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
 		response = Get::executeGet(request, config);
@@ -391,10 +391,10 @@ const std::string handleRedirect(Tools::Exception &e)
 	if (code == 300)
 	{
 		response.setBody("<a href=\"/v1\">Ver 1</a><br><a href=\"/v2\">Ver 2</a>");
-		response.addHeader("Content-Length", Tools::intToString(response.getBody().size()));
+		response.addHeader(CONTENT_LENGTH, Tools::intToString(response.getBody().size()));
 	}
 	else
-		response.addHeader("Content-Length", "0");
+		response.addHeader(CONTENT_LENGTH, "0");
 	response.addDateHeader();
 
 	return response.getFinalResponse();
@@ -428,8 +428,8 @@ const std::string handleOtherCodes(const ConfigBase *config, const int httpCode)
 		response.setReturnMessage("Custom Error");
 	}
 	response.setBody(errorBody);
-	response.addHeader("Content-Length", Tools::intToString(errorBody.size()));
-	response.addHeader("Content-Type", HttpTools::getContentType(".html"));
+	response.addHeader(CONTENT_LENGTH, Tools::intToString(errorBody.size()));
+	response.addHeader(CONTENT_TYPE, HttpTools::getContentType(".html"));
 	LOG(INFO, LIGHT_BLUE, "Error file size is", Tools::intToString(errorBody.size()));
 	response.addDateHeader();
 
@@ -542,7 +542,7 @@ void ServerManager::existingClient(Client *client)
 			handleReturnAndAllowMethod(config, request.getMethod());
 
 			client->setResponseBuff(execute(request, config, client)); // on envoie le client
-			if (client->getResponseBuff().empty())
+			if (!client->getResponseBuff().empty())
 				client->setResponseToBeSent(true);
 			handleResponse(client);
 		}

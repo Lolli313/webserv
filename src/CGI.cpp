@@ -10,11 +10,10 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-CGI::CGI(const HttpRequest &request, const ConfigBase *config) :
-	_request(request),
-	_config(config),
-	_cgiBinPath(config->getCGIPaths()._scriptFolderPath),
-	_responseStatus(200)
+CGI::CGI(const HttpRequest &request, const ConfigBase *config) : _request(request),
+																 _config(config),
+																 _cgiBinPath(config->getCGIPaths()._scriptFolderPath),
+																 _responseStatus(200)
 {
 	try
 	{
@@ -133,7 +132,7 @@ void CGI::setChildPipe()
  * @param fullScriptPath Full absolute path to the script
  * @param param[2] The char* array to be filled with the arguments
  */
-void CGI::buildParam(std::string &fullScriptPath, char* param[2])
+void CGI::buildParam(std::string &fullScriptPath, char *param[2])
 {
 	std::memset(param[0], '\0', _executablePath.size() + 1);
 	std::memset(param[1], '\0', fullScriptPath.size() + 1);
@@ -147,16 +146,30 @@ void CGI::buildParam(std::string &fullScriptPath, char* param[2])
 	param[1] = &temp[0];
 }
 
+const std::string buildMetaVariable(const std::string &key, const std::string &value)
+{
+	return key + "=" + value;
+}
+
 /**
  * @brief Builds the environment to be used later in execve
  * @param env The char** reference to be filled with the environment
  */
-void CGI::buildEnv(char**& env) {
-	(void)env;
+void CGI::buildEnv(char **&env)
+{
+	std::vector<std::string> envBuildVector;
+	if (!_request.getBody().empty())
+	{
+		std::string temp;
+		if ((temp = _request.findHeader("content-length")) == "")
+			throw Tools::Exception(500, "No Content-Length header not found unexcepectedly");
+		envBuildVector.push_back(buildMetaVariable("CONTENT_LENGTH", temp));
+		envBuildVector.push_back(buildMetaVariable("CONTENT_TYPE", _request.getHeader().find("content-type")->second));
+	}
 }
 
 /**
- * @brief Checks whether the requested path is valid 
+ * @brief Checks whether the requested path is valid
  * @returns The full absolute path to the script
  */
 std::string CGI::checkAndExtractScript()
@@ -190,15 +203,18 @@ void CGI::executeCGI()
 	std::string fullScriptPath = checkAndExtractScript();
 	const std::string &exec = _request.getPurePath();
 	(void)exec;
+	bool methodIsPost = false;
+	if (_request.getMethod() == "POST")
+		methodIsPost = true;
 
 	pipeAndFork();
-	if (_request.getMethod() == "POST")
+	if (methodIsPost)
 		setPostPipe();
 	if (_pid == 0)
 	{
 		LOG(DEBUG, "CHILD");
 		setChildPipe();
-		if (_request.getMethod() == "POST")
+		if (methodIsPost)
 			setPostDup();
 
 		char *param[2];
@@ -206,7 +222,7 @@ void CGI::executeCGI()
 
 		char **env;
 		buildEnv(env);
-		// execve(_pythonPath.c_str(), param, env);
+		execve(_executablePath.c_str(), param, env);
 		throw Tools::Exception(42, "CGI: child failed to execute");
 	}
 	else
@@ -264,14 +280,45 @@ void CGI::setCGI()
 		throw Tools::Exception(404, "CGI: file not found");
 }
 
+std::pair<std::string, std::string> findHeaderInOutput(const std::string &string, const std::string &target)
+{
+	std::size_t pos = string.find(target);
+	if (pos == std::string::npos)
+		return std::make_pair("", "");
+	std::size_t end = string.find(CRLF);
+	if (end == std::string::npos)
+		return std::make_pair("", "");
+
+	std::pair<std::string, std::string> output;
+	output.first = target;
+	output.second = string.substr(pos + target.size(), end);
+	return output;
+}
+
 /**
  * @brief Extract the headers of the CGI output.
  */
 std::vector<std::pair<std::string, std::string> > CGI::parseOutput()
 {
-	// IT NEED TO SET THE _status as well
-	// BUT NOT ADD IT TO THE VECTOR
 	std::vector<std::pair<std::string, std::string> > result;
+	std::vector<std::string> headers;
+
+	headers.push_back(CONTENT_TYPE);
+	headers.push_back(STATUS);
+
+	std::size_t end = _buffer.find(CRLF + std::string(CRLF));
+
+	if (end == std::string::npos)
+		throw Tools::Exception(500, "CGI: no CRLF in script output");
+
+	std::string subString = _buffer.substr(0, end);
+	for (std::vector<std::string>::iterator it = headers.begin(); it != headers.end(); it++)
+	{
+		std::pair<std::string, std::string> currPair = findHeaderInOutput(subString, *it);
+		if (currPair.first.empty())
+			continue;
+	}
+	_buffer.erase(0, end);
 	return result;
 }
 
@@ -285,6 +332,16 @@ std::pair<std::string, std::string> *getPairFromHeaders(std::vector<std::pair<st
 	return NULL;
 }
 
+void setStatus(const std::string &line, int &status)
+{
+	std::istringstream iss(line);
+	std::string label;
+	int code;
+
+	iss >> label >> code;
+	status = code;
+}
+
 /**
  * @brief Parse the CGI output and give a formatted HttpResponse.
  * @return formatted and ready to send HttpResponse.
@@ -294,9 +351,13 @@ const std::string CGI::getResponse()
 	std::pair<std::string, std::string> *oneHeader;
 	std::vector<std::pair<std::string, std::string> > headers = parseOutput();
 
-	oneHeader = getPairFromHeaders(headers, "Content-Type");
+	oneHeader = getPairFromHeaders(headers, CONTENT_TYPE);
 	if (!oneHeader)
 		throw Tools::Exception(500, "CGI: no Content-Type header");
+
+	oneHeader = getPairFromHeaders(headers, STATUS);
+	if (oneHeader)
+		setStatus(oneHeader->second, _responseStatus);
 
 	HttpResponse response(HttpTools::getReturnPair(_responseStatus));
 	response.addDateHeader();

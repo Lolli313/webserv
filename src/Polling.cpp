@@ -125,10 +125,10 @@ void Polling::deleteFdFromEpoll(int targetFD) {
 }
 
 // Exception on failure
-void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
+void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in& clientAddr)
 {
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
-	Client *client = new Client(targetFD);
+	Client *client = new Client(targetFD, clientAddr);
 	_clientMap[targetFD] = client;
 	_clientVector.push_back(client);
 	LOG(INFO, GREEN, "Adding FD to epoll and client maps");
@@ -172,11 +172,11 @@ void Polling::createEpoll()
 }
 
 // Exception on failure
-void Polling::successfulNewSocket(int newSocket)
+void Polling::successfulNewSocket(int newSocket, sockaddr_in& clientAddr)
 {
 	LOG(INFO, PINK, "Succesfully created new socket for client");
 	fcntl(newSocket, F_SETFL, O_NONBLOCK);
-	addFDtoEpollAndClientMap(newSocket, _newClientFlags);
+	addFDtoEpollAndClientMap(newSocket, _newClientFlags, clientAddr);
 }
 
 void Polling::failedNewSocket()
@@ -194,7 +194,7 @@ void Polling::registerNewClient(int serverSocketFD)
 
 	newSocket = accept(serverSocketFD, (sockaddr *)&clientAddr, &clientLen);
 	if (newSocket >= 0)
-		successfulNewSocket(newSocket);
+		successfulNewSocket(newSocket, clientAddr);
 	else
 		failedNewSocket();
 }

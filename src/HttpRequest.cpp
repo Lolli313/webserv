@@ -55,6 +55,11 @@ HttpRequest::~HttpRequest()	{}
 ================================================================================
 */
 
+const std::string HttpRequest::findHeader(const std::string& key) const {
+	std::map<std::string, std::string>::const_iterator it =_header.find(key);
+	return (it == _header.end() ? "" : it->second);
+}
+
 void HttpRequest::parseQueryParams() {
 	size_t queryPos = _path.find('?');
 	if (queryPos != std::string::npos) {
@@ -90,7 +95,7 @@ void HttpRequest::parse(const std::string &request) {
 
 	// parse la methode, le path et la version du http
 	std::istringstream iss(request);
-	LOG(DEBUG, request);
+	LOG(DEBUG, BLUE_BRIGHT, "Full request: " + request);
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
@@ -156,6 +161,7 @@ void HttpRequest::parse(const std::string &request) {
     	bodyStream << line << "\n";
 	}
 	_body = bodyStream.str();
+	print();
 }
 
 void HttpRequest::cookie(Cookie &cookie) {
@@ -191,7 +197,7 @@ void HttpRequest::print() const {
     LOG(DEBUG, YELLOW, "Boundary", _boundary);
     
     // Body is usually a large block, so we use the standard LOG for the content
-    LOG(DEBUG, YELLOW, "Body", "");
+    LOG(DEBUG, YELLOW, "Body", _body);
     // LOG(DEBUG, RESET, _body); 
 }
 

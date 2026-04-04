@@ -54,9 +54,10 @@ public:
   const std::map<std::string, std::string> &getHeader() const { return _header; }
   const std::string &getBoundary() const { return _boundary; }
   const std::string &getBody() const { return _body; }
-
+  
   // FUNCTIONS
-
+  
+  const std::string findHeader(const std::string& key) const;
   void cleanPath();
   void parseQueryParams();
   void parse(const std::string &request);
