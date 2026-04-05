@@ -361,14 +361,27 @@ std::pair<std::string, std::string> *getPairFromHeaders(std::vector<std::pair<st
 	return NULL;
 }
 
-void setStatus(const std::string &line, int &status)
+void setStatus(const std::string &line, int &status, std::string& statusMessage)
 {
 	std::istringstream iss(line);
 	std::string label;
 	int code;
 
-	iss >> label >> code;
+	iss >> code >> label;
+	if (code < 100 || code > 999)
+		throw Tools::Exception(500, "CGI: Response status code is invalid");
 	status = code;
+	if (!label.empty())
+		statusMessage = label;
+}
+
+void removeHeader(std::vector<std::pair<std::string, std::string> >& headers, const std::string& key) {
+	for (std::vector<std::pair<std::string, std::string> >::iterator it = headers.begin(); it != headers.end(); ++it) {
+		if (it->first == key) {
+			headers.erase(it);
+			break;
+		}
+	}
 }
 
 /**
@@ -384,12 +397,21 @@ const std::string CGI::getResponse()
 	if (!oneHeader)
 		throw Tools::Exception(500, "CGI: no Content-Type header");
 
+	std::string responseStatusMessage;
 	oneHeader = getPairFromHeaders(headers, STATUS);
-	if (oneHeader)
-		setStatus(oneHeader->second, _responseStatus);
+	if (oneHeader) {
+		setStatus(oneHeader->second, _responseStatus, responseStatusMessage);
+		// erase the Status header since that shouldn't be sent back to the client
+		removeHeader(headers, STATUS);
+	}
+
+	std::pair<int, std::string> httpPair = HttpTools::getReturnPair(_responseStatus);
+	if (httpPair.first == 0)
+		httpPair = std::make_pair(_responseStatus, responseStatusMessage);
 
 	HttpResponse response(HttpTools::getReturnPair(_responseStatus));
 	response.addDateHeader();
+	removeHeader(headers, CONTENT_LENGTH);
 	response.setResponseHeaders(headers);
 	response.setBody(_buffer);
 	response.addHeader(CONTENT_LENGTH, Tools::intToString(_buffer.size()));
