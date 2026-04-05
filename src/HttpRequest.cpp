@@ -68,7 +68,7 @@ HttpRequest::~HttpRequest()	{}
 
 const std::string HttpRequest::findHeader(const std::string& key) const {
 	std::map<std::string, std::string>::const_iterator it =_header.find(key);
-	return (it == _header.end() ? "" : it->second);
+	return ((it == _header.end()) ? "" : it->second);
 }
 
 void HttpRequest::parseQueryParams() {

@@ -44,7 +44,9 @@ public:
 	int getPipeOut() const { return _pipeFDs[0]; }
 	const std::string& getPath() const;
 	// const ConfigBase *getConfig() const;
-	const std::string& getBuffer() const {return _buffer;}
+	const std::string& getBuffer() const { return _buffer; }
+	const HttpRequest& getRequest() const { return _request; }
+	const ConfigBase* getConfig() const { return _config; }
 	// bool hasCGI() const;
 
 	// Setters

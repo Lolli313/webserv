@@ -216,7 +216,6 @@ const ConfigBase *ServerManager::findConfigBase(Client &client, HttpRequest &req
 	std::map<std::string, std::string>::const_iterator it = request.getHeader().find("host");
 	if (it == request.getHeader().end())
 	{
-		// LOG(ERROR, "Host header missing");
 		client.setToBeClosed(true);
 		throw Tools::Exception(400, "Host header missing");
 	}
@@ -317,13 +316,22 @@ const std::string ServerManager::execute(const HttpRequest &request, const Confi
 void ServerManager::setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, Client *> &it)
 {
 	// Remove from epoll
-	_polling->deleteFdFromEpoll(eventFD);
+	// _polling->deleteFdFromEpoll(eventFD);
 	Tools::closeAndResetFD(eventFD);
 	// Parse the CGI output and get the headers
-	it.second->setResponseBuff(it.first->getResponse());
+	try {
+		it.second->setResponseBuff(it.first->getResponse());
+	}
+	catch (Tools::Exception &e) {
+		_CGImap.erase(it.first);
+		const ConfigBase* config = it.first->getConfig();
+		delete it.first;
+		throwHandler(it.second, e, config, true);
+	}
+	_CGImap.erase(it.first);
+	delete it.first;
 	it.second->setDoneReceiving(true);
 	it.second->setResponseToBeSent(true);
-	_CGImap.erase(it.first);
 	handleResponse(it.second);
 }
 
