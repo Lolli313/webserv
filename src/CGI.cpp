@@ -198,12 +198,12 @@ std::string CGI::checkAndExtractScript()
 {
 	const std::string &exec = _request.getPurePath();
 	const std::string &scriptName = Tools::getStringAfterLastCharacter(exec, '/');
-	const std::string &extension = Tools::getExtension(scriptName);
-	if (extension != ".py" || extension != ".php")
+	const std::string &extension = Tools::extractExtension(scriptName);
+	if (extension != ".py" && extension != ".php")
 		throw Tools::Exception(403, "Script extension is forbidden");
 
 	const std::string fullPath = _config->getRoot() + exec;
-	if (!Tools::isDirectory(fullPath.c_str()))
+	if (Tools::isDirectory(fullPath.c_str()))
 		throw Tools::Exception(403, "File path is a directory");
 	if (!Tools::fileExists(fullPath.c_str()))
 		throw Tools::Exception(404, "Script not found");
@@ -220,7 +220,6 @@ std::string CGI::checkAndExtractScript()
 
 void CGI::executeCGI()
 {
-	LOG(DEBUG, "SCRIPT");
 	std::string output;
 	std::string fullScriptPath = checkAndExtractScript();
 	const std::string &exec = _request.getPurePath();
@@ -234,7 +233,6 @@ void CGI::executeCGI()
 		setPostPipe();
 	if (_pid == 0)
 	{
-		LOG(DEBUG, "CHILD");
 		setChildPipe();
 		if (methodIsPost)
 			setPostDup();
@@ -252,10 +250,7 @@ void CGI::executeCGI()
 		throw Tools::Exception(42, "CGI: child failed to execute");
 	}
 	else
-	{
-		LOG(DEBUG, "PARENT");
 		Tools::closeAndResetFD(_pipeFDs[1]);
-	}
 }
 
 /**
@@ -270,6 +265,7 @@ bool CGI::readCgiOutput()
 	bytesRead = read(_pipeFDs[0], buffer, BUFFERSIZE);
 	if (bytesRead > 0)
 	{
+		LOG(DEBUG, "Reading CGI output");
 		_buffer.append(buffer);
 		return false;
 	}
@@ -282,6 +278,7 @@ bool CGI::readCgiOutput()
 	}
 	else
 	{
+		LOG(DEBUG, "Finished reading CGI output");
 		Tools::closeAndResetFD(_pipeFDs[0]);
 		return true;
 	}
@@ -302,49 +299,55 @@ void CGI::setCGI()
 	_pipeFDs[1] = -1;
 	_postPipesFDs[0] = -1;
 	_postPipesFDs[1] = -1;
-	if (!Tools::fileExists(_request.getPurePath().c_str()))
+	std::string fullPath = _config->getRoot() + _request.getPurePath();
+	if (!Tools::fileExists(fullPath.c_str()))
 		throw Tools::Exception(404, "CGI: file not found");
-}
-
-std::pair<std::string, std::string> findHeaderInOutput(const std::string &string, const std::string &target)
-{
-	std::size_t pos = string.find(target);
-	if (pos == std::string::npos)
-		return std::make_pair("", "");
-	std::size_t end = string.find(CRLF);
-	if (end == std::string::npos)
-		return std::make_pair("", "");
-
-	std::pair<std::string, std::string> output;
-	output.first = target;
-	output.second = string.substr(pos + target.size(), end);
-	return output;
 }
 
 /**
  * @brief Extract the headers of the CGI output.
  */
-std::vector<std::pair<std::string, std::string> > CGI::parseOutput()
+std::vector<std::pair<std::string, std::string> > CGI::parseHeaders()
 {
 	std::vector<std::pair<std::string, std::string> > result;
-	std::vector<std::string> headers;
+	std::size_t headersEnd = _buffer.find(CRLF CRLF);
 
-	headers.push_back(CONTENT_TYPE);
-	headers.push_back(STATUS);
+	// length of "\r\n\r\n"
+	std::size_t separatorLen = 4;
 
-	std::size_t end = _buffer.rfind(CRLF);
-
-	if (end == std::string::npos)
-		throw Tools::Exception(500, "CGI: no CRLF in script output");
-
-	std::string subString = _buffer.substr(0, end);
-	for (std::vector<std::string>::iterator it = headers.begin(); it != headers.end(); it++)
-	{
-		std::pair<std::string, std::string> currPair = findHeaderInOutput(subString, *it);
-		if (currPair.first.empty())
-			continue;
+	if (headersEnd == std::string::npos) {
+		headersEnd = _buffer.rfind(LF LF);
+		// length of "\n\n"
+		separatorLen = 2;
 	}
-	_buffer.erase(0, end);
+	if (headersEnd == std::string::npos)
+		throw Tools::Exception(500, "CGI: Missing header-body separator");
+
+	std::string headers = _buffer.substr(0, headersEnd);
+	// Ignore the headers and the separator (\r\n\r\n or \n\n)
+	std::string body = _buffer.substr(headersEnd + separatorLen);
+	_buffer = body;
+
+	std::stringstream ss(headers);
+	std::string line;
+	while (std::getline(ss, line)) {
+		if (!line.empty() && Tools::getLastCharacter(line) == '\r')
+			Tools::removeLastCharacter(line);
+		
+		if (line.empty())
+			continue;
+
+		std::size_t colonPos = line.find(':');
+		if (colonPos != std::string::npos) {
+			std::string key = line.substr(0, colonPos);
+			std::string value = line.substr(colonPos + 1);
+
+			if (!value.empty() && value[0] == ' ')
+				value.erase(0, 1);
+			
+			result.push_back(std::make_pair(key, value));
+		}
+	}
 	return result;
 }
 
@@ -375,7 +378,7 @@ void setStatus(const std::string &line, int &status)
 const std::string CGI::getResponse()
 {
 	std::pair<std::string, std::string> *oneHeader;
-	std::vector<std::pair<std::string, std::string> > headers = parseOutput();
+	std::vector<std::pair<std::string, std::string> > headers = parseHeaders();
 
 	oneHeader = getPairFromHeaders(headers, CONTENT_TYPE);
 	if (!oneHeader)

@@ -91,4 +91,5 @@ public:
 	static bool isExecutable(const char *path);
 	static bool closeAndResetFD(int &fd);
 	static const std::string getExtension(const std::string &path);
+	static const std::string extractExtension(const std::string& path);
 };

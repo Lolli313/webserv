@@ -10,7 +10,7 @@
 #include <vector>
 #include <set>
 
-#define DEFAULT_PORT 80
+#define DEFAULT_PORT 8080
 #define DEFAULT_PATH "/" // ROOT
 #define SPACE " "
 #define CR "\r"     // Carriage return

@@ -403,3 +403,13 @@ const std::string Tools::getExtension(const std::string &path)
 
 	return HttpTools::getContentType(path.substr(pos));
 }
+
+/**
+ * @brief Extract the extension of a given file path
+ */
+const std::string Tools::extractExtension(const std::string& path) {
+	std::string::size_type pos = path.rfind(".");
+
+	return ((pos == std::string::npos || pos == 0) ? "" : path.substr(pos));
+}
+

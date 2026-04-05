@@ -34,6 +34,7 @@ ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs
 		_serversMap = setupServersMap();
 		_servSockFDs = setupServSockFDs();
 		_polling = new Polling(_servSockFDs);
+		LOG(INFO, "All servers set up successfully");
 	}
 	catch (Tools::Exception &e)
 	{

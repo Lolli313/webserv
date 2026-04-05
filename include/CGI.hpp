@@ -68,5 +68,5 @@ public:
 	void buildEnv(char**& env, std::vector<std::string>& envBuildVector);
 	const std::string getResponse();
 
-	std::vector<std::pair<std::string, std::string> > parseOutput();
+	std::vector<std::pair<std::string, std::string> > parseHeaders();
 };
