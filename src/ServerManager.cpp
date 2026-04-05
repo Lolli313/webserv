@@ -421,8 +421,10 @@ const std::string handleRedirect(Tools::Exception &e)
 /**
  * @brief Creates and returns a HTML "error" response for HTTP codes that aren't redirect codes `300` - `308`
  */
-const std::string handleOtherCodes(const ConfigBase *config, const int httpCode)
+const std::string handleOtherCodes(const ConfigBase *config, int httpCode)
 {
+	if (httpCode == 0)
+		httpCode = 500;
 	std::string errorBody;
 	if (config)
 	{
@@ -470,7 +472,7 @@ void ServerManager::throwHandler(Client *client, Tools::Exception &e, const Conf
 	else
 		LOG(DEBUG, PINK, "Throw code " + Tools::intToString(e.getReturnCode()), e.getMsgLog());
 
-	if (e.getReturnCode() >= 100)
+	if (e.getReturnCode() >= 100 || e.getReturnCode() == 0)
 	{
 		std::string responseString;
 		if (e.getReturnCode() >= 300 && e.getReturnCode() <= 308)
