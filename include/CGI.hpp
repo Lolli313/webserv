@@ -14,7 +14,7 @@
 class CGI
 {
 private:
-	const HttpRequest &_request;
+	HttpRequest _request;
 	const ConfigBase *_config;
 	std::string _cgiBinPath;
 	// ConfigBase* _config;

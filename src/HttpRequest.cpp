@@ -42,7 +42,8 @@ HttpRequest::HttpRequest(const HttpRequest &other) :
 	_httpVersion(other._httpVersion),
 	_header(other._header),
 	_boundary(other._boundary),
-	_body(other._body) {}
+	_body(other._body),
+	_clientAddr(other._clientAddr) {}
 
 HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 	if (this != &other) {

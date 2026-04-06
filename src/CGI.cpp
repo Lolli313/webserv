@@ -14,7 +14,8 @@ CGI::CGI(const HttpRequest &request, const ConfigBase *config) :
 	_request(request),
 	_config(config),
 	_cgiBinPath(config->getCGIPaths()._scriptFolderPath),
-	_responseStatus(200)
+	_responseStatus(200),
+	_postPos(0)
 {
 	try
 	{
@@ -89,7 +90,6 @@ void CGI::pipeAndFork()
 
 void CGI::setPostPipe()
 {
-	LOG(DEBUG, "CGI: POST");
 	if (pipe(_postPipesFDs) == -1)
 		throw Tools::Exception(500, "CGI: Failed to create pipe in POST");
 
@@ -103,8 +103,8 @@ void CGI::setPostPipe()
 void CGI::setPostDup()
 {
 	Tools::closeAndResetFD(_postPipesFDs[1]);
-	if (dup2(_pipeFDs[0], STDIN_FILENO) < 0)
-		throw Tools::Exception(500, "CGI: Failed to dup2 in post");
+	if (dup2(_postPipesFDs[0], STDIN_FILENO) < 0)
+		throw Tools::Exception(42, "CGI: Failed to dup2 in post");
 }
 
 /**
@@ -244,9 +244,9 @@ void CGI::executeCGI()
 	if (_request.getMethod() == "POST")
 		methodIsPost = true;
 
-	pipeAndFork();
 	if (methodIsPost)
 		setPostPipe();
+	pipeAndFork();
 	if (_pid == 0)
 	{
 		setChildPipe();
@@ -281,7 +281,6 @@ bool CGI::readCgiOutput()
 	bytesRead = read(_pipeFDs[0], buffer, BUFFERSIZE);
 	if (bytesRead > 0)
 	{
-		LOG(DEBUG, "CGI bytesRead: " + Tools::intToString(bytesRead));
 		_buffer.append(buffer);
 		return false;
 	}
@@ -294,7 +293,7 @@ bool CGI::readCgiOutput()
 	}
 	else
 	{
-		LOG(DEBUG, "Finished reading CGI output");
+		LOG(INFO, "Finished reading CGI output");
 		Tools::closeAndResetFD(_pipeFDs[0]);
 		return true;
 	}
