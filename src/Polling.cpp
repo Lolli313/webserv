@@ -121,7 +121,8 @@ void Polling::addFdToEpoll(int targetFD, int eventFlags)
 
 void Polling::deleteFdFromEpoll(int targetFD) {
 	LOG(INFO, GREEN, "deleting fd from epoll", Tools::intToString(targetFD));
-	epollEventAction(_epollFD, targetFD, EPOLL_CTL_DEL, 0);
+	// epollEventAction(_epollFD, targetFD, EPOLL_CTL_DEL, 0);
+	epoll_ctl(_epollFD, EPOLL_CTL_DEL, targetFD, NULL);
 }
 
 // Exception on failure
