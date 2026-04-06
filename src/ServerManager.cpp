@@ -270,7 +270,7 @@ bool isValidCgiPath(const HttpRequest &request, const ConfigBase *config) {
 	const std::string& folderPath = config->getCGIPaths()._scriptFolderPath;
 	LOG(DEBUG, PINK, "CGI folderPath is " + folderPath);
 	LOG(DEBUG, PINK, "Request's purePath is " + request.getPurePath());
-	if (!request.getPurePath().compare(0, folderPath.size(), folderPath)) {
+	if (folderPath.size() != 0 && !request.getPurePath().compare(0, folderPath.size(), folderPath)) {
 		if (!config->hasCGI())
 			throw Tools::Exception(403, "CGI usage is forbidden on this specific server");
 		else
