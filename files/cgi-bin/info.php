@@ -14,12 +14,11 @@ $body = <<<HTML
 HTML;
 
 $content_length = strlen($body);
-$current_date = gmdate("D, d M Y H:i:s") . " GMT";
 
-echo "HTTP/1.1 200 OK\r\n";
-echo "Date: $current_date\r\n";
+echo "Status: 200 OK\r\n"; 
 echo "Content-Length: $content_length\r\n";
-echo "Content-Type: text/html; charset=utf-8\r\n";
+echo "Content-Type: text/html\r\n";
+
 echo "\r\n";
 
 echo $body;

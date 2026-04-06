@@ -183,6 +183,11 @@ void CGI::buildEnv(char **&env, std::vector<std::string>& envVector)
 	envVector.push_back(buildMetaVariable("SERVER_PROTOCOL", _request.getHttpVersion()));
 	envVector.push_back(buildMetaVariable("SERVER_SOFTWARE", "webserv/1.1"));
 
+	if (_executablePath == _config->getCGIPaths()._phpPath) {
+		envVector.push_back(buildMetaVariable("REDIRECT_STATUS", "200"));
+		envVector.push_back(buildMetaVariable("SCRIPT_FILENAME", _config->getRoot() + _request.getPurePath()));
+	}
+
 	env = new char*[envVector.size() + 1];
 	for (std::size_t i = 0; i < envVector.size(); i++) {
 		env[i] = const_cast<char*>(envVector[i].c_str());
@@ -199,12 +204,12 @@ std::string CGI::checkAndExtractScript()
 	const std::string &exec = _request.getPurePath();
 	const std::string &scriptName = Tools::getStringAfterLastCharacter(exec, '/');
 	const std::string &extension = Tools::extractExtension(scriptName);
-	if (extension != ".py" && extension != ".php")
-		throw Tools::Exception(403, "Script extension is forbidden");
 
 	const std::string fullPath = _config->getRoot() + exec;
 	if (Tools::isDirectory(fullPath.c_str()))
 		throw Tools::Exception(403, "File path is a directory");
+	if (extension != ".py" && extension != ".php")
+		throw Tools::Exception(403, "Invalid script extension");
 	if (!Tools::fileExists(fullPath.c_str()))
 		throw Tools::Exception(404, "Script not found");
 	if (!Tools::isExecutable(fullPath.c_str()))
@@ -395,7 +400,7 @@ const std::string CGI::getResponse()
 
 	oneHeader = getPairFromHeaders(headers, CONTENT_TYPE);
 	if (!oneHeader)
-		throw Tools::Exception(500, "CGI: no Content-Type header");
+		throw Tools::Exception(502, "CGI: no Content-Type header");
 
 	std::string responseStatusMessage;
 	oneHeader = getPairFromHeaders(headers, STATUS);
