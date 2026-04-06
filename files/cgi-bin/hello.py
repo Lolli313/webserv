@@ -10,6 +10,8 @@ body = f"""<!DOCTYPE html>
 </body>
 </html>"""
 
+time.sleep(5)
+
 print("Status: 200 OK")
 print("Content-Type: text/html; charset=utf-8")
 print(f"Content-Length: {len(body.encode('utf-8'))}")
