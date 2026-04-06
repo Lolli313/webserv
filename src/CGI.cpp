@@ -77,6 +77,12 @@ void CGI::pipeAndFork()
 {
 	if (pipe(_pipeFDs) == -1)
 		throw Tools::Exception(500, "CGI: Failed to create pipe");
+
+	if (fcntl(_pipeFDs[0], F_SETFD, FD_CLOEXEC) < 0)
+		throw Tools::Exception("fcntl");
+	if (fcntl(_pipeFDs[1], F_SETFD, FD_CLOEXEC) < 0)
+		throw Tools::Exception("fcntl");
+
 	if ((_pid = fork()) == -1)
 		throw Tools::Exception(500, "CGI: Failed to create fork");
 }
@@ -86,6 +92,11 @@ void CGI::setPostPipe()
 	LOG(DEBUG, "CGI: POST");
 	if (pipe(_postPipesFDs) == -1)
 		throw Tools::Exception(500, "CGI: Failed to create pipe in POST");
+
+	if (fcntl(_postPipesFDs[0], F_SETFD, FD_CLOEXEC) < 0)
+		throw Tools::Exception("fcntl");
+	if (fcntl(_postPipesFDs[1], F_SETFD, FD_CLOEXEC) < 0)
+		throw Tools::Exception("fcntl");
 	// ADD TO EPOLL
 }
 
