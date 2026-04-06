@@ -281,7 +281,7 @@ bool CGI::readCgiOutput()
 	bytesRead = read(_pipeFDs[0], buffer, BUFFERSIZE);
 	if (bytesRead > 0)
 	{
-		LOG(DEBUG, "Reading CGI output");
+		LOG(DEBUG, "CGI bytesRead: " + Tools::intToString(bytesRead));
 		_buffer.append(buffer);
 		return false;
 	}

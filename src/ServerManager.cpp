@@ -248,7 +248,7 @@ void ServerManager::sendResponse(Client *client)
 	else if (client->getBytesSent() > client->getResponseBuff().size())
 		throw Tools::Exception("sendResponse: incorrect response size");
 	int sent = send(client->getFD(), client->getResponseBuff().c_str() + client->getBytesSent(), client->getResponseBuff().size() - client->getBytesSent(), MSG_NOSIGNAL);
-	LOG(DEBUG, "SEND " + Tools::intToString(sent));
+	LOG(INFO, YELLOW_BRIGHT, "BYTES SENT", Tools::intToString(sent));
 
 	if (sent < 0)
 	{
@@ -268,8 +268,6 @@ void checkBodySize(std::size_t size, std::size_t max)
 
 bool isValidCgiPath(const HttpRequest &request, const ConfigBase *config) {
 	const std::string& folderPath = config->getCGIPaths()._scriptFolderPath;
-	LOG(DEBUG, PINK, "CGI folderPath is " + folderPath);
-	LOG(DEBUG, PINK, "Request's purePath is " + request.getPurePath());
 	if (folderPath.size() != 0 && !request.getPurePath().compare(0, folderPath.size(), folderPath)) {
 		if (!config->hasCGI())
 			throw Tools::Exception(403, "CGI usage is forbidden on this specific server");

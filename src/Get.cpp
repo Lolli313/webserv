@@ -169,11 +169,7 @@ bool Get::handleIndexFile()
 
 void Get::checkAndSetFile(const std::string &path)
 {
-	LOG(DEBUG, "checkAndSetFile");
 	_path = _config->getRoot() + path;
-	LOG(DEBUG, "ROOT = " + _config->getRoot());
-	LOG(DEBUG, "PATH = " + _path);
-
 	if (Tools::isDirectory(_path.c_str()))
 	{
 		if (handleIndexFile())
@@ -198,17 +194,16 @@ void Get::checkAndSetFile(const std::string &path)
 		else
 			throw Tools::Exception(500, "GET: read error");
 	}
-	LOG(DEBUG, "File = " + path);
+	LOG(INFO, "File = " + path);
 }
 
 
 
 const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *config)
 {
-	LOG(INFO, YELLOW_BRIGHT, "executeGET");
 	Get get(request, config);
 	get.checkRequest();
-	LOG(DEBUG, "PUREPATH = " + request.getPurePath());
+	LOG(DEBUG, YELLOW_BRIGHT, "GET PUREPATH = " + request.getPurePath());
 	get.checkAndSetFile(request.getPurePath());
 
 	HttpResponse response(HttpTools::getReturnPair(200));
