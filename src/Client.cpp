@@ -211,6 +211,7 @@ void Client::findHost(std::string headers) {
 
 void Client::bufferManager() {
 	// Check la position dela request dans le buffer pour pouvoir isoler la request
+	LOG(DEBUG, YELLOW_BRIGHT, "_buffer is " + _buffer);
 	const char* methods[] = {"GET ", "HEAD ", "POST ", "PUT ", "DELETE ", "OPTIONS ", "TRACE ", "CONNECT "};
 	std::vector<std::string> request(methods, methods + sizeof(methods)/sizeof(methods[0]));
 	std::size_t minPos = std::string::npos;
@@ -260,10 +261,10 @@ std::string Client::bodyVerification() {
 	// la il faut trouver Content-Length pour savoir si le body est finit si il y en a un
 	std::size_t posContentLengthStart = _headers.find("content-length: ");
 	if (posContentLengthStart == std::string::npos) {
-		std::string request = _buffer.substr(0, posBodyStart);
-        _buffer.erase(0, posBodyStart);
+		// std::string request = _buffer.substr(0, posBodyStart);
+        // _buffer.erase(0, posBodyStart);
 		setDoneReceiving(true);
-		return request;
+		return _buffer;
 	}
 	// si il y a un content length on verifie qu'il soit remplit
 	std::size_t posContentLengthStop = _headers.find("\r\n", posContentLengthStart);
@@ -277,12 +278,19 @@ std::string Client::bodyVerification() {
 	if (*endPtr != '\0' && !isspace(*endPtr)) {
 		throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
-    if (_buffer.length() >= posBodyStart + contentLength - 2 &&	contentLength < _maxBodySize) {
-        std::string request = _buffer.substr(0, posBodyStart + contentLength);
-        _buffer.erase(0, posBodyStart + contentLength);
+	LOG(DEBUG, PINK, "contentLength is " + Tools::intToString(contentLength));
+	LOG(DEBUG, PINK, "_maxBodySize is " + Tools::intToString(_maxBodySize));
+	std::string body = _buffer.substr(posBodyStart);
+	if (contentLength == body.size()) {
 		setDoneReceiving(true);
-		LOG(DEBUG, PINK, _buffer);
-        return request;
+		return _buffer;
+	}
+    else if (_buffer.length() < posBodyStart + contentLength - 2 && contentLength < _maxBodySize) {
+        // std::string request = _buffer.substr(0, posBodyStart + contentLength);
+        // _buffer.erase(0, posBodyStart + contentLength);
+		// setDoneReceiving(true);
+		// LOG(DEBUG, PINK, _buffer);
+        return _buffer;
     } else {
 		LOG(DEBUG, DEFAULT, Tools::intToString(_buffer.length()) + " " + Tools::intToString(posBodyStart) + " " + 
 			Tools::intToString(contentLength));

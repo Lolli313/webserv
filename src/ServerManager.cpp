@@ -606,6 +606,7 @@ void ServerManager::existingClient(Client *client)
 		std::string tmpRequest = requestPreParsing(client);
 		if (client->doneReceiving())
 		{
+			LOG(DEBUG, BLUE_BRIGHT, "CLIENT IS DONE RECEIVING");
 			HttpRequest request(client->getClientAddr());
 			request.parse(tmpRequest);
 
