@@ -174,6 +174,13 @@ void HttpRequest::parse(const std::string &request) {
 	}
 	_body = bodyStream.str();
 	// print();
+
+	// Si il y a un body, verifie si les headers et Content-Length sont present
+	if (!_body.empty()) {
+		std::map<std::string, std::string>::const_iterator it = _header.find("content-length");
+		if (it == _header.end())
+			throw Tools::Exception(411, "Content-Length header is missing");
+	}
 }
 
 void HttpRequest::cookie(Cookie &cookie) {
