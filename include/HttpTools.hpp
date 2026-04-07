@@ -10,12 +10,16 @@
 #include <vector>
 #include <set>
 
-#define DEFAULT_PORT 80
+#define DEFAULT_PORT 8080
 #define DEFAULT_PATH "/" // ROOT
 #define SPACE " "
 #define CR "\r"     // Carriage return
 #define LF "\n"     // New line / linefeed
 #define CRLF "\r\n" // Use to separate blocs in HTTP messages (headers, body...)
+
+#define CONTENT_TYPE "Content-Type"
+#define CONTENT_LENGTH "Content-Length"
+#define STATUS "Status"
 
 #define CONTENT_TYPE_PAIRS                                                                  \
     X(".aac", "audio/aac")                                                                  \

@@ -176,50 +176,59 @@ bool ServerBlockConfig::parseReturn(std::vector<std::string>& tokens) {
 	return false;
 }
 
-bool checkCgiDirectiveValidity(std::vector<std::string>& tokens) {
-	if (tokens.size() != 2)
-		return false;
+// bool checkCgiDirectiveValidity(std::vector<std::string>& tokens) {
+// 	if (tokens.size() != 2)
+// 		return false;
 	
-	std::string& path = tokens[1];
-	if (!Tools::checkAndRemoveSemicolon(path) || path.empty() || !Tools::stringStartsWithCharacter(path, '/'))
-		return false;
+// 	std::string& path = tokens[1];
+// 	if (!Tools::checkAndRemoveSemicolon(path) || path.empty() || !Tools::stringStartsWithCharacter(path, '/'))
+// 		return false;
 
-	return true;
-}
+// 	return true;
+// }
+
+// bool ServerBlockConfig::parseCgi(std::vector<std::string>& tokens) {
+// 	if (tokens.size() < 2 || tokens.size() > 3)
+// 		return false;
+
+// 	if (!Tools::isValidBraceFormat("cgi", tokens, _infile))
+// 		return false;
+
+// 	std::string line;
+// 	while (std::getline(*_infile, line)) {
+// 		if (Tools::lineIsEmptyOrComment(line))
+// 			continue;
+
+// 		tokens = Tools::splitString(line);
+// 		if (tokens[0] == "}")
+// 			return true;
+		
+// 		if (!checkCgiDirectiveValidity(tokens))
+// 			return false;
+
+// 		const std::string& key = tokens[0];
+// 		const std::string& value = tokens[1];
+
+// 		if (key == "path")
+// 			// _cgi.setPath(value);
+// 			_cgiPaths._cgiPath = value;
+// 		else if (key == "python")
+// 			// _cgi.setPythonPath(value);
+// 			_cgiPaths._pythonPath = value;
+// 		else if (key == "php")
+// 			// _cgi.setPhpPath(value);
+// 			_cgiPaths._phpPath = value
+// 		else
+// 			return false;
+// 	}
+// 	_cgi.setHasCGI(true);
+// 	return true;
+// }
 
 bool ServerBlockConfig::parseCgi(std::vector<std::string>& tokens) {
-	if (tokens.size() < 2 || tokens.size() > 3)
-		return false;
-
-	if (!Tools::isValidBraceFormat("cgi", tokens, _infile))
-		return false;
-
-	std::string line;
-	while (std::getline(*_infile, line)) {
-		if (Tools::lineIsEmptyOrComment(line))
-			continue;
-
-		tokens = Tools::splitString(line);
-		if (tokens[0] == "}")
-			return true;
-		
-		if (!checkCgiDirectiveValidity(tokens))
-			return false;
-
-		const std::string& key = tokens[0];
-		const std::string& value = tokens[1];
-
-		if (key == "path")
-			_cgi.setPath(value);
-		else if (key == "python")
-			_cgi.setPythonPath(value);
-		else if (key == "php")
-			_cgi.setPhpPath(value);
-		else
-			return false;
-	}
-	_cgi.setHasCGI(true);
-	return true;
+	if (handleCgi(tokens, _infile))
+		return true;
+	return false;
 }
 
 /*

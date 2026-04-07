@@ -53,8 +53,8 @@ int main() {
     // "Host: 127.0.0.1:8080\r\n\r\n";
 
     std::string cookies =
-    "GET /utilisateur HTTP/1.1\r\n"
-    "Host: cgi.com\r\n"
+    "GET /cgi-bin/hello.py HTTP/1.1\r\n"
+    "Host: localhost:8080\r\n"
     "User-Agent: Mozilla/5.0 (X11; Linux x86_64)\r\n"
     "Accept: text/html\r\n"
     "Cookie: session_id=abc123; theme=dark; lang=fr\r\n"

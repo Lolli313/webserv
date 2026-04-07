@@ -33,6 +33,8 @@ ConfigBase &ConfigBase::operator=(const ConfigBase &obj)
 		_errorPages = obj._errorPages;
 		_allowedMethods = obj._allowedMethods;
 		_returnDirective = obj._returnDirective;
+		_hasCGI = obj._hasCGI;
+		_cgiPaths = obj._cgiPaths;
 	}
 	return *this;
 }
@@ -50,6 +52,8 @@ long ConfigBase::getClientMaxBodySize() const { return _clientMaxBodySize; }
 const std::map<int, std::string> &ConfigBase::getErrorPages() const { return _errorPages; }
 const std::set<std::string> &ConfigBase::getAllowMethods() const { return _allowedMethods; }
 const std::pair<int, std::string> &ConfigBase::getReturnDirective() const { return _returnDirective; }
+bool ConfigBase::hasCGI() const { return _hasCGI; }
+const struct CGIPaths& ConfigBase::getCGIPaths() const { return _cgiPaths; }
 
 void ConfigBase::setRoot(const std::string &src) { _root = src; }
 void ConfigBase::setIndex(std::vector<std::string>::const_iterator start, std::vector<std::string>::const_iterator end) {
@@ -60,6 +64,7 @@ void ConfigBase::setClientMaxBodySize(long src) { _clientMaxBodySize = src; }
 void ConfigBase::setErrorPages(const std::map<int, std::string> &src) { _errorPages = src; }
 void ConfigBase::setAllowMethods(const std::set<std::string> &src) { _allowedMethods = src; }
 void ConfigBase::setReturnDirective(const std::pair<int, std::string> &src) { _returnDirective = src; }
+void ConfigBase::setHasCgi(bool src) { _hasCGI = src; }
 
 /*
 =================================================================
@@ -404,6 +409,55 @@ bool ConfigBase::handleReturn(std::vector<std::string> &tokens, std::ifstream *i
 	return true;
 }
 
+bool checkCgiDirectiveValidity(std::vector<std::string>& tokens) {
+	if (tokens.size() != 2)
+		return false;
+	
+	std::string& path = tokens[1];
+	if (!Tools::checkAndRemoveSemicolon(path) || path.empty() || !Tools::stringStartsWithCharacter(path, '/'))
+		return false;
+
+	return true;
+}
+
+bool ConfigBase::handleCgi(std::vector<std::string> &tokens, std::ifstream *infile) {
+	if (tokens.size() < 2 || tokens.size() > 3)
+		return false;
+
+	if (!Tools::isValidBraceFormat("cgi", tokens, infile))
+		return false;
+
+	std::string line;
+	while (std::getline(*infile, line)) {
+		if (Tools::lineIsEmptyOrComment(line))
+			continue;
+
+		tokens = Tools::splitString(line);
+		if (tokens[0] == "}")
+			break;
+		
+		if (!checkCgiDirectiveValidity(tokens))
+			return false;
+
+		const std::string& key = tokens[0];
+		const std::string& value = tokens[1];
+
+		if (key == "path")
+			// _cgi.setPath(value);
+			_cgiPaths._scriptFolderPath = value;
+		else if (key == "python")
+			// _cgi.setPythonPath(value);
+			_cgiPaths._pythonPath = value;
+		else if (key == "php")
+			// _cgi.setPhpPath(value);
+			_cgiPaths._phpPath = value;
+		else
+			return false;
+	}
+	setHasCgi(true);
+	return true;
+}
+
 void ConfigBase::printData() const {
     // Single values
     LOG(DEBUG, YELLOW_BRIGHT, "Root", getRoot());
@@ -440,6 +494,12 @@ void ConfigBase::printData() const {
     std::string returnVal = Tools::intToString(getReturnDirective().first) + 
                             (getReturnDirective().second.empty() ? "" : " -> " + getReturnDirective().second);
     LOG(DEBUG, YELLOW_BRIGHT, "Return Directive", returnVal);
+
+	if (hasCGI()) {
+		LOG(DEBUG, YELLOW_BRIGHT, "Script Folder Path", _cgiPaths._scriptFolderPath);
+		LOG(DEBUG, YELLOW_BRIGHT, "Python Folder Path", _cgiPaths._pythonPath);
+		LOG(DEBUG, YELLOW_BRIGHT, "PHP Folder Path", _cgiPaths._phpPath);
+	}
 }
 
 /**
@@ -453,6 +513,8 @@ void ConfigBase::printData() const {
  * **Error Pages** | *empty*
  * **Allowed Methods** | GET
  * **Return Directive** | *empty*
+ * **Has CGI** | false
+ * **CGI Paths | *empty*
  * ```
  */
 void ConfigBase::initWithDefaultData() {
@@ -463,6 +525,7 @@ void ConfigBase::initWithDefaultData() {
 	setClientMaxBodySize(expandMaskedString(temp, MASK_M));
 	_allowedMethods.insert("GET");
 	setReturnDirective(std::make_pair(0, ""));
+	setHasCgi(false);
 }
 
 void ConfigBase::initRoot() {

@@ -22,7 +22,7 @@ private:
 	std::string _port;
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
-	CGI _cgi;
+	// CGI _cgi;
 	std::ifstream *_infile;
 	ServerBlockConfig();
 

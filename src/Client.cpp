@@ -15,16 +15,33 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-Client::Client(int fd) : _clientFD(fd), 
-						_bytesSent(0),
-						_doneReceiving(false), 
-						_responseToBeSent(0), 
-						_responseSent(false), 
-						_keepAlive(true), 
-						_readyToReceive(false), 
-						_toBeClosed(false),
-						_timestamp(std::time(0))
-						{
+
+Client::Client(int fd) :
+	_clientFD(fd), 
+	_bytesSent(0),
+	_doneReceiving(false), 
+	_responseToBeSent(0), 
+	_responseSent(false), 
+	_keepAlive(true), 
+	_readyToReceive(false), 
+	_toBeClosed(false),
+	_timestamp(std::time(0))
+{
+	LOG(INFO, CYAN_BRIGHT, "NEW CLIENT FD", Tools::intToString(fd));
+}
+
+Client::Client(int fd, sockaddr_in& clientAddr) :
+	_clientFD(fd),
+	_clientAddr(clientAddr),
+	_bytesSent(0),
+	_doneReceiving(false), 
+	_responseToBeSent(0), 
+	_responseSent(false), 
+	_keepAlive(true), 
+	_readyToReceive(false), 
+	_toBeClosed(false),
+	_timestamp(std::time(0))
+{
 	LOG(INFO, CYAN_BRIGHT, "NEW CLIENT FD", Tools::intToString(fd));
 }
 
@@ -33,16 +50,17 @@ Client::~Client() {
 	// close(_clientFD); 
 }
 
-Client::Client(const Client &obj) : _clientFD(obj._clientFD),
-								_bytesSent(obj._bytesSent),
-								_doneReceiving(obj._doneReceiving),  
-								_responseToBeSent(obj._responseToBeSent), 
-								_responseSent(obj._responseSent), 
-								_keepAlive(obj._keepAlive), 
-								_readyToReceive(obj._readyToReceive), 
-								_toBeClosed(obj._toBeClosed),
-								_timestamp(obj._timestamp)
-								{ 
+Client::Client(const Client &obj) :
+	_clientFD(obj._clientFD),
+	_bytesSent(obj._bytesSent),
+	_doneReceiving(obj._doneReceiving),  
+	_responseToBeSent(obj._responseToBeSent), 
+	_responseSent(obj._responseSent), 
+	_keepAlive(obj._keepAlive), 
+	_readyToReceive(obj._readyToReceive), 
+	_toBeClosed(obj._toBeClosed),
+	_timestamp(obj._timestamp)
+{ 
 	LOG(INFO, PINK, "Client copy constructor");
 	std::memcpy(_tmpBuff, obj._tmpBuff, BUFFERSIZE);
 	_buffer = obj._buffer;
@@ -69,9 +87,12 @@ Client &Client::operator=(const Client &obj)
 */
 
 int Client::getFD() const { return _clientFD; }
+int &Client::getRefFD() { return _clientFD; }
 
 std::string &Client::getBuffer() { return _buffer; }
 void Client::setBuffer(const std::string &input) { _buffer = input; }
+
+sockaddr_in Client::getClientAddr() const { return _clientAddr; }
 
 char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
@@ -173,8 +194,7 @@ std::string Client::bufferManager() {
 		}
 	}
 	if (minPos == std::string::npos) {
-		_buffer.erase();
-		return "";
+		throw Tools::Exception(400, "Inexisting method");
 	}
 	_buffer.erase(0, minPos);
 	// maintenant on verifie si la partie des headers est finit et note le debut du body
@@ -219,7 +239,7 @@ std::string Client::bufferManager() {
 	if (*endPtr != '\0' && !isspace(*endPtr)) {
 		throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
-    if (_buffer.length() >= posBodyStart + contentLength - 2) {
+    if (_buffer.length() >= posBodyStart + contentLength - 2 && _buffer.size() < std::numeric_limits<unsigned int>::max()) {
         std::string request = _buffer.substr(0, posBodyStart + contentLength);
         _buffer.erase(0, posBodyStart + contentLength);
 		setDoneReceiving(true);
@@ -227,6 +247,6 @@ std::string Client::bufferManager() {
     } else {
 		LOG(DEBUG, DEFAULT, Tools::intToString(_buffer.length()) + " " + Tools::intToString(posBodyStart) + " " + 
 			Tools::intToString(contentLength));
-        throw Tools::Exception(413, "HttpRequest: Malformed body");
+        throw Tools::Exception(413, "Wrong content size");
     }
 }

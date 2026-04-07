@@ -28,7 +28,7 @@ Polling::~Polling()
 		std::map<const unsigned int, Client *>::iterator curr = it++;
 		deleteCLient(curr->second);
 	}
-	close(_epollFD);
+	Tools::closeAndResetFD(_epollFD);
 }
 
 Polling::Polling(const Polling &obj) : _newClientFlags(obj._newClientFlags) { *this = obj; };
@@ -119,11 +119,17 @@ void Polling::addFdToEpoll(int targetFD, int eventFlags)
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
 }
 
+void Polling::deleteFdFromEpoll(int targetFD) {
+	LOG(INFO, GREEN, "deleting fd from epoll", Tools::intToString(targetFD));
+	// epollEventAction(_epollFD, targetFD, EPOLL_CTL_DEL, 0);
+	epoll_ctl(_epollFD, EPOLL_CTL_DEL, targetFD, NULL);
+}
+
 // Exception on failure
-void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags)
+void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in& clientAddr)
 {
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
-	Client *client = new Client(targetFD);
+	Client *client = new Client(targetFD, clientAddr);
 	_clientMap[targetFD] = client;
 	_clientVector.push_back(client);
 	LOG(INFO, GREEN, "Adding FD to epoll and client maps");
@@ -143,9 +149,9 @@ bool Polling::deleteCLient(Client *client)
 {
 	LOG(INFO, BLUE, "DELETE CLIENT");
 	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
-	close(client->getFD());
 	if ((_clientMap.erase(client->getFD())) != 1)
 		return (false);
+	Tools::closeAndResetFD(client->getRefFD());
 	for (std::vector<Client *>::iterator it = _clientVector.begin(); it != _clientVector.end(); it++)
 	{
 		if (*it == client)
@@ -167,11 +173,11 @@ void Polling::createEpoll()
 }
 
 // Exception on failure
-void Polling::successfulNewSocket(int newSocket)
+void Polling::successfulNewSocket(int newSocket, sockaddr_in& clientAddr)
 {
 	LOG(INFO, PINK, "Succesfully created new socket for client");
 	fcntl(newSocket, F_SETFL, O_NONBLOCK);
-	addFDtoEpollAndClientMap(newSocket, _newClientFlags);
+	addFDtoEpollAndClientMap(newSocket, _newClientFlags, clientAddr);
 }
 
 void Polling::failedNewSocket()
@@ -189,7 +195,7 @@ void Polling::registerNewClient(int serverSocketFD)
 
 	newSocket = accept(serverSocketFD, (sockaddr *)&clientAddr, &clientLen);
 	if (newSocket >= 0)
-		successfulNewSocket(newSocket);
+		successfulNewSocket(newSocket, clientAddr);
 	else
 		failedNewSocket();
 }
@@ -226,7 +232,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 
 	if (_clientMap.find(clientFD) == _clientMap.end())
 	{
-		LOG(CRITICAL, "Unexpectedly no match for existing client");
+		LOG(INFO, "founf a CGI pipe fd " + Tools::intToString(clientFD));
 		return NULL;
 	}
 	LOG(INFO, ORANGE, "Found clientFD match for FD", Tools::intToString(clientFD));

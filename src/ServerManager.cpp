@@ -1,6 +1,7 @@
 
 #include "ServerManager.hpp"
 #include "HttpMethod.hpp"
+#include "CGI.hpp"
 
 std::vector<Server *> setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 
@@ -19,6 +20,10 @@ ServerManager::~ServerManager()
 		delete (*it);
 	if (_polling)
 		delete _polling;
+	for (std::map<CGI *, Client *>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it)
+	{
+		delete it->first;
+	}
 }
 
 ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs) : _polling(NULL)
@@ -29,6 +34,7 @@ ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs
 		_serversMap = setupServersMap();
 		_servSockFDs = setupServSockFDs();
 		_polling = new Polling(_servSockFDs);
+		LOG(INFO, "All servers set up successfully");
 	}
 	catch (Tools::Exception &e)
 	{
@@ -121,7 +127,7 @@ std::set<int> ServerManager::setupServSockFDs()
 }
 
 // Just a test response that directly sends to the client.
-void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, const std::string &path)
+void TEST_RESPONSE(Client *client, int code, const std::string &message, const std::string &path)
 {
 	(void)message;
 	(void)path;
@@ -132,13 +138,16 @@ void TEST_RESPONSE(Client *tmpClient, int code, const std::string &message, cons
 	// body << file.rdbuf();
 	// //response.setBody(body.str());
 	// std::vector<std::pair<std::string, std::string> > tmp;
-	// tmp.push_back(std::make_pair<std::string, std::string>("Content-Length", Tools::intToString(body.str().size())));
+	// tmp.push_back(std::make_pair<std::string, std::string>(CONTENT_LENGTH, Tools::intToString(body.str().size())));
 	// response.setResponseHeaders(tmp);
 	response.addDateHeader();
 	response.addHeader("Content-length", "0");
-	send(tmpClient->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
+	send(client->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
 }
 
+/**
+ * @brief Find and return the correct port based on the client's socket FD
+ */
 const std::string &ServerManager::findPort(int eventFD)
 {
 	std::vector<ServerSocket *>::const_iterator it = _serverSocketArray.begin();
@@ -150,6 +159,9 @@ const std::string &ServerManager::findPort(int eventFD)
 	return _serverSocketArray[0]->getPort();
 }
 
+/**
+ * @brief Build an object `std::pair<std::string, std::string>` based on `Server Name` and `Port`
+ */
 std::pair<std::string, std::string> buildHostPair(const std::string &str, const std::string &port)
 {
 	std::vector<std::string> split = Tools::splitString(str, ":");
@@ -164,17 +176,22 @@ std::pair<std::string, std::string> buildHostPair(const std::string &str, const 
 	return std::make_pair(split[0], split[1]);
 }
 
-Server *ServerManager::findServer(const std::string &host, const std::string &port)
+/**
+ * @brief Find the correct `Server` object based on request's `Server Name` and `Port`
+ */
+Server *ServerManager::findServer(const std::string &host, const std::string &port, HttpRequest& request)
 {
 	std::pair<std::string, std::string> hostPair = buildHostPair(host, port);
 
 	int targetPort = std::atoi(hostPair.second.c_str());
 	std::pair<int, std::string> exactKey(targetPort, hostPair.first);
 
+	request.setPort(port);
 	std::map<std::pair<int, std::string>, Server *>::const_iterator it = _serversMap.find(exactKey);
 	if (it != _serversMap.end())
 	{ // found exact match for Port + Server Name
 		LOG(INFO, LIGHT_BLUE, "Found exact match for ", Tools::intToString(exactKey.first) + ":" + exactKey.second);
+		request.setServerName(it->first.second);
 		return it->second;
 	}
 
@@ -182,6 +199,7 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 	it = _serversMap.lower_bound(defaultKey); // Find the first match for targetPort regardless of the Server Name
 	if (it != _serversMap.end())
 	{
+		request.setServerName(it->first.second);
 		LOG(INFO, LIGHT_BLUE, "Found match for default port " + Tools::intToString(it->first.first) + " with server name: " + it->first.second);
 		return it->second;
 	}
@@ -189,36 +207,36 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 	throw Tools::Exception(500, "Error finding server");
 }
 
-const ConfigBase *ServerManager::findConfigBase(Client &client, const HttpRequest &request, int eventFD)
+/**
+ * @brief Find the matching `ConfigBase` object based on the client's request and return it
+ */
+const ConfigBase *ServerManager::findConfigBase(Client &client, HttpRequest &request)
 {
-	std::string port = findPort(eventFD);
+	std::string port = findPort(client.getFD());
 	(void)client;
 	std::map<std::string, std::string>::const_iterator it = request.getHeader().find("host");
 	if (it == request.getHeader().end())
 	{
-		// LOG(ERROR, "Host header missing");
 		client.setToBeClosed(true);
 		throw Tools::Exception(400, "Host header missing");
 	}
-	Server *server = findServer(it->second, port);
+	Server *server = findServer(it->second, port, request);
 	std::string modifiableString(request.getPath());
 	return &server->getPathConfig(modifiableString);
 }
 
+/**
+ * @brief Check if request's path has a return directive or a method that isn't allowed/implemented
+ */
 void handleReturnAndAllowMethod(const ConfigBase *config, const std::string &method)
 {
 	if (config->getReturnDirective().first)
-	{
-		// LOG(INFO, LIGHT_BLUE, "Found return directive with code " + Tools::intToString(config->getReturnDirective().first));
 		throw Tools::Exception(config->getReturnDirective().first, config->getReturnDirective().second);
-	}
 
 	std::set<std::string>::const_iterator it = config->getAllowMethods().find(method);
 	if (it == config->getAllowMethods().end())
-	{
-		// LOG(INFO, LIGHT_BLUE, method + " method not allowed");
 		throw Tools::Exception(405, "Method not allowed");
-	}
+
 	if (method != "GET" && method != "POST" && method != "DELETE")
 		throw Tools::Exception(501, "Method " + method + " not implemented");
 }
@@ -230,7 +248,7 @@ void ServerManager::sendResponse(Client *client)
 	else if (client->getBytesSent() > client->getResponseBuff().size())
 		throw Tools::Exception("sendResponse: incorrect response size");
 	int sent = send(client->getFD(), client->getResponseBuff().c_str() + client->getBytesSent(), client->getResponseBuff().size() - client->getBytesSent(), MSG_NOSIGNAL);
-	LOG(DEBUG, "SEND " + Tools::intToString(sent));
+	LOG(INFO, YELLOW_BRIGHT, "BYTES SENT", Tools::intToString(sent));
 
 	if (sent < 0)
 	{
@@ -245,42 +263,85 @@ void ServerManager::sendResponse(Client *client)
 void checkBodySize(std::size_t size, std::size_t max)
 {
 	if (size > max)
-		throw Tools::Exception(413, "body above max body size");	
+		throw Tools::Exception(413, "body above max body size");
+}
+
+bool isValidCgiPath(const HttpRequest &request, const ConfigBase *config) {
+	const std::string& folderPath = config->getCGIPaths()._scriptFolderPath;
+	if (folderPath.size() != 0 && !request.getPurePath().compare(0, folderPath.size(), folderPath)) {
+		if (!config->hasCGI())
+			throw Tools::Exception(403, "CGI usage is forbidden on this specific server");
+		else
+			return true;
+	}
+	// return (config->hasCGI() && !request.getPurePath().compare(0, config->getCGIPaths()._scriptFolderPath.size(), config->getCGIPaths()._scriptFolderPath));
+	return false;
 }
 
 /**
- * @brief execute the HTTP method and return the formatted HTTP response.
+ * @brief execute the HTTP method or the CGI and return the formatted HTTP response.
  * @return the formatted HTTP response in case of success
  * @throw in case of error
  */
-const std::string execute(const HttpRequest &request, const ConfigBase *config)
+const std::string ServerManager::execute(const HttpRequest &request, const ConfigBase *config, Client *client) // client *
 {
 	LOG(INFO, YELLOW_BRIGHT, "execute");
 	std::string response;
-	if (request.getMethodStr() == "GET")
+
+	if (isValidCgiPath(request, config))
 	{
-		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
-		return response = Get::executeGet(request, config);
+		LOG(INFO, "Initiating CGI");
+		CGI *cgi = new CGI(request, config);
+		_CGImap[cgi] = client;
+		_polling->addFdToEpoll(cgi->getPipeOut(), EPOLLIN);
+		if (cgi->getPostPipeIn() >= 0)
+		{
+			_polling->addFdToEpoll(cgi->getPostPipeIn(), EPOLLOUT);
+		}
+		return "";
 	}
 
-	else if (request.getMethodStr() == "POST")
+	else if (request.getMethod() == "GET")
 	{
 		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
-		return response = Post::executePost(request);
+		response = Get::executeGet(request, config);
 	}
 
-	else if (request.getMethodStr() == "DELETE")
+	else if (request.getMethod() == "POST")
 	{
-		return response = Delete::executeDelete(request, config);
+		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
+		response = Post::executePost(request);
 	}
+
+	else if (request.getMethod() == "DELETE")
+	{
+		response = Delete::executeDelete(request, config);
+	}
+
 	return response;
 }
 
-// std::map<std::string, std::string>::const_iterator itCookie = request.getHeader().find("Cookie");
-// if (itCookie != request.getHeader().end()) {
-// 	_cookie.setCookie(itCookie->second);
-// 	// _cookie.printCookie();
-// }
+void ServerManager::setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, Client *> &it)
+{
+	// Remove from epoll
+	// _polling->deleteFdFromEpoll(eventFD);
+	Tools::closeAndResetFD(eventFD);
+	// Parse the CGI output and get the headers
+	try {
+		it.second->setResponseBuff(it.first->getResponse());
+	}
+	catch (Tools::Exception &e) {
+		_CGImap.erase(it.first);
+		const ConfigBase* config = it.first->getConfig();
+		delete it.first;
+		throwHandler(it.second, e, config, true);
+	}
+	_CGImap.erase(it.first);
+	delete it.first;
+	it.second->setDoneReceiving(true);
+	it.second->setResponseToBeSent(true);
+	handleResponse(it.second);
+}
 
 /**
  * @brief If using the Config file error page and opening the ERROR_PAGE_TEMPLATE_PATH both fail for whatever reason,
@@ -295,6 +356,13 @@ const std::string generateFallBackPage()
 
 const std::string generateErrorPage(int code);
 
+/**
+ * @brief Read error file into a string and return it
+ * @param errorPath Path of the error file
+ * @param code HTML error code
+ * @param isPredefined Whether `code` has a predefined error file path mentioned in the config file
+ * @attention May return a file with template `{(CODE)}` and `{(MESSAGE)}` strings that should to be replaced if `isPredefined` is false
+ */
 const std::string readErrorFile(const std::string &errorPath, int code, bool isPredefined)
 {
 	int fd = open(errorPath.c_str(), O_RDONLY);
@@ -314,23 +382,29 @@ const std::string readErrorFile(const std::string &errorPath, int code, bool isP
 	ssize_t bytesRead = 0;
 	while ((bytesRead = read(fd, buffer, BUFFERSIZE)) > 0)
 		finalString.append(buffer, bytesRead);
-	close(fd);
+	Tools::closeAndResetFD(fd);
 	if (bytesRead == -1)
 		return "";
 	return finalString;
 }
 
+/**
+ * @brief Generate and return HTML error file body
+ */
 const std::string generateErrorPage(int code)
 {
 	const char *workingDirectory = std::getenv("PWD");
 	std::string errorPagePath = ERROR_PAGE_TEMPLATE_PATH;
 	std::string fullPath(std::string(workingDirectory) + errorPagePath);
 	std::string fileContent = readErrorFile(fullPath, code, false);
-	Tools::findAndReplaceAllOccurences(fileContent, TEMPLATE_ERROR_CODE, Tools::intToString(code));
-	Tools::findAndReplaceAllOccurences(fileContent, TEMPLATE_ERROR_MESSAGE, HttpTools::getHttpReturnMessage(code));
+	Tools::findAndReplaceAllOccurrences(fileContent, TEMPLATE_ERROR_CODE, Tools::intToString(code));
+	Tools::findAndReplaceAllOccurrences(fileContent, TEMPLATE_ERROR_MESSAGE, HttpTools::getHttpReturnMessage(code));
 	return fileContent;
 }
 
+/**
+ * @brief Creates and returns a HTML responses for the redirect HTML codes `300`-`308`
+ */
 const std::string handleRedirect(Tools::Exception &e)
 {
 	HttpResponse response(HttpTools::getReturnPair(302));
@@ -342,17 +416,22 @@ const std::string handleRedirect(Tools::Exception &e)
 	if (code == 300)
 	{
 		response.setBody("<a href=\"/v1\">Ver 1</a><br><a href=\"/v2\">Ver 2</a>");
-		response.addHeader("Content-Length", Tools::intToString(response.getBody().size()));
+		response.addHeader(CONTENT_LENGTH, Tools::intToString(response.getBody().size()));
 	}
 	else
-		response.addHeader("Content-Length", "0");
+		response.addHeader(CONTENT_LENGTH, "0");
 	response.addDateHeader();
 
 	return response.getFinalResponse();
 }
 
-const std::string handleOtherCodes(const ConfigBase *config, const int httpCode)
+/**
+ * @brief Creates and returns a HTML "error" response for HTTP codes that aren't redirect codes `300` - `308`
+ */
+const std::string handleOtherCodes(const ConfigBase *config, int httpCode)
 {
+	if (httpCode == 0)
+		httpCode = 500;
 	std::string errorBody;
 	if (config)
 	{
@@ -376,17 +455,20 @@ const std::string handleOtherCodes(const ConfigBase *config, const int httpCode)
 		response.setReturnMessage("Custom Error");
 	}
 	response.setBody(errorBody);
-	response.addHeader("Content-Length", Tools::intToString(errorBody.size()));
-	response.addHeader("Content-Type", HttpTools::getContentType(".html"));
+	response.addHeader(CONTENT_LENGTH, Tools::intToString(errorBody.size()));
+	response.addHeader(CONTENT_TYPE, HttpTools::getContentType(".html"));
 	LOG(INFO, LIGHT_BLUE, "Error file size is", Tools::intToString(errorBody.size()));
 	response.addDateHeader();
 
 	return response.getFinalResponse();
 }
 
-void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config, bool reThrow)
+/**
+ * @brief HTML error code handler
+ */
+void ServerManager::throwHandler(Client *client, Tools::Exception &e, const ConfigBase *config, bool reThrow)
 {
-	if (!tmpClient)
+	if (!client)
 	{
 		if (reThrow)
 			throw;
@@ -397,7 +479,7 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 	else
 		LOG(DEBUG, PINK, "Throw code " + Tools::intToString(e.getReturnCode()), e.getMsgLog());
 
-	if (e.getReturnCode() >= 100)
+	if (e.getReturnCode() >= 100 || e.getReturnCode() == 0)
 	{
 		std::string responseString;
 		if (e.getReturnCode() >= 300 && e.getReturnCode() <= 308)
@@ -406,105 +488,104 @@ void ServerManager::throwHandler(Client *tmpClient, Tools::Exception &e, const C
 			responseString = handleOtherCodes(config, e.getReturnCode());
 
 		LOG(DEBUG, responseString);
-		tmpClient->refreshClient();
-		tmpClient->setResponseBuff(responseString);
+		client->refreshClient();
+		client->setResponseBuff(responseString);
 		try
 		{
-			sendResponse(tmpClient);
+			sendResponse(client);
 		}
 		catch (Tools::Exception &e)
 		{
-			if (tmpClient->toBeClosed())
+			if (client->toBeClosed())
 			{
-				if (!_polling->deleteCLient(tmpClient))
+				if (!_polling->deleteCLient(client))
 					throw Tools::Exception("Error at deleting client");
-				tmpClient = NULL;
+				client = NULL;
 			}
 			LOG(CRITICAL, "Response THROWS in throwHandler");
 		}
 	}
 
-	if (tmpClient && tmpClient->toBeClosed())
+	if (client && client->toBeClosed())
 	{
-		if (!_polling->deleteCLient(tmpClient))
+		if (!_polling->deleteCLient(client))
 			throw Tools::Exception("Error at deleting client");
-		tmpClient = NULL;
+		client = NULL;
 	}
 
 	// ============================================================================
 	// NOT SURE IF WE SHOULD REFRECH THE CLIENT HERE
-	if (tmpClient)
+	if (client)
 	{
-		_polling->setClientEPOLLOUT(tmpClient, false);
-		tmpClient->refreshClient();
+		_polling->setClientEPOLLOUT(client, false);
+		client->refreshClient();
 	}
 	// ============================================================================
 	if (reThrow)
 		throw;
 }
 
-void ServerManager::existingClient(int eventFD)
+void ServerManager::handleResponse(Client *client)
 {
-	Client *tmpClient = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
+	if (!client)
+		return;
+	if (client->doneReceiving())
+	{
+		if (client->responseToBeSent() && !client->readyToReceive())
+		{
+			// Set the EPOLLOUT event to be monitored.
+			_polling->setClientEPOLLOUT(client, true);
+			client->setReadyToReceive(true);
+		}
+		LOG(INFO, PURPLE, "toReceive", Tools::boolToString(client->readyToReceive()));
+		LOG(INFO, PURPLE, "toBeSent", Tools::boolToString(client->responseToBeSent()));
+		if (client->readyToReceive() && client->responseToBeSent())
+		{
+			sendResponse(client);
+		}
+		if (client->responseSent())
+		{
+			// Remove the EPOLLOUT event
+			_polling->setClientEPOLLOUT(client, false);
+			client->refreshClient();
+		}
+	}
+}
+
+void ServerManager::existingClient(Client *client)
+{
 	const ConfigBase *config = NULL;
-	if (tmpClient)
+	try
 	{
-		tmpClient->updateTimestamp();
-		try
+		client->updateTimestamp();
+		std::string tmpRequest = client->bufferManager();
+		if (client->doneReceiving())
 		{
-			std::string tmpRequest = tmpClient->bufferManager();
-			if (tmpClient->doneReceiving())
-			{
-				HttpRequest request;
-				request.parse(tmpRequest);
-				request.cookie(_cookie);
-				_cookie.printCookie();
-				// request.print();
+			HttpRequest request(client->getClientAddr());
+			request.parse(tmpRequest);
 
-				// Ideally we would call this function after the headers are parsed, for now it is here
-				config = findConfigBase(*tmpClient, request, eventFD);
-				handleReturnAndAllowMethod(config, request.getMethodStr());
-				tmpClient->setResponseBuff(execute(request, config));
-				tmpClient->setResponseToBeSent(true);
-				// exit(1);
+			// Ideally we would call this function after the headers are parsed, for now it is here
+			config = findConfigBase(*client, request);
+			handleReturnAndAllowMethod(config, request.getMethod());
 
-				if (tmpClient->responseToBeSent() && !tmpClient->readyToReceive())
-				{
-					// Set the EPOLLOUT event to be monitored.
-					_polling->setClientEPOLLOUT(tmpClient, true);
-					tmpClient->setReadyToReceive(true);
-				}
-				LOG(INFO, PURPLE, "toReceive", Tools::boolToString(tmpClient->readyToReceive()));
-				LOG(INFO, PURPLE, "toBeSent", Tools::boolToString(tmpClient->responseToBeSent()));
-				if (tmpClient->readyToReceive() && tmpClient->responseToBeSent())
-				{
-					sendResponse(tmpClient);
-				}
-				if (tmpClient->responseSent())
-				{
-					// Remove the EPOLLOUT event
-					_polling->setClientEPOLLOUT(tmpClient, false);
-					tmpClient->refreshClient();
-				}
-			}
-			// tmpClient->printStatus();
-			if (tmpClient->toBeClosed())
-			{
-				_polling->deleteCLient(tmpClient);
-				return;
-			}
+			client->setResponseBuff(execute(request, config, client)); // on envoie le client
+			if (!client->getResponseBuff().empty())
+				client->setResponseToBeSent(true);
+			handleResponse(client);
 		}
-		catch (Tools::Exception &e)
+		// client->printStatus();
+		if (client->toBeClosed())
 		{
-			throwHandler(tmpClient, e, config, true);
+			_polling->deleteCLient(client);
+			return;
 		}
 	}
-	else
+	catch (Tools::Exception &e)
 	{
-		// Keep going boi
+		if (e.getReturnCode() == 42)
+			throw;
+		throwHandler(client, e, config, true);
 	}
-	// LOG(INFO, tmpClient->getResponseBuff());
-	// exit(1);
 }
 
 bool ServerManager::matchServerFD(int eventFD) const
@@ -546,6 +627,36 @@ void ServerManager::handleTimeout()
 	}
 }
 
+void ServerManager::router(int eventFD)
+{
+	Client *client = NULL;
+
+	client = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
+	// si il est dans la map, le client est a NULL et va dans le else
+	if (client)
+		existingClient(client); // eventFD
+	else
+	{
+		std::map<CGI *, Client *>::const_iterator it = _CGImap.begin();
+		for (; it != _CGImap.end(); ++it)
+		{
+			// It's a CGI
+			if (it->first->getPipeOut() == eventFD)
+			{
+				if (it->first->readCgiOutput())
+					setResponseAndDeleteCGI(eventFD, *it);
+				return;
+			}
+			// It's the POST write end of the CGI
+			else if (it->first->getPostPipeIn() == eventFD)
+			{
+				it->first->handlePostCGI();
+				return;
+			}
+		}
+	}
+}
+
 void ServerManager::eventLoop()
 {
 	while (!_sigStop)
@@ -565,7 +676,7 @@ void ServerManager::eventLoop()
 			if (matchServerFD(eventFD))
 				_polling->registerNewClient(eventFD);
 			else
-				existingClient(eventFD);
+				router(eventFD);
 		}
 	}
 }
@@ -580,6 +691,8 @@ void ServerManager::mainLoop()
 		}
 		catch (Tools::Exception &e)
 		{
+			if (e.getReturnCode() == 42)
+				throw;
 			LOG(ERROR, RED_BRIGHT, "mainLoop", e.getMsgLog());
 		}
 		catch (std::exception &e)

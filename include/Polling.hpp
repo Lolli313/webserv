@@ -5,6 +5,7 @@
 #include "ServerSocket.hpp"
 #include "HttpResponse.hpp"
 #include "Client.hpp"
+#include "Tools.hpp"
 
 #include <netinet/in.h>
 #include <algorithm>
@@ -20,7 +21,6 @@
 
 #define MAX_EVENTS 5
 #define TIMEOUT 60
-#define BUFFERSIZE 4096
 
 class Polling
 {
@@ -55,16 +55,17 @@ public:
 
 	void epollWaitEvent();
 	void createEpoll();
-	void addFDtoEpollAndClientMap(int targetFD, int eventFlags);
+	void addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in& clientAddr);
 	
 	void addFdToEpoll(int targetFD, int eventFlags);
 	void addClientToEpoll(Client &client);
+	void deleteFdFromEpoll(int targetFD);
 	bool deleteCLient(Client *client);
 	void registerNewClient(int eventFD);
 	Client *handleExistingClient(int eventFD, uint32_t currEvent);
 	void readClientInput(Client &client);
 
-	void successfulNewSocket(int newSocket);
+	void successfulNewSocket(int newSocket, sockaddr_in& clientAddr);
 	void failedNewSocket();
 
 	void setClientEPOLLOUT(Client *client, bool add);

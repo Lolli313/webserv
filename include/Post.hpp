@@ -28,6 +28,6 @@ class Post {
         void print() const;
         void saveInFile() const;
 
-    static const std::string executePost(const HttpRequest &request);
+        static const std::string executePost(const HttpRequest &request);
 
 };

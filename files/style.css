@@ -3,7 +3,6 @@ body {
     background-color: var(--body-c);
     margin: 0;
     padding: 30px;
-    color: #333;
 }
 
 .container {
@@ -91,9 +90,43 @@ button {
     font-weight: 1000;
 }
 
+.method-button.active {
+    background-color: green;
+    color: lightseagreen;
+    border: 3px solid lightseagreen;
+}
+
 .send {
     display: flex;
     justify-content: center;
+}
+
+
+
+.pathName {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 10%; 
+}
+.path {
+    width: 100%;
+}
+.name {
+    width: 100%;
+}
+
+.jsonFile {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 10%; 
+}
+.json {
+    width: 100%;
+}
+.file {
+    width: 100%;
 }
 
 .response {

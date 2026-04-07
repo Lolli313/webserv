@@ -17,6 +17,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <map>
 
 #define ERROR_PAGE_TEMPLATE_PATH "/files/error_pages/ErrorTemplate.html"
 #define TEMPLATE_ERROR_CODE "{(CODE)}"
@@ -33,6 +34,8 @@ private:
 	std::vector<Server *> _serverArray; // To store the servers, that will be retrieved throw the following map
 
 	std::vector<ServerSocket *> _serverSocketArray;
+
+	std::map<CGI*, Client*> _CGImap;
 
 	// map<pair<port, serverName &>, Server &> : We create a new key, value for each serverName of a server.
 	// If it has 3 names, them the map will have 3 entries for each of its combination <port, serverName>
@@ -52,20 +55,25 @@ public:
 	// ServerManager(ParseConfig); // Constructor with
 	~ServerManager();
 
+	const std::string execute(const HttpRequest &request, const ConfigBase *config, Client *client);
 
 	void setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 	std::map<std::pair<int, std::string>, Server*> setupServersMap();
 	std::set<int> setupServSockFDs();
 	const std::string& findPort(int eventFD);
-	Server* findServer(const std::string& host, const std::string& port);
+	Server* findServer(const std::string& host, const std::string& port, HttpRequest& request);
 	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
-	const ConfigBase *findConfigBase(Client &client, const HttpRequest &request, int eventFD);
-	void existingClient(int eventFD);
+	const ConfigBase *findConfigBase(Client &client, HttpRequest &request);
+	void existingClient(Client *client);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();
 	void mainLoop();
 	void sendResponse(Client *client);
-	void throwHandler(Client *tmpClient, Tools::Exception &e, const ConfigBase *config, bool reThrow);
+	void throwHandler(Client *client, Tools::Exception &e, const ConfigBase *config, bool reThrow);
+	void handleResponse(Client *client);
+	void setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, Client*> &it);
+	void router(int eventFD);
+
 	void handleTimeout();
 };
 

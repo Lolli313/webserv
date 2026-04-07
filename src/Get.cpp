@@ -7,7 +7,7 @@
 */
 Get::Get(const HttpRequest &request, const ConfigBase *config) : _fd(-1), _request(request), _config(config), _autoindex(false) {}
 
-Get::~Get() { closeAndResetFD(); }
+Get::~Get() { Tools::closeAndResetFD(_fd); }
 
 // Get::Get(const Get &obj) { *this = obj; }
 
@@ -58,15 +58,6 @@ int openFile(const std::string &path)
 			throw Tools::Exception(500, "GET: unknown error, cannot open the file");
 	}
 	return fd;
-}
-
-void Get::closeAndResetFD()
-{
-	if (_fd >= 0)
-	{
-		close(_fd);
-		_fd = -1;
-	}
 }
 
 bool Get::setIndexFile(const std::string &path)
@@ -178,11 +169,7 @@ bool Get::handleIndexFile()
 
 void Get::checkAndSetFile(const std::string &path)
 {
-	LOG(DEBUG, "checkAndSetFile");
 	_path = _config->getRoot() + path;
-	LOG(DEBUG, "ROOT = " + _config->getRoot());
-	LOG(DEBUG, "PATH = " + _path);
-
 	if (Tools::isDirectory(_path.c_str()))
 	{
 		if (handleIndexFile())
@@ -198,7 +185,7 @@ void Get::checkAndSetFile(const std::string &path)
 	while ((bytesRead = read(_fd, buffer, BUFFERSIZE)) > 0)
 		_file.append(buffer, bytesRead);
 
-	closeAndResetFD();
+	Tools::closeAndResetFD(_fd);
 
 	if (bytesRead < 0)
 	{
@@ -207,36 +194,29 @@ void Get::checkAndSetFile(const std::string &path)
 		else
 			throw Tools::Exception(500, "GET: read error");
 	}
-	LOG(DEBUG, "File = " + path);
+	LOG(INFO, "File = " + path);
 }
 
-const std::string Get::getExtension(const std::string &path) const
-{
-	std::string::size_type pos = path.rfind(".");
 
-	if (pos == std::string::npos || pos == 0)
-		return "";
-
-	return HttpTools::getContentType(path.substr(pos));
-}
 
 const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *config)
 {
-	LOG(INFO, YELLOW_BRIGHT, "executeGET");
 	Get get(request, config);
 	get.checkRequest();
-	LOG(DEBUG, "PUREPATH = " + request.getPurePath());
+	LOG(DEBUG, YELLOW_BRIGHT, "GET PUREPATH = " + request.getPurePath());
 	get.checkAndSetFile(request.getPurePath());
 
 	HttpResponse response(HttpTools::getReturnPair(200));
 	response.addDateHeader();
+
 	response.setBody(get._file);
+
 	response.addHeader("Content-length", Tools::intToString(get._file.size()));
 	std::string extension;
 	if (get._autoindex)
-		extension = get.getExtension("file.json");
+		extension = Tools::getExtension("file.json");
 	else
-		extension = get.getExtension(get.getPath());
+		extension = Tools::getExtension(get.getPath());
 	if (!extension.empty())
 	{
 		if (extension == ".ico")

@@ -39,7 +39,6 @@ public:
 	const std::string &getPath() const;
 	void checkRequest();
 	void checkAndSetFile(const std::string &path);
-	const std::string getExtension(const std::string &path) const;
 	bool setIndexFile(const std::string &path);
 	bool handleIndexFile();
 	void closeAndResetFD();

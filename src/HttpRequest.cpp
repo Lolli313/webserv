@@ -23,6 +23,17 @@ HttpRequest::HttpRequest() :
 	_boundary(""),
 	_body("") {}
 
+HttpRequest::HttpRequest(const sockaddr_in& clientAddr) :
+	_methodStr(""),
+	_path(""),
+	_purePath(""),
+	_queryParams(),
+	_httpVersion(""),
+	_header(),
+	_boundary(""),
+	_body(""),
+	_clientAddr(clientAddr) {}
+
 HttpRequest::HttpRequest(const HttpRequest &other) :
 	_methodStr(other._methodStr),
 	_path(other._path),
@@ -31,7 +42,8 @@ HttpRequest::HttpRequest(const HttpRequest &other) :
 	_httpVersion(other._httpVersion),
 	_header(other._header),
 	_boundary(other._boundary),
-	_body(other._body) {}
+	_body(other._body),
+	_clientAddr(other._clientAddr) {}
 
 HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 	if (this != &other) {
@@ -54,6 +66,11 @@ HttpRequest::~HttpRequest()	{}
 ======= FUNCTIONS ==============================================================
 ================================================================================
 */
+
+const std::string HttpRequest::findHeader(const std::string& key) const {
+	std::map<std::string, std::string>::const_iterator it =_header.find(key);
+	return ((it == _header.end()) ? "" : it->second);
+}
 
 void HttpRequest::parseQueryParams() {
 	size_t queryPos = _path.find('?');
@@ -90,7 +107,7 @@ void HttpRequest::parse(const std::string &request) {
 
 	// parse la methode, le path et la version du http
 	std::istringstream iss(request);
-	LOG(DEBUG, request);
+	LOG(DEBUG, BLUE_BRIGHT, "Full request: " + request);
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
@@ -156,6 +173,14 @@ void HttpRequest::parse(const std::string &request) {
     	bodyStream << line << "\n";
 	}
 	_body = bodyStream.str();
+	// print();
+
+	// Si il y a un body, verifie si les headers et Content-Length sont present
+	if (!_body.empty()) {
+		std::map<std::string, std::string>::const_iterator it = _header.find("content-length");
+		if (it == _header.end())
+			throw Tools::Exception(411, "Content-Length header is missing");
+	}
 }
 
 void HttpRequest::cookie(Cookie &cookie) {
@@ -163,54 +188,6 @@ void HttpRequest::cookie(Cookie &cookie) {
 	if (itCookie != _header.end()) {
 		cookie.setCookie(itCookie->second);
 	}
-}
-
-void HttpRequest::executeScript() {
-	if (_purePath != "cgi-bin/hello.py" && _purePath != "cgi-bin/info.php") {
-		LOG(ERROR, "Script not found");
-		return;
-	}
-
-    int pipefd[2];
-    if (pipe(pipefd) == -1) {
-		LOG(CRITICAL, "Failed to pipe");
-        // throw std::runtime_error("Failed to create pipe");
-    }
-    pid_t pid = fork();
-    if (pid == -1) {
-		LOG(CRITICAL, "Failed to fork");
-        // throw std::runtime_error("Failed to fork");
-    } else if (pid == 0) {
-        close(pipefd[0]);
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[1]);
-
-        // for (const auto &[key, value] : env) {
-        //     setenv(key.c_str(), value.c_str(), 1);
-        // }
-
-        execl(_purePath.c_str(), _purePath.c_str(), NULL);
-		LOG(CRITICAL, "Failed to execl");
-        exit(1);
-    } else { 
-        close(pipefd[1]);
-
-        char buffer[4096];
-        std::string output;
-        ssize_t bytesRead;
-        while ((bytesRead = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
-            output.append(buffer, bytesRead);
-        }
-        close(pipefd[0]);
-
-        // int status;
-        // waitpid(pid, &status, 0);
-        // if (!(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
-		// 	std::clog << "NULL4" << std::endl; 
-        //     // throw std::runtime_error("CGI script execution failed");
-        // }
-		LOG(INFO, YELLOW, "CGI output: " + output);
-    }
 }
 
 void HttpRequest::print() const {
@@ -239,6 +216,8 @@ void HttpRequest::print() const {
     LOG(DEBUG, YELLOW, "Boundary", _boundary);
     
     // Body is usually a large block, so we use the standard LOG for the content
-    LOG(DEBUG, YELLOW, "Body", "");
+    LOG(DEBUG, YELLOW, "Body", _body);
     // LOG(DEBUG, RESET, _body); 
 }
+
+
