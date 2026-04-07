@@ -194,8 +194,7 @@ std::string Client::bufferManager() {
 		}
 	}
 	if (minPos == std::string::npos) {
-		_buffer.erase();
-		return "";
+		throw Tools::Exception(400, "Inexisting method");
 	}
 	_buffer.erase(0, minPos);
 	// maintenant on verifie si la partie des headers est finit et note le debut du body
@@ -240,7 +239,7 @@ std::string Client::bufferManager() {
 	if (*endPtr != '\0' && !isspace(*endPtr)) {
 		throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
-    if (_buffer.length() >= posBodyStart + contentLength - 2) {
+    if (_buffer.length() >= posBodyStart + contentLength - 2 && _buffer.size() < std::numeric_limits<unsigned int>::max()) {
         std::string request = _buffer.substr(0, posBodyStart + contentLength);
         _buffer.erase(0, posBodyStart + contentLength);
 		setDoneReceiving(true);
@@ -248,6 +247,6 @@ std::string Client::bufferManager() {
     } else {
 		LOG(DEBUG, DEFAULT, Tools::intToString(_buffer.length()) + " " + Tools::intToString(posBodyStart) + " " + 
 			Tools::intToString(contentLength));
-        throw Tools::Exception(413, "HttpRequest: Malformed body");
+        throw Tools::Exception(413, "Wrong content size");
     }
 }
