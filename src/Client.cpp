@@ -231,7 +231,7 @@ void Client::bufferManager() {
 	// on trouve le path
 	findPath(_buffer.substr(0, posHeaderStart));
 
-	std::size_t _posHeaderEnd = _buffer.find("\r\n\r\n");
+	_posHeaderEnd = _buffer.find("\r\n\r\n");
 	if (posHeaderStart != std::string::npos && _posHeaderEnd != std::string::npos) {
 		bool flag = false;
 		for (std::size_t i = posHeaderStart; i < _posHeaderEnd; ++i) {
@@ -277,7 +277,7 @@ std::string Client::bodyVerification() {
 	if (*endPtr != '\0' && !isspace(*endPtr)) {
 		throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
-    if (_buffer.length() >= posBodyStart + contentLength - 2 && contentLength < _maxBodySize) {
+    if (_buffer.length() >= posBodyStart + contentLength - 2 &&	contentLength < _maxBodySize) {
         std::string request = _buffer.substr(0, posBodyStart + contentLength);
         _buffer.erase(0, posBodyStart + contentLength);
 		setDoneReceiving(true);
