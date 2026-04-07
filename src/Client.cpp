@@ -211,7 +211,7 @@ void Client::findHost(std::string headers) {
 
 void Client::bufferManager() {
 	// Check la position dela request dans le buffer pour pouvoir isoler la request
-	LOG(DEBUG, YELLOW_BRIGHT, "_buffer is " + _buffer);
+	// LOG(DEBUG, YELLOW_BRIGHT, "_buffer is " + _buffer);
 	const char* methods[] = {"GET ", "HEAD ", "POST ", "PUT ", "DELETE ", "OPTIONS ", "TRACE ", "CONNECT "};
 	std::vector<std::string> request(methods, methods + sizeof(methods)/sizeof(methods[0]));
 	std::size_t minPos = std::string::npos;
@@ -278,22 +278,27 @@ std::string Client::bodyVerification() {
 	if (*endPtr != '\0' && !isspace(*endPtr)) {
 		throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
-	LOG(DEBUG, PINK, "contentLength is " + Tools::intToString(contentLength));
-	LOG(DEBUG, PINK, "_maxBodySize is " + Tools::intToString(_maxBodySize));
+	// LOG(DEBUG, PINK, "contentLength is " + Tools::intToString(contentLength));
+	// LOG(DEBUG, PINK, "_maxBodySize is " + Tools::intToString(_maxBodySize));
 	std::string body = _buffer.substr(posBodyStart);
 	if (contentLength == body.size()) {
+		LOG(DEBUG, PINK, Tools::intToString(body.size()));
+		LOG(DEBUG, PINK, Tools::intToString(_buffer.size()));
+		LOG(DEBUG, PINK, Tools::intToString(posBodyStart));
+		LOG(DEBUG, PINK, Tools::intToString(contentLength));
+		LOG(DEBUG, PINK, Tools::intToString(_maxBodySize));
 		setDoneReceiving(true);
 		return _buffer;
 	}
-    else if (_buffer.length() < posBodyStart + contentLength - 2 && contentLength < _maxBodySize) {
-        // std::string request = _buffer.substr(0, posBodyStart + contentLength);
-        // _buffer.erase(0, posBodyStart + contentLength);
-		// setDoneReceiving(true);
-		// LOG(DEBUG, PINK, _buffer);
+    else if (_buffer.size() - posBodyStart < contentLength && contentLength < _maxBodySize) {
+		LOG(DEBUG, PINK, Tools::intToString(body.size()));
+		LOG(DEBUG, PINK, Tools::intToString(_buffer.size()));
+		LOG(DEBUG, PINK, Tools::intToString(posBodyStart));
+		LOG(DEBUG, PINK, Tools::intToString(contentLength));
+		LOG(DEBUG, PINK, Tools::intToString(_maxBodySize));
         return _buffer;
     } else {
-		LOG(DEBUG, DEFAULT, Tools::intToString(_buffer.length()) + " " + Tools::intToString(posBodyStart) + " " + 
-			Tools::intToString(contentLength));
+		LOG(DEBUG, DEFAULT, Tools::intToString(_buffer.length()) + " " + Tools::intToString(posBodyStart) + " " + Tools::intToString(contentLength));
         throw Tools::Exception(413, "Wrong content size");
     }
 }

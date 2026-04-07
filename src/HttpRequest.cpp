@@ -107,7 +107,7 @@ void HttpRequest::parse(const std::string &request) {
 
 	// parse la methode, le path et la version du http
 	std::istringstream iss(request);
-	LOG(DEBUG, BLUE_BRIGHT, "Full request: " + request);
+	// LOG(DEBUG, BLUE_BRIGHT, "Full request: " + request);
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
