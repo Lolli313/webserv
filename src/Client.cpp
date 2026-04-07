@@ -94,6 +94,9 @@ void Client::setBuffer(const std::string &input) { _buffer = input; }
 
 sockaddr_in Client::getClientAddr() const { return _clientAddr; }
 
+const std::string& Client::getPath() const { return _path; }
+const std::string& Client::getHost() const { return _host; }
+
 long Client::getMaxBodySize() const { return _maxBodySize; }
 void Client::setMaxBodySize(long src) { _maxBodySize = src; }
 
@@ -185,21 +188,34 @@ void Client::refreshClient()
 	_responseBuff.clear();
 }
 
-// std::string Client::findHost() {
+void Client::findPath(std::string firstLine) {
+	std::istringstream iss(firstLine);
+    std::string method;
+    std::string protocol;
 
-// }
+    iss >> method >> _path >> protocol;
+}
 
-// std::string Client::findPath() {
+void Client::findHost(std::string headers) {
+	size_t hostPos = headers.find("host: ");
+	if (hostPos != std::string::npos) {
+        hostPos += 6;
+        size_t endPos = headers.find_first_of(" \r\n", hostPos);
+        if (endPos != std::string::npos) {
+            _host = headers.substr(hostPos, endPos - hostPos);
+        } else {
+            _host = headers.substr(hostPos);
+        }
+    }
+}
 
-// }
-
-std::string Client::bufferManager() {
+void Client::bufferManager() {
 	// Check la position dela request dans le buffer pour pouvoir isoler la request
 	const char* methods[] = {"GET ", "HEAD ", "POST ", "PUT ", "DELETE ", "OPTIONS ", "TRACE ", "CONNECT "};
 	std::vector<std::string> request(methods, methods + sizeof(methods)/sizeof(methods[0]));
-	size_t minPos = std::string::npos;
+	std::size_t minPos = std::string::npos;
 	for (std::vector<std::string>::const_iterator it = request.begin(); it != request.end(); ++it) {
-		size_t pos = _buffer.find(*it);
+		std::size_t pos = _buffer.find(*it);
 		if (pos != std::string::npos && minPos > pos) {
 			minPos = pos;
 		}
@@ -208,12 +224,17 @@ std::string Client::bufferManager() {
 		throw Tools::Exception(400, "Inexisting method");
 	}
 	_buffer.erase(0, minPos);
+
 	// maintenant on verifie si la partie des headers est finit et note le debut du body
-	size_t posHeaderStart = _buffer.find_first_of("\r\n");
-	size_t posHeaderEnd = _buffer.find("\r\n\r\n");
-	if (posHeaderStart != std::string::npos && posHeaderEnd != std::string::npos) {
+	std::size_t posHeaderStart = _buffer.find_first_of("\r\n");
+
+	// on trouve le path
+	findPath(_buffer.substr(0, posHeaderStart));
+
+	std::size_t _posHeaderEnd = _buffer.find("\r\n\r\n");
+	if (posHeaderStart != std::string::npos && _posHeaderEnd != std::string::npos) {
 		bool flag = false;
-		for (size_t i = posHeaderStart; i < posHeaderEnd; ++i) {
+		for (std::size_t i = posHeaderStart; i < _posHeaderEnd; ++i) {
 			if (_buffer[i] == ':') {
 				flag = true;
 			} else if (_buffer[i] == '\r') {
@@ -225,13 +246,19 @@ std::string Client::bufferManager() {
 		}
 	}
 	// transform en minuscule
-	if (posHeaderStart == std::string::npos || posHeaderEnd == std::string::npos) {
-        return "";
+	if (posHeaderStart == std::string::npos || _posHeaderEnd == std::string::npos) {
+        return ;
     }
-	std::string headers = _buffer.substr(0, posHeaderEnd);
-	size_t posBodyStart = posHeaderEnd + 4;
+	_headers = _buffer.substr(0, _posHeaderEnd);
+
+	// on trouve le host
+	findHost(_headers);
+}
+
+std::string Client::bodyVerification() {
+	std::size_t posBodyStart = _posHeaderEnd + 4;
 	// la il faut trouver Content-Length pour savoir si le body est finit si il y en a un
-	size_t posContentLengthStart = headers.find("content-length: ");
+	std::size_t posContentLengthStart = _headers.find("content-length: ");
 	if (posContentLengthStart == std::string::npos) {
 		std::string request = _buffer.substr(0, posBodyStart);
         _buffer.erase(0, posBodyStart);
@@ -239,21 +266,18 @@ std::string Client::bufferManager() {
 		return request;
 	}
 	// si il y a un content length on verifie qu'il soit remplit
-	size_t posContentLengthStop = headers.find("\r\n", posContentLengthStart);
+	std::size_t posContentLengthStop = _headers.find("\r\n", posContentLengthStart);
 	if (posContentLengthStop == std::string::npos) {
-		posContentLengthStop = posHeaderEnd;
+		posContentLengthStop = _posHeaderEnd;
 		// throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
-	std::string contentLengthStr = headers.substr(posContentLengthStart + 16, posContentLengthStop - (posContentLengthStart + 16));
+	std::string contentLengthStr = _headers.substr(posContentLengthStart + 16, posContentLengthStop - (posContentLengthStart + 16));
 	char* endPtr;
 	unsigned long contentLength = strtoul(contentLengthStr.c_str(), &endPtr, 10);
 	if (*endPtr != '\0' && !isspace(*endPtr)) {
 		throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
-
-
-
-    if (_buffer.length() >= posBodyStart + contentLength - 2 /*&& contentLength < _maxBodySize*/) {
+    if (_buffer.length() >= posBodyStart + contentLength - 2 && contentLength < _maxBodySize) {
         std::string request = _buffer.substr(0, posBodyStart + contentLength);
         _buffer.erase(0, posBodyStart + contentLength);
 		setDoneReceiving(true);

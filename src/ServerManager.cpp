@@ -586,16 +586,24 @@ void ServerManager::handleResponse(Client *client)
 	}
 }
 
+std::string ServerManager::requestPreParsing(Client *client) {
+	client->bufferManager();
+	if (client->getHost().empty() || client->getPath().empty()) {
+		return "";
+	}
+	client->setMaxBodySize(findMaxBodySize(client, client->getHost(), client->getPath()));
+	std::string tmpRequest = client->bodyVerification();
+	return tmpRequest;
+}
+
+
 void ServerManager::existingClient(Client *client)
 {
 	const ConfigBase *config = NULL;
 	try
 	{
 		client->updateTimestamp();
-		// std::string host = client->findHost();
-		// std::string path = client->findPath();
-		// client->setMaxBodySize(findMaxBodySize(client, host, path));
-		std::string tmpRequest = client->bufferManager();
+		std::string tmpRequest = requestPreParsing(client);
 		if (client->doneReceiving())
 		{
 			HttpRequest request(client->getClientAddr());

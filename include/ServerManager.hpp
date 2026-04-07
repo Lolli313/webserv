@@ -66,6 +66,7 @@ public:
 	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
 	const ConfigBase *findConfigBase(Client &client, HttpRequest &request);
 	long findMaxBodySize(const Client *client, const std::string& host, std::string path);
+	std::string requestPreParsing(Client *client);
 	void existingClient(Client *client);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();

@@ -14,11 +14,16 @@ class Client
 {
 private:
 
+	std::size_t _posHeaderEnd;
+	std::string _host;
+	std::string _path;
+	std::string _headers;
+
 	int _clientFD;
 	std::string _buffer; // Receives the input
 	char _tmpBuff[BUFFERSIZE];
 	sockaddr_in _clientAddr;
-	long _maxBodySize;
+	unsigned long _maxBodySize;
 
 	std::string _responseBuff; // The response buffer
 	std::size_t _bytesSent; // Already sent bytes, an index for _responseBuff, waiting for client to send be ready to receive.
@@ -55,9 +60,11 @@ public:
 	long getMaxBodySize() const;
 	void setMaxBodySize(long src);
 
-	std::string findHost();
-	std::string findPath();
+	void findPath(std::string firstLine);
+	void findHost(std::string headers);
 
+	const std::string& getPath() const;
+	const std::string& getHost() const;
 	
 	char *getTmpBufferPtr();
 	
@@ -92,7 +99,8 @@ public:
 
 	void refreshClient();
 
-	std::string bufferManager();
+	void bufferManager();
+	std::string bodyVerification();
 
 	void printStatus() const;
 };
