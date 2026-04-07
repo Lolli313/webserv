@@ -232,7 +232,7 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 
 	if (_clientMap.find(clientFD) == _clientMap.end())
 	{
-		LOG(INFO, "founf a CGI pipe fd " + Tools::intToString(clientFD));
+		LOG(INFO, "found a CGI pipe fd " + Tools::intToString(clientFD));
 		return NULL;
 	}
 	LOG(INFO, ORANGE, "Found clientFD match for FD", Tools::intToString(clientFD));

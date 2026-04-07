@@ -116,7 +116,7 @@ void HttpRequest::parse(const std::string &request) {
 		LOG(WARNING, LIGHT_BLUE, "HttpRequest: Unknown method");
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
 	}
-	if (_path.find("/../") != std::string::npos || _path.find("//") != std::string::npos || _path.empty() || _path[0] != '/') {
+	if (_path.find("..") != std::string::npos || _path.find("//") != std::string::npos || _path.empty() || _path[0] != '/') {
 		throw Tools::Exception(403, "HttpRequest: Wrong path request");
 	}
 	cleanPath();

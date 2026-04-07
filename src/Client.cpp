@@ -94,6 +94,9 @@ void Client::setBuffer(const std::string &input) { _buffer = input; }
 
 sockaddr_in Client::getClientAddr() const { return _clientAddr; }
 
+long Client::getMaxBodySize() const { return _maxBodySize; }
+void Client::setMaxBodySize(long src) { _maxBodySize = src; }
+
 char *Client::getTmpBufferPtr() { return _tmpBuff; }
 // chat *Client::getTmpBuffer() { return _tmpBuff; }
 
@@ -182,6 +185,14 @@ void Client::refreshClient()
 	_responseBuff.clear();
 }
 
+// std::string Client::findHost() {
+
+// }
+
+// std::string Client::findPath() {
+
+// }
+
 std::string Client::bufferManager() {
 	// Check la position dela request dans le buffer pour pouvoir isoler la request
 	const char* methods[] = {"GET ", "HEAD ", "POST ", "PUT ", "DELETE ", "OPTIONS ", "TRACE ", "CONNECT "};
@@ -239,10 +250,14 @@ std::string Client::bufferManager() {
 	if (*endPtr != '\0' && !isspace(*endPtr)) {
 		throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
-    if (_buffer.length() >= posBodyStart + contentLength - 2 && _buffer.size() < std::numeric_limits<unsigned int>::max()) {
+
+
+
+    if (_buffer.length() >= posBodyStart + contentLength - 2 /*&& contentLength < _maxBodySize*/) {
         std::string request = _buffer.substr(0, posBodyStart + contentLength);
         _buffer.erase(0, posBodyStart + contentLength);
 		setDoneReceiving(true);
+		LOG(DEBUG, PINK, _buffer);
         return request;
     } else {
 		LOG(DEBUG, DEFAULT, Tools::intToString(_buffer.length()) + " " + Tools::intToString(posBodyStart) + " " + 
