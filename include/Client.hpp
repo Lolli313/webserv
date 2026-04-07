@@ -18,6 +18,7 @@ private:
 	std::string _buffer; // Receives the input
 	char _tmpBuff[BUFFERSIZE];
 	sockaddr_in _clientAddr;
+	long _maxBodySize;
 
 	std::string _responseBuff; // The response buffer
 	std::size_t _bytesSent; // Already sent bytes, an index for _responseBuff, waiting for client to send be ready to receive.
@@ -50,6 +51,13 @@ public:
 	void setBuffer(const std::string &input);
 
 	sockaddr_in getClientAddr() const;
+
+	long getMaxBodySize() const;
+	void setMaxBodySize(long src);
+
+	std::string findHost();
+	std::string findPath();
+
 	
 	char *getTmpBufferPtr();
 	

@@ -207,6 +207,24 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 	throw Tools::Exception(500, "Error finding server");
 }
 
+Server *ServerManager::findServer(const std::string &host, const std::string &port) {
+	std::pair<std::string, std::string> hostPair = buildHostPair(host, port);
+
+	int targetPort = std::atoi(hostPair.second.c_str());
+	std::pair<int, std::string> exactKey(targetPort, hostPair.first);
+
+	std::map<std::pair<int, std::string>, Server *>::const_iterator it = _serversMap.find(exactKey);
+	if (it != _serversMap.end()) // found exact match for Port + Server Name
+		return it->second;
+
+	std::pair<int, std::string> defaultKey(targetPort, "");
+	it = _serversMap.lower_bound(defaultKey); // Find the first match for targetPort regardless of the Server Name
+	if (it != _serversMap.end())
+		return it->second;
+
+	throw Tools::Exception(500, "Error finding server");
+}
+
 /**
  * @brief Find the matching `ConfigBase` object based on the client's request and return it
  */
@@ -223,6 +241,14 @@ const ConfigBase *ServerManager::findConfigBase(Client &client, HttpRequest &req
 	Server *server = findServer(it->second, port, request);
 	std::string modifiableString(request.getPath());
 	return &server->getPathConfig(modifiableString);
+}
+
+long ServerManager::findMaxBodySize(const Client *client, const std::string& host, std::string path) {
+	std::string port = findPort(client->getFD());
+	
+	Server *server = findServer(host, port);
+	std::string modifiableString(path);
+	return server->getPathConfig(modifiableString).getClientMaxBodySize();
 }
 
 /**
@@ -492,6 +518,14 @@ void ServerManager::throwHandler(Client *client, Tools::Exception &e, const Conf
 		client->setResponseBuff(responseString);
 		try
 		{
+			static const int excludingCodes[] = {408, 413, 429, 431, 500, 502, 503, 504};
+    		static const int excludingCodesSize = sizeof(excludingCodes) / sizeof(excludingCodes[0]);
+			for (int i = 0; i < excludingCodesSize; ++i) {
+				if (e.getReturnCode() == excludingCodes[i]) {
+					client->setToBeClosed(true);
+					throw;
+				}
+			}
 			sendResponse(client);
 		}
 		catch (Tools::Exception &e)
@@ -558,6 +592,9 @@ void ServerManager::existingClient(Client *client)
 	try
 	{
 		client->updateTimestamp();
+		// std::string host = client->findHost();
+		// std::string path = client->findPath();
+		// client->setMaxBodySize(findMaxBodySize(client, host, path));
 		std::string tmpRequest = client->bufferManager();
 		if (client->doneReceiving())
 		{
