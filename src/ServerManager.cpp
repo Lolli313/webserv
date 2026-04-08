@@ -294,13 +294,12 @@ void checkBodySize(std::size_t size, std::size_t max)
 
 bool isValidCgiPath(const HttpRequest &request, const ConfigBase *config) {
 	const std::string& folderPath = config->getCGIPaths()._scriptFolderPath;
-	if (folderPath.size() != 0 && !request.getPurePath().compare(0, folderPath.size(), folderPath)) {
+	if (!request.getPurePath().compare(0, folderPath.size(), folderPath)) {
 		if (!config->hasCGI())
 			throw Tools::Exception(403, "CGI usage is forbidden on this specific server");
 		else
 			return true;
 	}
-	// return (config->hasCGI() && !request.getPurePath().compare(0, config->getCGIPaths()._scriptFolderPath.size(), config->getCGIPaths()._scriptFolderPath));
 	return false;
 }
 
