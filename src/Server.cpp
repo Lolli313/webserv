@@ -22,6 +22,7 @@ Server::Server(const Server &obj) :
 }
 
 Server::Server(const ServerBlockConfig &config, ServerSocket *socket) : 
+	ConfigBase(config),
 	_servSocket(socket), 
 	_port(config.getPort()), 
 	_serverNames(config.getServerNames()), 

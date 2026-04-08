@@ -523,7 +523,7 @@ void ServerManager::throwHandler(Client *client, Tools::Exception &e, const Conf
 			for (int i = 0; i < excludingCodesSize; ++i) {
 				if (e.getReturnCode() == excludingCodes[i]) {
 					client->setToBeClosed(true);
-					throw;
+					// throw;
 				}
 			}
 			sendResponse(client);
