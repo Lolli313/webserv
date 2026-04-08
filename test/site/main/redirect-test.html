@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirections Test - Aero Webserver</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { color: #f5576c; margin-bottom: 10px; }
+        .back-link {
+            display: inline-block;
+            color: #f5576c;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .redirect-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border: 2px solid #f5576c;
+        }
+        .redirect-section h3 {
+            color: #f5576c;
+            margin-bottom: 15px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        .badge-301 { background: #4CAF50; color: white; }
+        .badge-302 { background: #2196F3; color: white; }
+        .btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+        .output {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 2px solid #e0e0e0;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Test Suite</a>
+        
+        <h1>🔄 HTTP Redirections Test</h1>
+        <p>Test 301/302 redirects configured in the server.</p>
+
+        <div class="info-box">
+            <h3>What this tests:</h3>
+            <ul>
+                <li>301 Moved Permanently - Permanent redirects</li>
+                <li>302 Found - Temporary redirects</li>
+                <li>Location header in redirect responses</li>
+                <li>Browser follows redirects automatically</li>
+                <li>Redirect configuration in routes</li>
+            </ul>
+        </div>
+
+        <div class="redirect-section">
+            <h3>301 - Permanent Redirect</h3>
+            <span class="badge badge-301">301</span>
+            <p>Used for permanent URL changes. Browsers cache this redirect.</p>
+            <a href="/old-page" class="btn" target="_blank">Test 301 Redirect</a>
+        </div>
+
+        <div class="redirect-section">
+            <h3>302 - Temporary Redirect</h3>
+            <span class="badge badge-302">302</span>
+            <p>Used for temporary URL changes. Not cached by browsers.</p>
+            <a href="/temp-page" class="btn" target="_blank">Test 302 Redirect</a>
+        </div>
+
+        <div class="redirect-section">
+            <h3>Route-based Redirect</h3>
+            <p>Test redirect configuration in <code>.aero</code> config files.</p>
+            <a href="/redirect-me" class="btn" target="_blank">Follow Redirect</a>
+        </div>
+
+        <div class="info-box" style="background: #d4edda; border-color: #c3e6cb; margin-top: 20px;">
+            <h3 style="color: #155724;">Configuration Example:</h3>
+            <pre style="background: white; padding: 15px; border-radius: 5px; color: #155724;">
+route /old-page {
+    redirect 301 /new-page
+}
+
+route /temp-page {
+    redirect 302 /
+}
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        async function testRedirect(path, type) {
+            const outputId = 'output' + type.replace('/', '');
+            const output = document.getElementById(outputId);
+            output.style.display = 'block';
+            output.textContent = '⏳ Testing redirect...';
+
+            try {
+                // Don't follow redirects automatically
+                const response = await fetch(path, {
+                    redirect: 'manual'
+                });
+
+                const location = response.headers.get('Location');
+                const status = response.status;
+                const type = response.type;
+                
+                let result = `Status: ${status}\n`;
+                result += `Type: ${type || response.statusText}\n`;
+                result += `Location: ${location || 'Hidden (Browser Security)'}\n\n`;
+
+                if (status === 301 || status === 302 || type === 'opaqueredirect') {
+                    result += `✅ Redirect working!\n`;
+                    if (type === 'opaqueredirect') {
+                        result += `(Browser detected a redirect but hides details for security)`;
+                    } else {
+                        result += `→ Points to: ${location}`;
+                    }
+                } else {
+                    result += `⚠️ Expected 301/302, got ${status}`;
+                }
+
+                output.textContent = result;
+            } catch (e) {
+                output.textContent = `❌ Error: ${e.message}\n\nNote: Configure redirects in your .aero config file.`;
+            }
+        }
+    </script>
+</body>
+</html>

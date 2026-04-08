@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGI Test - Aero Webserver</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { color: #667eea; margin-bottom: 10px; }
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .info-box ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+        }
+        .test-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        input[type="text"] {
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            width: 300px;
+            margin: 10px 0;
+        }
+        .output {
+            margin-top: 15px;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            border: 2px solid #2196F3;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            display: none;
+        }
+        .output.show { display: block; }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Test Suite</a>
+        
+        <h1>⚙️ CGI Script Execution Test</h1>
+        <p>Test the webserver's ability to execute CGI scripts (Python, PHP, etc.).</p>
+
+        <div class="info-box">
+            <h3>What this tests:</h3>
+            <ul>
+                <li>CGI script execution (Python/PHP)</li>
+                <li>Environment variables (REQUEST_METHOD, QUERY_STRING, etc.)</li>
+                <li>GET request with query parameters</li>
+                <li>POST request with body data</li>
+                <li>Content-Type header parsing</li>
+                <li>Script output capture and return</li>
+                <li>Error handling for script failures</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🐍 Python CGI - GET Request</h3>
+            <p>Test a simple Python script that echoes environment variables.</p>
+            <button class="btn" onclick="testPythonGet()">Run Python CGI (GET)</button>
+            <div id="pythonGetOutput" class="output"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🐍 Python CGI - POST Request</h3>
+            <p>Test POST data handling with Python CGI.</p>
+            <input type="text" id="postData" placeholder="Enter data to send">
+            <button class="btn" onclick="testPythonPost()">Run Python CGI (POST)</button>
+            <div id="pythonPostOutput" class="output"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🐘 PHP CGI (if available)</h3>
+            <p>Test PHP script execution.</p>
+            <button class="btn" onclick="testPhp()">Run PHP CGI</button>
+            <div id="phpOutput" class="output"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📂 CWD & Relative Path Test</h3>
+            <p>Tests if the CGI script runs in its own directory (required for relative file access).</p>
+            <button class="btn" onclick="testCwd()">Test CWD Behavior</button>
+            <div id="cwdOutput" class="output"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>❓ Query String Test</h3>
+            <p>Test CGI with query parameters: <code>?name=value&key=data</code></p>
+            <input type="text" id="queryName" placeholder="Name" value="test">
+            <input type="text" id="queryValue" placeholder="Value" value="123">
+            <button class="btn" onclick="testQueryString()">Test Query String</button>
+            <div id="queryOutput" class="output"></div>
+        </div>
+
+        <div class="info-box" style="background: #d4edda; border-color: #c3e6cb;">
+            <h3 style="color: #155724;">✅ Expected Behavior:</h3>
+            <ul style="color: #155724;">
+                <li>Scripts should execute without crashing the server</li>
+                <li>Environment variables should be set correctly</li>
+                <li>POST data should be passed via stdin</li>
+                <li>Script output should be returned as HTTP response</li>
+                <li>Errors in scripts should return 500 status code</li>
+                <li>CWD should be the script's directory (allowing relative file access)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function testCwd() {
+            const output = document.getElementById('cwdOutput');
+            output.classList.add('show');
+            output.textContent = '⏳ Testing CWD behavior...';
+
+            try {
+                const response = await fetch('/cgi/script/python/cwd_test.py');
+                const text = await response.text();
+                
+                let status = "❌ FAILED";
+                if (text.includes("SUCCESS")) {
+                    status = "✅ PASSED";
+                    output.style.borderColor = "#28a745";
+                } else {
+                    output.style.borderColor = "#dc3545";
+                }
+
+                output.textContent = `${status}\nStatus: ${response.status}\n\nOutput:\n${text}`;
+            } catch (e) {
+                output.textContent = `❌ Error: ${e.message}\n\nNote: Make sure cwd_test.py and cwd_test_data exist in test/`;
+            }
+        }
+
+        async function testPythonGet() {
+            const output = document.getElementById('pythonGetOutput');
+            output.classList.add('show');
+            output.textContent = '⏳ Executing Python CGI...';
+
+            try {
+                const response = await fetch('/cgi/script/python/test.py?name=Aero&version=1.0');
+                const text = await response.text();
+                output.textContent = `Status: ${response.status}\n\nOutput:\n${text}`;
+            } catch (e) {
+                output.textContent = `❌ Error: ${e.message}\n\nNote: Make sure test.py exists in test/cgi-bin/`;
+            }
+        }
+
+        async function testPythonPost() {
+            const output = document.getElementById('pythonPostOutput');
+            const data = document.getElementById('postData').value;
+            output.classList.add('show');
+            output.textContent = '⏳ Executing Python CGI with POST...';
+
+            try {
+                const response = await fetch('/cgi/script/python/post_test.py', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: data
+                });
+                const text = await response.text();
+                output.textContent = `Status: ${response.status}\n\nOutput:\n${text}`;
+            } catch (e) {
+                output.textContent = `❌ Error: ${e.message}\n\nNote: Make sure test.py exists in test/cgi-bin/`;
+            }
+        }
+
+        async function testPhp() {
+            const output = document.getElementById('phpOutput');
+            output.classList.add('show');
+            output.textContent = '⏳ Executing PHP CGI...';
+
+            try {
+                const response = await fetch('/cgi/script/php/test.php');
+                const text = await response.text();
+                output.textContent = `Status: ${response.status}\n\nOutput:\n${text}`;
+            } catch (e) {
+                output.textContent = `❌ Error: ${e.message}\n\nNote: PHP CGI may not be configured.`;
+            }
+        }
+
+        async function testQueryString() {
+            const output = document.getElementById('queryOutput');
+            const name = document.getElementById('queryName').value;
+            const value = document.getElementById('queryValue').value;
+            output.classList.add('show');
+            output.textContent = '⏳ Testing query string...';
+
+            try {
+                const response = await fetch(`/cgi/script/python/query_test.py?${name}=${value}`);
+                const text = await response.text();
+                output.textContent = `Status: ${response.status}\n\nQuery: ?${name}=${value}\n\nOutput:\n${text}`;
+            } catch (e) {
+                output.textContent = `❌ Error: ${e.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+example.com {
+
+    port 8080
+    root test/site/subject/YoupiBanane
+    index youpi.bad_extension
+	allowed_methods GET
+
+    route /put_test {
+        allowed_methods PUT
+        root test/site/subject/put_here
+    }
+
+    route /post_body {
+        allowed_methods POST
+        max_body_size 100
+        upload_path test/site/subject/YoupiBanane
+    }
+
+    route /directory {
+        allowed_methods GET
+        root test/site/subject/YoupiBanane
+        index youpi.bad_extension
+    }
+
+    route /directory/*.bla {
+    	allowed_methods GET POST
+    	script .bla test/script/go/ubuntu_cgi_tester
+    }
+
+    route *.bla {
+    	allowed_methods POST
+    	script .bla test/script/go/ubuntu_cgi_tester
+    }
+
+}

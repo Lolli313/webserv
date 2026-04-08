@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP Methods Test - Aero Webserver</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { color: #667eea; margin-bottom: 10px; }
+        .back-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .back-link:hover { text-decoration: underline; }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .method-card {
+            background: #f8f9ff;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+        .method-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .method-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .badge-get { background: #4CAF50; color: white; }
+        .badge-post { background: #2196F3; color: white; }
+        .badge-delete { background: #f44336; color: white; }
+        .badge-head { background: #FF9800; color: white; }
+        .badge-unknown { background: #9E9E9E; color: white; }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .output {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 2px solid #e0e0e0;
+            text-align: left;
+            font-family: monospace;
+            font-size: 0.9em;
+            min-height: 60px;
+        }
+        .status-ok { color: #4CAF50; font-weight: bold; }
+        .status-error { color: #f44336; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Test Suite</a>
+        
+        <h1>🔧 HTTP Methods Test</h1>
+        <p>Test different HTTP methods and their restrictions.</p>
+
+        <div class="info-box">
+            <h3>What this tests:</h3>
+            <ul>
+                <li>GET - Retrieve resources</li>
+                <li>POST - Submit data to server</li>
+                <li>DELETE - Remove resources</li>
+                <li>HEAD - Get headers only (no body)</li>
+                <li>Method restrictions per route (405 Method Not Allowed)</li>
+                <li>Unknown method handling (501 Not Implemented)</li>
+            </ul>
+        </div>
+
+        <div class="test-grid">
+            <div class="method-card">
+                <h3>GET Method</h3>
+                <span class="method-badge badge-get">GET</span>
+                <p>Retrieve a resource from the server.</p>
+                <button class="btn" onclick="testGet()">Test GET</button>
+                <div id="getOutput" class="output"></div>
+            </div>
+
+            <div class="method-card">
+                <h3>POST Method</h3>
+                <span class="method-badge badge-post">POST</span>
+                <p>Send data to the server.</p>
+                <button class="btn" onclick="testPost()">Test POST</button>
+                <div id="postOutput" class="output"></div>
+            </div>
+
+            <div class="method-card">
+                <h3>DELETE Method</h3>
+                <span class="method-badge badge-delete">DELETE</span>
+                <p>Delete a resource (if allowed).</p>
+                <button class="btn" onclick="testDelete()">Test DELETE</button>
+                <div id="deleteOutput" class="output"></div>
+            </div>
+
+            <div class="method-card">
+                <h3>HEAD Method</h3>
+                <span class="method-badge badge-head">HEAD</span>
+                <p>Get headers without body.</p>
+                <button class="btn" onclick="testHead()">Test HEAD</button>
+                <div id="headOutput" class="output"></div>
+            </div>
+
+            <div class="method-card">
+                <h3>Method Not Allowed</h3>
+                <span class="method-badge badge-delete">DELETE</span>
+                <p>Try DELETE on GET-only route.</p>
+                <button class="btn" onclick="testNotAllowed()">Test 405</button>
+                <div id="notAllowedOutput" class="output"></div>
+            </div>
+
+            <div class="method-card">
+                <h3>Unknown Method</h3>
+                <span class="method-badge badge-unknown">CUSTOM</span>
+                <p>Send an unknown HTTP method.</p>
+                <button class="btn" onclick="testUnknown()">Test CUSTOM</button>
+                <div id="unknownOutput" class="output"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testGet() {
+            const output = document.getElementById('getOutput');
+            try {
+                const response = await fetch('/');
+                output.innerHTML = `<span class="status-ok">✓ ${response.status} ${response.statusText}</span><br>Content-Type: ${response.headers.get('Content-Type')}`;
+            } catch (e) {
+                output.innerHTML = `<span class="status-error">✗ Error: ${e.message}</span>`;
+            }
+        }
+
+        async function testPost() {
+            const output = document.getElementById('postOutput');
+            try {
+                const formData = new FormData();
+                const blob = new Blob(['Test content for DELETE'], { type: 'text/plain' });
+                formData.append('file', blob, 'method-test-file.txt');
+                const response = await fetch('/uploads', {
+                    method: 'POST',
+                    body: formData
+                });
+                output.innerHTML = `<span class="${response.ok ? 'status-ok' : 'status-error'}">✓ ${response.status} ${response.statusText}</span><br>Created method-test-file.txt for DELETE test`;
+            } catch (e) {
+                output.innerHTML = `<span class="status-error">✗ Error: ${e.message}</span>`;
+            }
+        }
+
+        async function testDelete() {
+            const output = document.getElementById('deleteOutput');
+            try {
+                const response = await fetch('/uploads/method-test-file.txt', {
+                    method: 'DELETE'
+                });
+                if (response.status === 204 || response.status === 200) {
+                    output.innerHTML = `<span class="status-ok">✓ ${response.status} ${response.statusText}</span><br>File deleted successfully`;
+                } else if (response.status === 404) {
+                    output.innerHTML = `<span class="status-error">→ ${response.status} Not Found</span><br>Run POST test first to create the file`;
+                } else if (response.status === 405) {
+                    output.innerHTML = `<span class="status-error">✗ ${response.status} Method Not Allowed</span><br>DELETE not enabled`;
+                } else {
+                    output.innerHTML = `<span class="status-error">→ ${response.status} ${response.statusText}</span><br>Unexpected response`;
+                }
+            } catch (e) {
+                output.innerHTML = `<span class="status-error">✗ Error: ${e.message}</span>`;
+            }
+        }
+
+        async function testHead() {
+            const output = document.getElementById('headOutput');
+            try {
+                const response = await fetch('/', {
+                    method: 'HEAD'
+                });
+                const hasBody = response.body !== null;
+                output.innerHTML = `<span class="status-ok">✓ ${response.status} ${response.statusText}</span><br>Has body: ${hasBody}<br>Content-Length: ${response.headers.get('Content-Length')}`;
+            } catch (e) {
+                output.innerHTML = `<span class="status-error">✗ Error: ${e.message}</span>`;
+            }
+        }
+
+        async function testNotAllowed() {
+            const output = document.getElementById('notAllowedOutput');
+            try {
+                const response = await fetch('/', {
+                    method: 'DELETE'
+                });
+                const isCorrect = response.status === 405;
+                output.innerHTML = `<span class="${isCorrect ? 'status-ok' : 'status-error'}">${isCorrect ? '✓' : '✗'} ${response.status} ${response.statusText}</span><br>${isCorrect ? 'Correctly blocked' : 'Should be 405'}`;
+            } catch (e) {
+                output.innerHTML = `<span class="status-error">✗ Error: ${e.message}</span>`;
+            }
+        }
+
+        async function testUnknown() {
+            const output = document.getElementById('unknownOutput');
+            output.innerHTML = '<span class="status-ok">⏳ Testing...</span>';
+            
+            try {
+                const response = await fetch('/', {
+                    method: 'CUSTOM'
+                });
+                const isCorrect = response.status === 501 || response.status === 405;
+                output.innerHTML = `<span class="${isCorrect ? 'status-ok' : 'status-error'}">${isCorrect ? '✓' : '→'} ${response.status} ${response.statusText}</span><br>Expected: 501/405`;
+            } catch (e) {
+                output.innerHTML = `<span class="status-error">✗ Error: ${e.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>

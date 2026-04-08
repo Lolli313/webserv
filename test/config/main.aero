@@ -1,0 +1,79 @@
+server {
+    listen 3000;
+    server_name localhost;
+    root /home/aakerblo/to_home/common_core/webserv/test/;
+    index index.html;
+    client_max_body_size 10M;
+
+    error_page {
+        404 /error/404.html;
+        405 /error/405.html;
+        418 /error/418.html;
+    }
+
+    location /uploads {
+        root /home/aakerblo/to_home/common_core/webserv/site/main/uploads/;
+        allow_methods HEAD GET POST DELETE;
+        autoindex on;
+    }
+
+    location /static {
+        root /home/aakerblo/to_home/common_core/webserv/site/main/static/;
+        allow_methods HEAD GET POST;
+    }
+
+    location /session {
+        root /home/aakerblo/to_home/common_core/webserv/session/;
+        allow_methods HEAD GET POST;
+    }
+
+    location /forbidden {
+        root /home/aakerblo/to_home/common_core/webserv/site/main/forbidden/;
+        allow_methods HEAD GET POST;
+        autoindex on;
+    }
+
+    location /old-page {
+        return 301 /;
+    }
+
+    location /temp-page {
+        return 302 /;
+    }
+
+    location /redirect-me {
+        return 302 /static-test.html;
+    }
+}
+
+server {
+    listen 3001;
+    server_name localhost;
+    root /home/aakerblo/to_home/common_core/webserv/site/static/;
+    index index.html;
+
+    location / {
+        allow_methods GET;
+    }
+}
+
+server {
+    listen 3002;
+    server_name localhost;
+    root /home/aakerblo/to_home/common_core/webserv/;
+    index index.html;
+
+    cgi {
+        path /cgi/;
+        python /usr/bin/python3;
+    }
+
+    location / {
+        allow_methods GET POST;
+    }
+
+    location /cgi {
+        root /home/aakerblo/to_home/common_core/webserv/;
+        allow_methods GET;
+        }
+}
