@@ -170,6 +170,7 @@ void Polling::createEpoll()
 	_epollFD = epoll_create1(0);
 	if (_epollFD < 0)
 		throw Tools::Exception("createEpoll");
+	fcntl(_epollFD, F_SETFD, FD_CLOEXEC);
 }
 
 // Exception on failure
@@ -177,6 +178,7 @@ void Polling::successfulNewSocket(int newSocket, sockaddr_in& clientAddr)
 {
 	LOG(INFO, PINK, "Succesfully created new socket for client");
 	fcntl(newSocket, F_SETFL, O_NONBLOCK);
+	fcntl(newSocket, F_SETFD, FD_CLOEXEC);
 	addFDtoEpollAndClientMap(newSocket, _newClientFlags, clientAddr);
 }
 
