@@ -1,7 +1,7 @@
 server {
     listen 3000;
     server_name localhost;
-    root /home/aakerblo/to_home/common_core/webserv/test/;
+    root /home/aakerblo/to_home/common_core/webserv/test/site/main;
     index index.html;
     client_max_body_size 10M;
 
@@ -12,25 +12,30 @@ server {
     }
 
     location /uploads {
-        root /home/aakerblo/to_home/common_core/webserv/site/main/uploads/;
+        root /home/aakerblo/to_home/common_core/webserv/site/main/uploads;
         allow_methods HEAD GET POST DELETE;
         autoindex on;
     }
 
     location /static {
-        root /home/aakerblo/to_home/common_core/webserv/site/main/static/;
+        root /home/aakerblo/to_home/common_core/webserv/site/main/static;
         allow_methods HEAD GET POST;
     }
 
     location /session {
-        root /home/aakerblo/to_home/common_core/webserv/session/;
+        root /home/aakerblo/to_home/common_core/webserv/session;
         allow_methods HEAD GET POST;
     }
 
     location /forbidden {
-        root /home/aakerblo/to_home/common_core/webserv/site/main/forbidden/;
+        root /home/aakerblo/to_home/common_core/webserv/site/main/forbidden;
         allow_methods HEAD GET POST;
         autoindex on;
+    }
+
+    location /script {
+        root /home/aakerblo/to_home/common_core/webserv/test;
+        allow_methods GET;
     }
 
     location /old-page {
@@ -49,7 +54,7 @@ server {
 server {
     listen 3001;
     server_name localhost;
-    root /home/aakerblo/to_home/common_core/webserv/site/static/;
+    root /home/aakerblo/to_home/common_core/webserv/site/static;
     index index.html;
 
     location / {
@@ -60,7 +65,7 @@ server {
 server {
     listen 3002;
     server_name localhost;
-    root /home/aakerblo/to_home/common_core/webserv/;
+    root /home/aakerblo/to_home/common_core/webserv;
     index index.html;
 
     cgi {
@@ -73,7 +78,7 @@ server {
     }
 
     location /cgi {
-        root /home/aakerblo/to_home/common_core/webserv/;
+        root /home/aakerblo/to_home/common_core/webserv;
         allow_methods GET;
         }
 }
