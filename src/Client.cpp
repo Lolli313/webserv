@@ -290,7 +290,7 @@ std::string Client::bodyVerification() {
 		setDoneReceiving(true);
 		return _buffer;
 	}
-    else if (_buffer.size() - posBodyStart < contentLength && contentLength < _maxBodySize) {
+    else if (_buffer.size() - posBodyStart - 2 == contentLength && contentLength < _maxBodySize) {
 		LOG(DEBUG, PINK, Tools::intToString(body.size()));
 		LOG(DEBUG, PINK, Tools::intToString(_buffer.size()));
 		LOG(DEBUG, PINK, Tools::intToString(posBodyStart));
@@ -298,7 +298,11 @@ std::string Client::bodyVerification() {
 		LOG(DEBUG, PINK, Tools::intToString(_maxBodySize));
         return _buffer;
     } else {
-		LOG(DEBUG, DEFAULT, Tools::intToString(_buffer.length()) + " " + Tools::intToString(posBodyStart) + " " + Tools::intToString(contentLength));
+		LOG(DEBUG, PINK, Tools::intToString(body.size()));
+		LOG(DEBUG, PINK, Tools::intToString(_buffer.size()));
+		LOG(DEBUG, PINK, Tools::intToString(posBodyStart));
+		LOG(DEBUG, PINK, Tools::intToString(contentLength));
+		LOG(DEBUG, PINK, Tools::intToString(_maxBodySize));
         throw Tools::Exception(413, "Wrong content size");
     }
 }

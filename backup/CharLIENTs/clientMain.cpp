@@ -5,20 +5,20 @@ int main() {
     Client client("127.0.0.1", "8080");
     bool connected = client.clientConnect();
 
-    // std::string boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";
+    std::string boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";
 
-    // std::string request =
-    //     "POST /upload HTTP/1.1\r\n"
-    //     "Host: 127.0.0.1:8080\r\n"
-    //     "Content-Type: multipart/form-data; boundary=" + boundary + "\r\n"
-    //     "Content-Length: 132\r\n"
-    //     "\r\n"
-    //     + boundary + "\r\n"
-    //     "Content-Disposition: form-data; name=\"data\"\r\n"
-    //     "\r\n"
-    //     "testy\r\n"
-    //     + boundary + "--\r\n";
-    // client.clientSend(request);
+    std::string request =
+        "POST / HTTP/1.1\r\n"
+        "Host: 127.0.0.1:8080\r\n"
+        "Content-Type: multipart/form-data; boundary=" + boundary + "\r\n"
+        "Content-Length: 132\r\n"
+        "\r\n"
+        + boundary + "\r\n"
+        "Content-Disposition: form-data; name=\"data\"\r\n"
+        "\r\n"
+        "testy\r\n"
+        + boundary + "--\r\n";
+    client.clientSend(request);
 
 // std::string test =
 //     "POST /api/upload HTTP/1.1\r\n"
@@ -80,10 +80,10 @@ int main() {
     // "\r\n";
 
     
-    std::string message;
+    // std::string message;
 
-    std::getline(std::cin, message);
-    client.clientSend(cookies);
+    // std::getline(std::cin, message);
+    // client.clientSend(cookies);
     while (client.clientReceive().empty()) {
     }
     // std::getline(std::cin, message);
@@ -95,7 +95,7 @@ int main() {
     // client.clientSend(boulangerie);
     // std::getline(std::cin, message);
     // client.clientSend(test3);
-    std::getline(std::cin, message);
+    // std::getline(std::cin, message);
     client.clientDisconnect();
     return 0;
 }
