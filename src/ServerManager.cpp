@@ -239,7 +239,7 @@ const ConfigBase *ServerManager::findConfigBase(Client &client, HttpRequest &req
 		throw Tools::Exception(400, "Host header missing");
 	}
 	Server *server = findServer(it->second, port, request);
-	std::string modifiableString(request.getPath());
+	std::string modifiableString(request.getPurePath());
 	return &server->getPathConfig(modifiableString);
 }
 

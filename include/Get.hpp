@@ -44,6 +44,9 @@ public:
 	void closeAndResetFD();
 	const std::vector<Directory> handleAutoindex(const std::string &path) const;
 	const std::string autoIndexToJson(const std::vector<Directory> &currDir) const;
+	bool isCgiLocation(const std::string& path);
+	bool handleCgiPage();
+	const std::string& prepareResponse(HttpResponse& response);
 
 	static const std::string executeGet(const HttpRequest &request, const ConfigBase *config);
 };

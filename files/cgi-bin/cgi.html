@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEBSERV - CGI Manager</title>
+    <link rel="stylesheet" href="cgi.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="head">
+        <div class="titles">
+            <h1>✨CGI EXECUTOR✨</h1>
+            <p>SERVER: 127.0.0.1:8080</p>
+        </div>
+        <div class="toggle" id="modeToggle" onclick="toggleDarkMode()">
+            <div class="toggle-btn"></div>
+        </div>
+    </div>
+
+    <div class="cgi-section">
+        <h2>📂 Available Scripts</h2>
+        <ul class="cgi-list" id="cgiList"></ul>
+    </div>
+
+    <h3>Terminal Output</h3>
+    <div class="output-box">
+        <pre id="output">Ready to run scripts...</pre>
+    </div>
+</div>
+
+<script src="cgi.js"></script>
+</body>
+</html>

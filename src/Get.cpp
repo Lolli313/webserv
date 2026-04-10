@@ -142,9 +142,10 @@ const std::vector<Directory> Get::handleAutoindex(const std::string &path) const
 }
 
 /**
- * @brief First check if the config file has an index for the given path, then check if a index.html exists in the given path, then check and handle autoindex, and if none of the previous, throws an error.
+ * @brief First check if the config file has an index for the given path, then check if a index.html exists in the given path,
+ * 	then check and handle autoindex, and if none of the previous, throws an error.
  * @return false if the _fd is set and thus need to be open following the normal logic.
- * True if the _file is already being handled by the function and it doesn't have to follow the normal logic.
+ * 	True if the _file is already being handled by the function and it doesn't have to follow the normal logic.
  */
 bool Get::handleIndexFile()
 {
@@ -167,10 +168,37 @@ bool Get::handleIndexFile()
 	return false;
 }
 
+bool Get::handleCgiPage() {
+	std::map<std::string, std::string>::const_iterator it = _request.getQueryParams().find("format");
+	if (it != _request.getQueryParams().end() && it->second == "json") {
+		std::vector<Directory> currDir = handleAutoindex(_path);
+		_file = autoIndexToJson(currDir);
+		_autoindex = true;
+		return true;
+	}
+	setIndexFile(_path);
+	return false;
+}
+
+bool Get::isCgiLocation(const std::string& path) {
+	const std::string& folderPath = _config->getCGIPaths()._scriptFolderPath;
+	if (path == folderPath || (Tools::getLastCharacter(path) == '/' && path.substr(0, path.size() - 1) == folderPath)) {
+		if (!_config->hasCGI())
+			throw Tools::Exception(403, "CGI usage is forbidden on this specific server");
+		else
+			return true;
+	}
+	return false;
+}
+
 void Get::checkAndSetFile(const std::string &path)
 {
 	_path = _config->getRoot() + path;
-	if (Tools::isDirectory(_path.c_str()))
+	if (isCgiLocation(path)) {
+		if (handleCgiPage())
+			return;
+	}
+	else if (Tools::isDirectory(_path.c_str()))
 	{
 		if (handleIndexFile())
 			return;
@@ -197,26 +225,17 @@ void Get::checkAndSetFile(const std::string &path)
 	LOG(INFO, "File = " + path);
 }
 
-
-
-const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *config)
-{
-	Get get(request, config);
-	get.checkRequest();
-	LOG(DEBUG, YELLOW_BRIGHT, "GET PUREPATH = " + request.getPurePath());
-	get.checkAndSetFile(request.getPurePath());
-
-	HttpResponse response(HttpTools::getReturnPair(200));
+const std::string& Get::prepareResponse(HttpResponse& response) {
 	response.addDateHeader();
 
-	response.setBody(get._file);
+	response.setBody(_file);
 
-	response.addHeader("Content-length", Tools::intToString(get._file.size()));
+	response.addHeader("Content-length", Tools::intToString(_file.size()));
 	std::string extension;
-	if (get._autoindex)
+	if (_autoindex)
 		extension = Tools::getExtension("file.json");
 	else
-		extension = Tools::getExtension(get.getPath());
+		extension = Tools::getExtension(getPath());
 	if (!extension.empty())
 	{
 		if (extension == ".ico")
@@ -226,4 +245,15 @@ const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *
 		response.addHeader("Content-Type", extension);
 	}
 	return response.getFinalResponse();
+}
+
+const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *config)
+{
+	Get get(request, config);
+	get.checkRequest();
+	LOG(DEBUG, YELLOW_BRIGHT, "GET PUREPATH = " + request.getPurePath());
+	get.checkAndSetFile(request.getPurePath());
+
+	HttpResponse response(HttpTools::getReturnPair(200));
+	return get.prepareResponse(response);
 }

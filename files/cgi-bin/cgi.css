@@ -1,0 +1,130 @@
+:root {
+    --bg: white;
+    --text: initial;
+    --cont-bg: greenyellow;
+    --header-c: green;
+    --body-c: green;
+    --button-c: green;
+    --button-bg: lightseagreen;
+    --button-bord: 3px solid;
+    --button-bord-c: green;
+    --input-bg: initial;
+    --box-bord: 3px solid green;
+}
+
+.dark-mode {
+    --bg: black;
+    --text: white;
+    --cont-bg: #326620;
+    --header-c: rgb(25, 206, 25);
+    --body-c: rgb(7, 63, 7);
+    --button-c: greenyellow;
+    --button-bg: rgb(23, 136, 130);
+    --button-bord-c: lightseagreen;
+    --input-bg: #cac8c8;
+    --box-bord: 3px solid lightseagreen;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--body-c);
+    margin: 0;
+    padding: 30px;
+    color: var(--text);
+    transition: background-color 0.3s;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: var(--cont-bg);
+    padding: 30px;
+    border: 3px solid lightseagreen;
+    border-radius: 30px;
+}
+
+.head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+h1, h2, h3 { color: var(--header-c); margin-top: 0; }
+
+.cgi-section {
+    background-color: var(--bg);
+    border: var(--box-bord);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.cgi-list {
+    list-style: none;
+    padding: 0;
+}
+
+.cgi-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid var(--button-bg);
+}
+
+.cgi-item:last-child { border-bottom: none; }
+
+.cgi-name {
+    font-weight: bold;
+    font-family: monospace;
+    color: var(--header-c);
+    font-size: 1.0rem;
+    letter-spacing: 1px;
+}
+
+.output-box {
+    background: var(--bg); 
+    border: var(--box-bord); 
+    border-radius: 15px; 
+    padding: 15px;
+}
+
+pre { color: var(--text); margin: 0; min-height: 100px; white-space: pre-wrap; }
+
+button {
+    cursor: pointer;
+    background-color: var(--button-bg);
+    color: var(--button-c);
+    border: var(--button-bord) var(--button-bord-c);
+    border-radius: 10px;
+    padding: 8px 15px;
+    font-weight: bold;
+    transition: transform 0.1s;
+}
+
+button:active { transform: scale(0.95); }
+
+/* Dark Mode Toggle Switch */
+.toggle {
+    position: relative;
+    width: 85px;
+    height: 40px;
+    background: rgb(8, 0, 15);
+    border-radius: 55px;
+    cursor: pointer;
+}
+
+.toggle .toggle-btn {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 30px;
+    height: 30px;
+    background: rgb(132, 115, 148);
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.dark-mode .toggle { background: whitesmoke; }
+.dark-mode .toggle .toggle-btn { left: 50px; background: #326620; }
