@@ -48,3 +48,13 @@ GET /ascii/body.txt HTTP/1.1
 Host: localhost
 ```
 then press `enter` 2x
+
+### 4. siege
+
+-c (number of clients)
+-t (time before a client reconnects)
+-r (number of attempts)
+
+### 5. Apache Bench
+- sudo apt-get ab
+
