@@ -1,15 +1,16 @@
 #pragma once
 
-#include "string"
-#include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
-#include "fstream"
-#include "Tools.hpp"
-#include "fcntl.h"
+#include "HttpRequest.hpp"
 #include "ConfigBase.hpp"
 #include "Polling.hpp"
+#include "Tools.hpp"
+
 #include <sys/stat.h>
 #include <dirent.h>
+#include <fstream>
+#include <fcntl.h>
+#include <string>
 
 struct Directory
 {

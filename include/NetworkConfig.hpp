@@ -1,13 +1,14 @@
 #ifndef NETWORKCONFIG_CLASS_HPP
 #define NETWORKCONFIG_CLASS_HPP
 
+#include "TerminalColors.hpp"
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
-#include <netdb.h>
 #include <iostream>
+#include <netdb.h>
 #include <string>
-#include "TerminalColors.hpp"
 
 #define DEFAULT_LOCAL_IP "0.0.0.0"
 #define DEFAULT_LOCAL_PORT "8080"

@@ -1,22 +1,21 @@
 #ifndef SERVERMANAGER_HPP
 #define SERVERMANAGER_HPP
 
-#include "TerminalColors.hpp"
 #include "parsing/ParseConfig.hpp"
+#include "TerminalColors.hpp"
 #include "ServerSocket.hpp"
+#include "HttpResponse.hpp"
+#include "HttpRequest.hpp"
 #include "Polling.hpp"
 #include "Server.hpp"
-#include "HttpResponse.hpp"
-#include "Get.hpp"
-#include "HttpRequest.hpp"
 #include "Cookie.hpp"
+#include "Delete.hpp"
 #include "Post.hpp"
 #include "Get.hpp"
-#include "Delete.hpp"
 
-#include <vector>
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <map>
 
 #define ERROR_PAGE_TEMPLATE_PATH "/files/error_pages/ErrorTemplate.html"

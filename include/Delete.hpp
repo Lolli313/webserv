@@ -1,7 +1,7 @@
 #pragma once
 
-#include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "HttpRequest.hpp"
 #include "ConfigBase.hpp"
 
 class Delete

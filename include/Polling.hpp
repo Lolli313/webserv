@@ -8,8 +8,8 @@
 #include "Tools.hpp"
 
 #include <netinet/in.h>
-#include <algorithm>
 #include <sys/epoll.h>
+#include <algorithm>
 #include <iostream>
 #include <cstring>
 #include <cstdlib>

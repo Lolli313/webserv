@@ -7,8 +7,8 @@
 #include "Tools.hpp"
 #include "CGI.hpp"
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <cstdlib>
 #include <fstream>
 #include <limits>

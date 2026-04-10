@@ -59,7 +59,8 @@ bool locationMatchesPath(std::string &path, const std::string &location)
 }
 
 /** @brief Access directly to the path's config, abstracting all the different locationConfigs and the Server's.
- * @return A LocationConfig reference, so all the methods and data are directly accessible. */
+ * @return A LocationConfig reference, so all the methods and data are directly accessible.
+ */
 const ConfigBase &Server::getPathConfig(std::string &path)
 {
 	LOG(INFO, LIGHT_BLUE, "Path to look for is: ", path);

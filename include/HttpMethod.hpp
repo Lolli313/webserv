@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include "HttpTools.hpp"
+
+#include <string>
 
 // BASE CLASS, CANNOT BE INSTANTIATED
 class HttpMethod

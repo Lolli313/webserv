@@ -7,6 +7,7 @@ class Logger;
 #include <sys/stat.h>
 #include <exception>
 #include <iostream>
+#include <unistd.h>
 #include <sstream>
 #include <fstream>
 #include <cstdlib>
@@ -14,7 +15,6 @@ class Logger;
 #include <string>
 #include <vector>
 #include <ctime>
-#include <unistd.h>
 
 #define BUFFERSIZE 4096
 
