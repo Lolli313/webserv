@@ -5,31 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WEBSERV - CGI Manager</title>
     <link rel="stylesheet" href="cgi.css">
+    <style>
+        :root {
+            --bg: white;
+            --text: initial;
+            --cont-bg: greenyellow;
+            --header-c: green;
+            --body-c: green;
+            --button-c: green;
+            --button-bg: lightseagreen;
+            --button-bord: 3px solid;
+            --button-bord-c: green;
+            --input-bg: initial;
+            --box-bord: 3px solid green;
+        }
+
+        .dark-mode {
+            --bg: black;
+            --text: white;
+            --cont-bg: #326620;
+            --header-c: rgb(25, 206, 25);
+            --body-c: rgb(7, 63, 7);
+            --button-c: greenyellow;
+            --button-bg: rgb(23, 136, 130);
+            --button-bord-c: lightseagreen;
+            --input-bg: #cac8c8;
+            --box-bord: 3px solid lightseagreen;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="head">
-        <div class="titles">
-            <h1>✨CGI EXECUTOR✨</h1>
-            <p>SERVER: 127.0.0.1:8080</p>
+    <div class="container">
+        <div class="head">
+            <div class="titles">
+                <h1>✨CGI EXECUTOR✨</h1>
+                <p>SERVER: 127.0.0.1:8080</p>
+            </div>
+            <div class="toggle" onclick="Animatedtoggle()">
+                <div class="toggle-btn"></div>
+            </div>
         </div>
-        <div class="toggle" id="modeToggle" onclick="toggleDarkMode()">
-            <div class="toggle-btn"></div>
+
+        <div class="cgi-section">
+            <h2>📂 Available Scripts</h2>
+            <ul class="cgi-list" id="cgiList"></ul>
+        </div>
+
+        <h3>Terminal Output</h3>
+        <div class="output-box">
+            <pre id="output">Ready to run scripts...</pre>
         </div>
     </div>
 
-    <div class="cgi-section">
-        <h2>📂 Available Scripts</h2>
-        <ul class="cgi-list" id="cgiList"></ul>
-    </div>
+    <script src="../dark_mode.js"></script>
+    <script src="cgi.js"></script>
 
-    <h3>Terminal Output</h3>
-    <div class="output-box">
-        <pre id="output">Ready to run scripts...</pre>
-    </div>
-</div>
-
-<script src="cgi.js"></script>
 </body>
 </html>

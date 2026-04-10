@@ -1,8 +1,4 @@
 
-function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-}
-
 // Run this when the page loads
 window.onload = async function() {
     await loadCgiScripts();
