@@ -182,7 +182,7 @@ bool Get::handleCgiPage() {
 
 bool Get::isCgiLocation(const std::string& path) {
 	const std::string& folderPath = _config->getCGIPaths()._scriptFolderPath;
-	if (path == folderPath || (Tools::getLastCharacter(path) == '/' && path.substr(0, path.size() - 1) == folderPath)) {
+	if (!folderPath.empty() && (path == folderPath || (Tools::getLastCharacter(path) == '/' && path.substr(0, path.size() - 1) == folderPath))) {
 		if (!_config->hasCGI())
 			throw Tools::Exception(403, "CGI usage is forbidden on this specific server");
 		else
