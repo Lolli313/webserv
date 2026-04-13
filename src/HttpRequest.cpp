@@ -43,7 +43,9 @@ HttpRequest::HttpRequest(const HttpRequest &other) :
 	_header(other._header),
 	_boundary(other._boundary),
 	_body(other._body),
-	_clientAddr(other._clientAddr) {}
+	_clientAddr(other._clientAddr),
+	_port(other._port),
+	_serverName(other._serverName) {}
 
 HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 	if (this != &other) {
@@ -55,6 +57,9 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		_header = other._header;
 		_boundary = other._boundary;
 		_body = other._body;
+		_clientAddr = other._clientAddr;
+		_port = other._port;
+		_serverName = other._serverName;
 	}
 	return *this;
 }
