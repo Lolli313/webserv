@@ -294,7 +294,7 @@ void checkBodySize(std::size_t size, std::size_t max)
 
 bool isValidCgiPath(const HttpRequest &request, const ConfigBase *config) {
 	const std::string extension = Tools::extractExtension(request.getPurePath());
-	if (extension == ".py" || extension == ".php") {
+	if (extension == ".py" || extension == ".php" || extension == ".c") {
 		if (!config->hasCGI())
 			throw Tools::Exception(403, "CGI usage is forbidden on this specific server");
 		else

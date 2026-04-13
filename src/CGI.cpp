@@ -146,7 +146,10 @@ void CGI::setChildPipe()
  */
 void CGI::buildParam(std::string &fullScriptPath, char *param[3]) {
 	param[0] = const_cast<char*>(_executablePath.c_str());
-	param[1] = const_cast<char*>(fullScriptPath.c_str());
+	if (_executablePath == _config->getRoot() + "cgi-bin/a.out")
+		param[1] = NULL;
+	else
+		param[1] = const_cast<char*>(fullScriptPath.c_str());
 	param[2] = NULL;
 }
 
@@ -219,7 +222,7 @@ std::string CGI::checkAndExtractScript()
 	const std::string fullPath = _config->getRoot() + exec;
 	if (Tools::isDirectory(fullPath.c_str()))
 		throw Tools::Exception(403, "File path is a directory");
-	if (extension != ".py" && extension != ".php")
+	if (extension != ".py" && extension != ".php" && extension != ".c")
 		throw Tools::Exception(403, "Invalid script extension");
 	if (!Tools::fileExists(fullPath.c_str()))
 		throw Tools::Exception(404, "Script not found");
@@ -230,6 +233,8 @@ std::string CGI::checkAndExtractScript()
 		_executablePath = _config->getCGIPaths()._pythonPath;
 	else if (extension == ".php")
 		_executablePath = _config->getCGIPaths()._phpPath;
+	else if (extension == ".c")
+		_executablePath = _config->getRoot() + "cgi-bin/a.out";
 
 	return fullPath;
 }
