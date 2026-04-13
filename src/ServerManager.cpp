@@ -432,7 +432,7 @@ const std::string generateErrorPage(int code)
  */
 const std::string handleRedirect(Tools::Exception &e)
 {
-	HttpResponse response(HttpTools::getReturnPair(302));
+	HttpResponse response(HttpTools::getReturnPair(e.getReturnCode()));
 	const std::string &location = e.getMsgLog();
 	const int code = e.getReturnCode();
 	if (code == 301 || code == 302 || code == 303 || code == 305 || code == 307 || code == 308)
