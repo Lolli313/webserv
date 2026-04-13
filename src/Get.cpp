@@ -194,13 +194,15 @@ bool Get::isCgiLocation(const std::string& path) {
 void Get::checkAndSetFile(const std::string &path)
 {
 	_path = _config->getRoot() + path;
-	if (isCgiLocation(path)) {
-		if (handleCgiPage())
-			return;
-	}
-	else if (Tools::isDirectory(_path.c_str()))
+	if (Tools::isDirectory(_path.c_str()))
 	{
-		if (handleIndexFile())
+		if (Tools::getLastCharacter(path) != '/')
+			throw Tools::Exception(301, path + "/");
+		if (isCgiLocation(path)) {
+			if (handleCgiPage())
+				return;
+		}
+		else if (handleIndexFile())
 			return;
 	}
 	LOG(INFO, YELLOW_BRIGHT, "file path = " + _path);
