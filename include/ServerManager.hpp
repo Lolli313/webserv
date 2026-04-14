@@ -74,7 +74,7 @@ public:
 	void throwHandler(Client *client, Tools::Exception &e, const ConfigBase *config, bool reThrow);
 	void handleResponse(Client *client);
 	void setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, Client*> &it);
-	void router(int eventFD);
+	void router(int eventFD, int i);
 
 	void handleTimeout();
 };

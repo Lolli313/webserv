@@ -673,11 +673,12 @@ void ServerManager::handleTimeout()
 	}
 }
 
-void ServerManager::router(int eventFD)
+void ServerManager::router(int eventFD, int i)
 {
 	Client *client = NULL;
 
-	client = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
+	const epoll_event *eventArray = _polling->getEventArray();
+	client = _polling->handleExistingClient(eventFD, eventArray[i].events);
 	// si il est dans la map, le client est a NULL et va dans le else
 	if (client)
 		existingClient(client); // eventFD
@@ -722,7 +723,7 @@ void ServerManager::eventLoop()
 			if (matchServerFD(eventFD))
 				_polling->registerNewClient(eventFD);
 			else
-				router(eventFD);
+				router(eventFD, i);
 		}
 	}
 }

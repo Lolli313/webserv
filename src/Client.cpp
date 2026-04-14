@@ -211,7 +211,7 @@ void Client::findHost(std::string headers) {
 
 void Client::bufferManager() {
 	// Check la position dela request dans le buffer pour pouvoir isoler la request
-	// LOG(DEBUG, YELLOW_BRIGHT, "_buffer is " + _buffer);
+	LOG(DEBUG, YELLOW_BRIGHT, "_buffer is " + _buffer);
 	const char* methods[] = {"GET ", "HEAD ", "POST ", "PUT ", "DELETE ", "OPTIONS ", "TRACE ", "CONNECT "};
 	std::vector<std::string> request(methods, methods + sizeof(methods)/sizeof(methods[0]));
 	std::size_t minPos = std::string::npos;

@@ -256,9 +256,10 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 		if (error != 0) {
 			LOG(ERROR, Logger::getLevelColor(ERROR), "Socket error", strerror(error));
 		}
-		itClient->second->setToBeClosed(true);
-		itClient->second->setResponseToBeSent(-1); // No response should be sent
-		return itClient->second;
+		deleteCLient(itClient->second);
+		// itClient->second->setToBeClosed(true);
+		// itClient->second->setResponseToBeSent(-1); // No response should be sent
+		return NULL;
 
 	}
 
@@ -300,5 +301,5 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 void Polling::epollWaitEvent()
 {
 	// LOG(INFO, DEFAULT, "epoll WAITING, " + Tools::intToString(_clientMap.size()) + " clients");
-	_eventCount = epoll_wait(_epollFD, _eventArray, MAX_EVENTS, TIMEOUT);
+	_eventCount = epoll_wait(_epollFD, _eventArray, MAX_EVENTS, EPOLL_TIMEOUT);
 }

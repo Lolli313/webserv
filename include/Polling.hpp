@@ -19,8 +19,9 @@
 #include <map>
 #include <set>
 
-#define MAX_EVENTS 5
+#define MAX_EVENTS 1024
 #define TIMEOUT 60
+#define EPOLL_TIMEOUT 1000
 
 class Polling
 {
