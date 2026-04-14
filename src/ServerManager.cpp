@@ -596,6 +596,13 @@ std::string ServerManager::requestPreParsing(Client *client) {
 	return tmpRequest;
 }
 
+void handleKeepAlive(Client *client, const HttpRequest &request)
+{
+	std::string keepAlive = request.findHeader("connection");
+	if (keepAlive.empty() || keepAlive.compare("close"))
+		return ;
+	client->setKeepAlive(false);
+}
 
 void ServerManager::existingClient(Client *client)
 {
@@ -609,6 +616,7 @@ void ServerManager::existingClient(Client *client)
 			LOG(DEBUG, BLUE_BRIGHT, "CLIENT IS DONE RECEIVING");
 			HttpRequest request(client->getClientAddr());
 			request.parse(tmpRequest);
+			handleKeepAlive(client, request);
 
 			// Ideally we would call this function after the headers are parsed, for now it is here
 			config = findConfigBase(*client, request);
