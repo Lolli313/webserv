@@ -504,7 +504,7 @@ void ServerManager::throwHandler(Client *client, Tools::Exception &e, const Conf
 	else
 		LOG(DEBUG, PINK, "Throw code " + Tools::intToString(e.getReturnCode()), e.getMsgLog());
 
-	if (e.getReturnCode() >= 100 || e.getReturnCode() == 0)
+	if (client->responseToBeSent() && (e.getReturnCode() >= 100 || e.getReturnCode() == 0))
 	{
 		std::string responseString;
 		if (e.getReturnCode() >= 300 && e.getReturnCode() <= 308)
@@ -574,6 +574,7 @@ void ServerManager::handleResponse(Client *client)
 		LOG(INFO, PURPLE, "toBeSent", Tools::boolToString(client->responseToBeSent()));
 		if (client->readyToReceive() && client->responseToBeSent())
 		{
+			// LOG(DEBUG, "Response is " + client->getResponseBuff());
 			sendResponse(client);
 		}
 		if (client->responseSent())

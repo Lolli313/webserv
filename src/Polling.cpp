@@ -147,7 +147,7 @@ void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in
 // returns true if client deleted, false on error
 bool Polling::deleteCLient(Client *client)
 {
-	LOG(INFO, BLUE, "DELETE CLIENT");
+	LOG(INFO, BLUE, "DELETE CLIENT " + Tools::intToString(client->getFD()));
 	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
 	if ((_clientMap.erase(client->getFD())) != 1)
 		return (false);
@@ -257,6 +257,9 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 			LOG(ERROR, Logger::getLevelColor(ERROR), "Socket error", strerror(error));
 		}
 		itClient->second->setToBeClosed(true);
+		itClient->second->setResponseToBeSent(-1); // No response should be sent
+		return itClient->second;
+
 	}
 
 	// CLIENT DISCONNECTED
