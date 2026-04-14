@@ -17,6 +17,8 @@ class Logger;
 #include <ctime>
 
 #define BUFFERSIZE 4096
+#define MAX_EVENTS 1024
+
 
 class Tools
 {

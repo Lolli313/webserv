@@ -106,6 +106,6 @@ void ServerSocket::connectSocketToPort()
 		throw Tools::Exception("bind");
 
 	// MAGIC NUMBER TO BE SET WITH MAX_EVENTS
-	if (listen(_servSockFD, 5) < 0)
+	if (listen(_servSockFD, MAX_EVENTS) < 0)
 		throw Tools::Exception("listen");
 }
