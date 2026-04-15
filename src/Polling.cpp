@@ -69,7 +69,7 @@ Client &Polling::getClient(const unsigned int fd)
 {
 	std::map<const unsigned int, Client *>::iterator itClient = _clientMap.find(fd);
 	if (itClient == _clientMap.end())
-		Tools::Exception("Client not found");
+		throw Tools::Exception("Client not found");
 	return *itClient->second;
 }
 
@@ -77,7 +77,7 @@ Client *Polling::getClientPtr(const unsigned int fd)
 {
 	std::map<const unsigned int, Client *>::iterator itClient = _clientMap.find(fd);
 	if (itClient == _clientMap.end())
-		Tools::Exception("Client not found");
+		throw Tools::Exception("Client not found");
 	return itClient->second;
 }
 
