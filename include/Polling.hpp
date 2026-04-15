@@ -10,6 +10,7 @@
 
 #include <netinet/in.h>
 #include <sys/epoll.h>
+#include <sys/wait.h>
 #include <algorithm>
 #include <iostream>
 #include <cstring>
@@ -22,6 +23,8 @@
 
 #define TIMEOUT 60
 #define EPOLL_TIMEOUT 1000
+
+extern bool g_isChild;
 
 class Polling
 {

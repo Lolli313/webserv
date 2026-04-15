@@ -3,6 +3,8 @@
 #include "parsing/ParseConfig.hpp"
 #include "HttpResponse.hpp"
 
+bool g_isChild = false;
+
 int _sigStop = 0;
 
 void handle_signals(int sig)

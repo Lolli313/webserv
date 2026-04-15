@@ -22,14 +22,23 @@ Polling::Polling(const std::set<int> &servSockFDs) : _newClientFlags(EPOLLIN | E
 Polling::~Polling()
 {
 	LOG(INFO, RED_BRIGHT, "Calling Polling destructor");
+	
+	if (g_isChild)
+		return;
+
 	for (std::map<const unsigned int, Client *>::iterator it = _clientMap.begin(); it != _clientMap.end();)
 	{
 		std::map<const unsigned int, Client *>::iterator curr = it++;
 		deleteClient(curr->second);
 	}
 	// Should be useless, but just in case.
-	for (std::map<CGI *, Client *>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it)
+	for (std::map<CGI *, Client *>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it) {
+		int temp = it->first->getPipeOut();
+		Tools::closeAndResetFD(temp);
+		int temp2 = it->first->getPostPipeIn();
+		Tools::closeAndResetFD(temp2);
 		delete it->first;
+	}
 	Tools::closeAndResetFD(_epollFD);
 }
 
@@ -191,15 +200,20 @@ void Polling::createEpoll()
 	_epollFD = epoll_create1(0);
 	if (_epollFD < 0)
 		throw Tools::Exception("createEpoll");
-	fcntl(_epollFD, F_SETFD, FD_CLOEXEC);
+	int flags = fcntl(_epollFD, F_GETFD);
+	if (flags < 0)
+		throw Tools::Exception("setSocketOptions: flags error");
+	fcntl(_epollFD, F_SETFD, flags | FD_CLOEXEC);
 }
 
 // Exception on failure
 void Polling::successfulNewSocket(int newSocket, sockaddr_in &clientAddr)
 {
 	LOG(INFO, PINK, "Succesfully created new socket for client");
-	fcntl(newSocket, F_SETFL, O_NONBLOCK);
-	fcntl(newSocket, F_SETFD, FD_CLOEXEC);
+	int flags = fcntl(newSocket, F_GETFD);
+	if (flags < 0)
+		throw Tools::Exception("setSocketOptions: flags error");
+	fcntl(newSocket, F_SETFD, flags | O_NONBLOCK | FD_CLOEXEC);
 	addFDtoEpollAndClientMap(newSocket, _newClientFlags, clientAddr);
 }
 

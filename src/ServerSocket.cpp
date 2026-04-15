@@ -38,9 +38,10 @@ ServerSocket::~ServerSocket()
 		Tools::closeAndResetFD(_servSockFD);
 }
 
-ServerSocket::ServerSocket(const ServerSocket &obj) : _port(obj.getPort()),
-													  _servSockFD(obj.getServSockFD()),
-													  _netwConf(obj.getNetwConf())
+ServerSocket::ServerSocket(const ServerSocket &obj) :
+	_port(obj.getPort()),
+	_servSockFD(obj.getServSockFD()),
+	_netwConf(obj.getNetwConf())
 {
 	LOG(INFO, BLUE, "ServerSocket copy constructor");
 }
@@ -92,9 +93,10 @@ void ServerSocket::setSocketOptions()
 		throw Tools::Exception("setsockeopt REUSEADDR");
 	if (setsockopt(_servSockFD, SOL_SOCKET, SO_KEEPALIVE, &option, sizeof(option)) < 0)
 		throw Tools::Exception("setsockeopt SO_KEEPALIVE");
-	if (fcntl(_servSockFD, F_SETFL, O_NONBLOCK) < 0)
-		throw Tools::Exception("fcntl");
-	if (fcntl(_servSockFD, F_SETFD, FD_CLOEXEC) < 0)
+	int flags = fcntl(_servSockFD, F_GETFD);
+	if (flags < 0)
+		throw Tools::Exception("setSocketOptions: flags error");
+	if (fcntl(_servSockFD, F_SETFD, flags | O_NONBLOCK | FD_CLOEXEC) < 0)
 		throw Tools::Exception("fcntl");
 }
 

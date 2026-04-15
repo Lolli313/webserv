@@ -23,6 +23,7 @@
 #define TEMPLATE_ERROR_MESSAGE "{(MSG)}"
 
 extern int _sigStop;
+extern bool g_isChild;
 
 class ServerManager
 {
@@ -79,6 +80,7 @@ public:
 	bool clientEvent(int clientFD, uint32_t currEvent);
 	void cgiEvent(const epoll_event *event);
 	void cgiPostEvent(const epoll_event *event);
+	void cgiTimeout();
 };
 
 #endif

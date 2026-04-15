@@ -11,6 +11,8 @@
 #include <arpa/inet.h>
 #include <string>
 
+extern bool g_isChild;
+
 class CGI
 {
 private:
@@ -25,6 +27,7 @@ private:
 	int _pipeFDs[2];
 	int _postPipesFDs[2];
 	int _responseStatus;
+	std::time_t _timestamp;
 
 	std::size_t _postPos;
 
@@ -37,16 +40,21 @@ public:
 
 	// Getters
 	// CGI POST INPUT PIPE FD
-	int getPostPipeIn() const { return _postPipesFDs[1]; }
-	int getPostPipeOut() const { return _postPipesFDs[0]; }
+	const int& getPostPipeIn() const { return _postPipesFDs[1]; }
+	int& getPostPipeIn() { return _postPipesFDs[1]; }
+	const int& getPostPipeOut() const { return _postPipesFDs[0]; }
+	int& getPostPipeOut() { return _postPipesFDs[0]; }
 
 	// CGI OUTPUT PIPE FD
-	int getPipeOut() const { return _pipeFDs[0]; }
+	const int& getPipeOut() const { return _pipeFDs[0]; }
+	int& getPipeOut() { return _pipeFDs[0]; }
 	const std::string& getPath() const;
 	// const ConfigBase *getConfig() const;
 	const std::string& getBuffer() const { return _buffer; }
 	const HttpRequest& getRequest() const { return _request; }
 	const ConfigBase* getConfig() const { return _config; }
+	const int &getPid() const;
+	const std::time_t &getTimeStamp() const;
 	// bool hasCGI() const;
 
 	// Setters

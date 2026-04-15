@@ -659,6 +659,31 @@ bool ServerManager::matchServerFD(int eventFD) const
 	return false;
 }
 
+void ServerManager::cgiTimeout()
+{
+	int error = 0;
+	int status = 0;
+
+	// for each CGI that is still active, check if it has timed out.
+	for (std::map<CGI*, Client*>::iterator it = _polling->getCgiMap().begin(); it != _polling->getCgiMap().end(); it++)
+	{
+		error = waitpid(it->first->getPid(), &status, WNOHANG);
+		if (error == 0)
+		{
+			if (it->first->getTimeStamp() > TIMEOUT)
+			{
+				kill(it->first->getPid(), SIGKILL);
+				throw Tools::Exception(504, "cgiTimeout: took a lil nap, getting killed bc of it... (timeout)");
+			}
+		}
+		if (error == -1 || status != 0)
+			throw Tools::Exception(502, "cgiTimeout: CGI has somehow failed bro");
+
+		error = 0;
+		status = 0;
+	}
+}
+
 void ServerManager::handleTimeout()
 {
 	const std::time_t currTime = std::time(0);

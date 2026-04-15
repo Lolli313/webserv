@@ -15,6 +15,7 @@ CGI::CGI(const HttpRequest &request, const ConfigBase *config) :
 	_config(config),
 	_cgiBinPath(config->getCGIPaths()._scriptFolderPath),
 	_responseStatus(200),
+	_timestamp(std::time(0)),
 	_postPos(0)
 {
 	try
@@ -62,6 +63,9 @@ CGI &CGI::operator=(const CGI &obj)
 */
 
 const std::string &CGI::getPath() const { return _cgiBinPath; }
+
+const int &CGI::getPid() const { return _pid; }
+const std::time_t &CGI::getTimeStamp() const { return _timestamp; }
 
 void CGI::setPath(const std::string &src) { _cgiBinPath = src; }
 
@@ -254,6 +258,7 @@ void CGI::executeCGI()
 	pipeAndFork();
 	if (_pid == 0)
 	{
+		g_isChild = true;
 		setChildPipe();
 		if (methodIsPost)
 			setPostDup();
