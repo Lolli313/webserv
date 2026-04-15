@@ -68,17 +68,17 @@ int Polling::getNewClientFlags() const { return _newClientFlags; }
 Client &Polling::getClient(const unsigned int fd)
 {
 	std::map<const unsigned int, Client *>::iterator itClient = _clientMap.find(fd);
-	if (itClient == _clientMap.end())
-		throw Tools::Exception("Client not found");
-	return *itClient->second;
+	if (itClient != _clientMap.end())
+		return *itClient->second;
+	throw Tools::Exception("Client not found");
 }
 
 Client *Polling::getClientPtr(const unsigned int fd)
 {
 	std::map<const unsigned int, Client *>::iterator itClient = _clientMap.find(fd);
-	if (itClient == _clientMap.end())
-		throw Tools::Exception("Client not found");
-	return itClient->second;
+	if (itClient != _clientMap.end())
+		return itClient->second;
+	throw Tools::Exception("Client not found");
 }
 
 std::vector<Client *> &Polling::getClientVector() { return _clientVector; }
