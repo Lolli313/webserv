@@ -10,12 +10,13 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-CGI::CGI(const HttpRequest &request, const ConfigBase *config) : _request(request),
-																 _config(config),
-																 _cgiBinPath(config->getCGIPaths()._scriptFolderPath),
-																 _responseStatus(200),
-																 _timestamp(std::time(0)),
-																 _postPos(0)
+CGI::CGI(const HttpRequest &request, const ConfigBase *config) :
+	_request(request),
+	_config(config),
+	_cgiBinPath(config->getCGIPaths()._scriptFolderPath),
+	_responseStatus(200),
+	_timestamp(std::time(0)),
+	_postPos(0)
 {
 	try
 	{

@@ -715,10 +715,45 @@ void ServerManager::handleTimeout()
 	}
 }
 
+/*void ServerManager::router(int eventFD)
+{
+	Client *client = NULL;
+
+	client = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
+	// si il est dans la map, le client est a NULL et va dans le else
+	if (client)
+		existingClient(client); // eventFD
+	else
+	{
+		std::map<CGI *, Client *>::const_iterator it = _CGImap.begin();
+		for (; it != _CGImap.end(); ++it)
+		{
+			// It's a CGI
+			if (it->first->getPipeOut() == eventFD)
+			{
+				if (it->first->readCgiOutput())
+					setResponseAndDeleteCGI(eventFD, *it);
+				return;
+			}
+			// It's the POST write end of the CGI
+			else if (it->first->getPostPipeIn() == eventFD)
+			{
+				it->first->handlePostCGI();
+				return;
+			}
+		}
+	}
+}*/
+
 void ServerManager::router(const epoll_event &event)
 {
-	if (clientEvent(event.data.fd, event.events))
-		return ;
+	Client *client = NULL;
+	LOG(DEBUG, PURPLE, "In router");
+
+	int eventFD = event.data.fd;
+	client = _polling->handleClientEvent(eventFD, event.events);
+	if (client)
+		clientLogic(client);
 	else
 	{
 		std::map<CGI *, Client *>::const_iterator it = _polling->getCgiMap().begin();
@@ -741,28 +776,21 @@ void ServerManager::router(const epoll_event &event)
 	}
 }
 
-bool ServerManager::clientEvent(int clientFD, uint32_t currEvent)
-{
-	Client *client = NULL;
-
-	client = _polling->getClientPtr(clientFD);
-	client = _polling->handleClientEvent(client, currEvent);
-	if (client)
-	{
-		clientLogic(client);
-		return true;
-	}
-	return false;
-}
-
-// void ServerManager::cgiEvent(const epoll_event *event)
+// bool ServerManager::clientEvent(int clientFD, uint32_t currEvent)
 // {
-// 	if (it->first->readCgiOutput())
-// 		setResponseAndDeleteCGI(event->data.fd, *it);
-// }
+// 	Client *client = NULL;
 
-// void ServerManager::cgiPostEvent(const epoll_event *event)
-// {
+// 	client = _polling->getClientPtr(clientFD);
+// 	if (!client)
+// 		return false;
+
+// 	client = _polling->handleClientEvent(clientFD, currEvent);
+// 	if (client)
+// 	{
+// 		clientLogic(client);
+// 		return true;
+// 	}
+// 	return false;
 // }
 
 void ServerManager::eventLoop()

@@ -69,7 +69,7 @@ public:
 	void deleteFdFromEpoll(int targetFD);
 	bool deleteClient(Client *client);
 	void registerNewClient(int eventFD);
-	Client *handleClientEvent(Client *client, uint32_t currEvent);
+	Client *handleClientEvent(int clientFD, uint32_t currEvent);
 	void readClientInput(Client &client);
 
 	void successfulNewSocket(int newSocket, sockaddr_in& clientAddr);
