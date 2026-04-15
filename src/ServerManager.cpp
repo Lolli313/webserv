@@ -507,7 +507,7 @@ void ServerManager::throwHandler(Client *client, Tools::Exception &e, const Conf
 	else
 		LOG(DEBUG, PINK, "Throw code " + Tools::intToString(e.getReturnCode()), e.getMsgLog());
 
-	if (client->responseToBeSent() && (e.getReturnCode() >= 100 || e.getReturnCode() == 0))
+	if (e.getReturnCode() >= 100 || e.getReturnCode() == 0)
 	{
 		std::string responseString;
 		if (e.getReturnCode() >= 300 && e.getReturnCode() <= 308)
