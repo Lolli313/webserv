@@ -10,13 +10,12 @@
 ===== CONSTRUCTORS / DESTRUCTORS ================================
 =================================================================
 */
-CGI::CGI(const HttpRequest &request, const ConfigBase *config) :
-	_request(request),
-	_config(config),
-	_cgiBinPath(config->getCGIPaths()._scriptFolderPath),
-	_responseStatus(200),
-	_timestamp(std::time(0)),
-	_postPos(0)
+CGI::CGI(const HttpRequest &request, const ConfigBase *config) : _request(request),
+																 _config(config),
+																 _cgiBinPath(config->getCGIPaths()._scriptFolderPath),
+																 _responseStatus(200),
+																 _timestamp(std::time(0)),
+																 _postPos(0)
 {
 	try
 	{
@@ -83,9 +82,16 @@ void CGI::pipeAndFork()
 	if (pipe(_pipeFDs) == -1)
 		throw Tools::Exception(500, "CGI: Failed to create pipe");
 
-	if (fcntl(_pipeFDs[0], F_SETFD, FD_CLOEXEC) < 0)
+	int flags = fcntl(_pipeFDs[0], F_GETFD);
+	if (flags < 0)
+		throw Tools::Exception("pipeAndFork: flags error");
+	if (fcntl(_pipeFDs[0], F_SETFD, flags | FD_CLOEXEC) < 0)
 		throw Tools::Exception("fcntl");
-	if (fcntl(_pipeFDs[1], F_SETFD, FD_CLOEXEC) < 0)
+
+	flags = fcntl(_pipeFDs[1], F_GETFD);
+	if (flags < 0)
+		throw Tools::Exception("pipeAndFork: flags error");
+	if (fcntl(_pipeFDs[1], F_SETFD, flags | FD_CLOEXEC) < 0)
 		throw Tools::Exception("fcntl");
 
 	if ((_pid = fork()) == -1)
@@ -97,10 +103,18 @@ void CGI::setPostPipe()
 	if (pipe(_postPipesFDs) == -1)
 		throw Tools::Exception(500, "CGI: Failed to create pipe in POST");
 
-	if (fcntl(_postPipesFDs[0], F_SETFD, FD_CLOEXEC) < 0)
+	int flags = fcntl(_postPipesFDs[0], F_GETFD);
+	if (flags < 0)
+		throw Tools::Exception("pipeAndFork: flags error");
+	if (fcntl(_postPipesFDs[0], F_SETFD, flags | FD_CLOEXEC) < 0)
 		throw Tools::Exception("fcntl");
-	if (fcntl(_postPipesFDs[1], F_SETFD, FD_CLOEXEC) < 0)
+
+	flags = fcntl(_postPipesFDs[1], F_GETFD);
+	if (flags < 0)
+		throw Tools::Exception("pipeAndFork: flags error");
+	if (fcntl(_postPipesFDs[1], F_SETFD, flags | FD_CLOEXEC) < 0)
 		throw Tools::Exception("fcntl");
+
 	// ADD TO EPOLL
 }
 
@@ -148,23 +162,27 @@ void CGI::setChildPipe()
  * @param fullScriptPath Full absolute path to the script
  * @param param[2] The char* array to be filled with the arguments
  */
-void CGI::buildParam(std::string &fullScriptPath, char *param[3]) {
-	param[0] = const_cast<char*>(_executablePath.c_str());
+void CGI::buildParam(std::string &fullScriptPath, char *param[3])
+{
+	param[0] = const_cast<char *>(_executablePath.c_str());
 	if (_executablePath == _config->getRoot() + "cgi-bin/a.out")
 		param[1] = NULL;
 	else
-		param[1] = const_cast<char*>(fullScriptPath.c_str());
+		param[1] = const_cast<char *>(fullScriptPath.c_str());
 	param[2] = NULL;
 }
 
-const std::string buildMetaVariable(const std::string &key, const std::string &value) {
+const std::string buildMetaVariable(const std::string &key, const std::string &value)
+{
 	return key + "=" + value;
 }
 
-const std::string transformMapToQueryString(const std::map<std::string, std::string>& queryMap) {
+const std::string transformMapToQueryString(const std::map<std::string, std::string> &queryMap)
+{
 	std::map<std::string, std::string>::const_iterator it = queryMap.begin();
 	std::string result;
-	for (; it != queryMap.end(); it++) {
+	for (; it != queryMap.end(); it++)
+	{
 		if (!result.empty())
 			result += "&";
 		result += it->first + "=" + it->second;
@@ -175,9 +193,9 @@ const std::string transformMapToQueryString(const std::map<std::string, std::str
 /**
  * @brief Builds the environment to be used later in execve
  * @param env The char** reference to be filled with the environment for execve
- * @param envVector 
+ * @param envVector
  */
-void CGI::buildEnv(char **&env, std::vector<std::string>& envVector)
+void CGI::buildEnv(char **&env, std::vector<std::string> &envVector)
 {
 	std::string temp;
 	if (!_request.getBody().empty())
@@ -192,7 +210,7 @@ void CGI::buildEnv(char **&env, std::vector<std::string>& envVector)
 	envVector.push_back(buildMetaVariable("GATEWAY_INTERFACE", "CGI/1.1"));
 	envVector.push_back(buildMetaVariable("QUERY_STRING", transformMapToQueryString(_request.getQueryParams())));
 
-	char* ip = inet_ntoa(_request.getClientAddr().sin_addr);
+	char *ip = inet_ntoa(_request.getClientAddr().sin_addr);
 	std::string ipStr = (ip) ? ip : "127.0.0.1";
 	envVector.push_back(buildMetaVariable("REMOTE_ADDR", ipStr));
 	envVector.push_back(buildMetaVariable("REQUEST_METHOD", _request.getMethod()));
@@ -201,14 +219,16 @@ void CGI::buildEnv(char **&env, std::vector<std::string>& envVector)
 	envVector.push_back(buildMetaVariable("SERVER_PROTOCOL", _request.getHttpVersion()));
 	envVector.push_back(buildMetaVariable("SERVER_SOFTWARE", "webserv/1.1"));
 
-	if (_executablePath == _config->getCGIPaths()._phpPath) {
+	if (_executablePath == _config->getCGIPaths()._phpPath)
+	{
 		envVector.push_back(buildMetaVariable("REDIRECT_STATUS", "200"));
 		envVector.push_back(buildMetaVariable("SCRIPT_FILENAME", _config->getRoot() + _request.getPurePath()));
 	}
 
-	env = new char*[envVector.size() + 1];
-	for (std::size_t i = 0; i < envVector.size(); i++) {
-		env[i] = const_cast<char*>(envVector[i].c_str());
+	env = new char *[envVector.size() + 1];
+	for (std::size_t i = 0; i < envVector.size(); i++)
+	{
+		env[i] = const_cast<char *>(envVector[i].c_str());
 	}
 	env[envVector.size()] = NULL;
 }
@@ -340,7 +360,8 @@ std::vector<std::pair<std::string, std::string> > CGI::parseHeaders()
 	// length of "\r\n\r\n"
 	std::size_t separatorLen = 4;
 
-	if (headersEnd == std::string::npos) {
+	if (headersEnd == std::string::npos)
+	{
 		headersEnd = _buffer.rfind(LF LF);
 		// length of "\n\n"
 		separatorLen = 2;
@@ -355,21 +376,23 @@ std::vector<std::pair<std::string, std::string> > CGI::parseHeaders()
 
 	std::stringstream ss(headers);
 	std::string line;
-	while (std::getline(ss, line)) {
+	while (std::getline(ss, line))
+	{
 		if (!line.empty() && Tools::getLastCharacter(line) == '\r')
 			Tools::removeLastCharacter(line);
-		
+
 		if (line.empty())
 			continue;
 
 		std::size_t colonPos = line.find(':');
-		if (colonPos != std::string::npos) {
+		if (colonPos != std::string::npos)
+		{
 			std::string key = line.substr(0, colonPos);
 			std::string value = line.substr(colonPos + 1);
 
 			if (!value.empty() && value[0] == ' ')
 				value.erase(0, 1);
-			
+
 			result.push_back(std::make_pair(key, value));
 		}
 	}
@@ -386,7 +409,7 @@ std::pair<std::string, std::string> *getPairFromHeaders(std::vector<std::pair<st
 	return NULL;
 }
 
-void setStatus(const std::string &line, int &status, std::string& statusMessage)
+void setStatus(const std::string &line, int &status, std::string &statusMessage)
 {
 	std::istringstream iss(line);
 	std::string label;
@@ -400,9 +423,12 @@ void setStatus(const std::string &line, int &status, std::string& statusMessage)
 		statusMessage = label;
 }
 
-void removeHeader(std::vector<std::pair<std::string, std::string> >& headers, const std::string& key) {
-	for (std::vector<std::pair<std::string, std::string> >::iterator it = headers.begin(); it != headers.end(); ++it) {
-		if (it->first == key) {
+void removeHeader(std::vector<std::pair<std::string, std::string> > &headers, const std::string &key)
+{
+	for (std::vector<std::pair<std::string, std::string> >::iterator it = headers.begin(); it != headers.end(); ++it)
+	{
+		if (it->first == key)
+		{
 			headers.erase(it);
 			break;
 		}
@@ -424,7 +450,8 @@ const std::string CGI::getResponse()
 
 	std::string responseStatusMessage;
 	oneHeader = getPairFromHeaders(headers, STATUS);
-	if (oneHeader) {
+	if (oneHeader)
+	{
 		setStatus(oneHeader->second, _responseStatus, responseStatusMessage);
 		// erase the Status header since that shouldn't be sent back to the client
 		removeHeader(headers, STATUS);

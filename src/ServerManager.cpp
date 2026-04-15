@@ -676,8 +676,10 @@ void ServerManager::cgiTimeout()
 				throw Tools::Exception(504, "cgiTimeout: took a lil nap, getting killed bc of it... (timeout)");
 			}
 		}
-		if (error == -1 || status != 0)
+		if (error == -1 || status != 0) {
+			_polling->deleteClient(it->second);
 			throw Tools::Exception(502, "cgiTimeout: CGI has somehow failed bro");
+		}
 
 		error = 0;
 		status = 0;
