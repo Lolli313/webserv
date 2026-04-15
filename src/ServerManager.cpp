@@ -179,7 +179,7 @@ std::pair<std::string, std::string> buildHostPair(const std::string &str, const 
 /**
  * @brief Find the correct `Server` object based on request's `Server Name` and `Port`
  */
-Server *ServerManager::findServer(const std::string &host, const std::string &port, HttpRequest& request)
+Server *ServerManager::findServer(const std::string &host, const std::string &port, HttpRequest &request)
 {
 	std::pair<std::string, std::string> hostPair = buildHostPair(host, port);
 
@@ -207,7 +207,8 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 	throw Tools::Exception(500, "Error finding server");
 }
 
-Server *ServerManager::findServer(const std::string &host, const std::string &port) {
+Server *ServerManager::findServer(const std::string &host, const std::string &port)
+{
 	std::pair<std::string, std::string> hostPair = buildHostPair(host, port);
 
 	int targetPort = std::atoi(hostPair.second.c_str());
@@ -243,9 +244,10 @@ const ConfigBase *ServerManager::findConfigBase(Client &client, HttpRequest &req
 	return &server->getPathConfig(modifiableString);
 }
 
-long ServerManager::findMaxBodySize(const Client *client, const std::string& host, std::string path) {
+long ServerManager::findMaxBodySize(const Client *client, const std::string &host, std::string path)
+{
 	std::string port = findPort(client->getFD());
-	
+
 	Server *server = findServer(host, port);
 	std::string modifiableString(path);
 	return server->getPathConfig(modifiableString).getClientMaxBodySize();
@@ -292,9 +294,11 @@ void checkBodySize(std::size_t size, std::size_t max)
 		throw Tools::Exception(413, "body above max body size");
 }
 
-bool isValidCgiPath(const HttpRequest &request, const ConfigBase *config) {
+bool isValidCgiPath(const HttpRequest &request, const ConfigBase *config)
+{
 	const std::string extension = Tools::extractExtension(request.getPurePath());
-	if (extension == ".py" || extension == ".php" || extension == ".c") {
+	if (extension == ".py" || extension == ".php" || extension == ".c")
+	{
 		if (!config->hasCGI())
 			throw Tools::Exception(403, "CGI usage is forbidden on this specific server");
 		else
@@ -317,7 +321,7 @@ const std::string ServerManager::execute(const HttpRequest &request, const Confi
 	{
 		LOG(INFO, "Initiating CGI");
 		CGI *cgi = new CGI(request, config);
-		_CGImap[cgi] = client;
+		_polling->getCgiMap()[cgi] = client;
 		_polling->addFdToEpoll(cgi->getPipeOut(), EPOLLIN);
 		if (cgi->getPostPipeIn() >= 0)
 		{
@@ -352,16 +356,18 @@ void ServerManager::setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, 
 	// _polling->deleteFdFromEpoll(eventFD);
 	Tools::closeAndResetFD(eventFD);
 	// Parse the CGI output and get the headers
-	try {
+	try
+	{
 		it.second->setResponseBuff(it.first->getResponse());
 	}
-	catch (Tools::Exception &e) {
-		_CGImap.erase(it.first);
-		const ConfigBase* config = it.first->getConfig();
+	catch (Tools::Exception &e)
+	{
+		_polling->getCgiMap().erase(it.first);
+		const ConfigBase *config = it.first->getConfig();
 		delete it.first;
 		throwHandler(it.second, e, config, true);
 	}
-	_CGImap.erase(it.first);
+	_polling->getCgiMap().erase(it.first);
 	delete it.first;
 	it.second->setDoneReceiving(true);
 	it.second->setResponseToBeSent(true);
@@ -518,9 +524,11 @@ void ServerManager::throwHandler(Client *client, Tools::Exception &e, const Conf
 		try
 		{
 			static const int excludingCodes[] = {408, 413, 429, 431, 500, 502, 503, 504};
-    		static const int excludingCodesSize = sizeof(excludingCodes) / sizeof(excludingCodes[0]);
-			for (int i = 0; i < excludingCodesSize; ++i) {
-				if (e.getReturnCode() == excludingCodes[i]) {
+			static const int excludingCodesSize = sizeof(excludingCodes) / sizeof(excludingCodes[0]);
+			for (int i = 0; i < excludingCodesSize; ++i)
+			{
+				if (e.getReturnCode() == excludingCodes[i])
+				{
 					client->setToBeClosed(true);
 					// throw;
 				}
@@ -586,9 +594,11 @@ void ServerManager::handleResponse(Client *client)
 	}
 }
 
-std::string ServerManager::requestPreParsing(Client *client) {
+std::string ServerManager::requestPreParsing(Client *client)
+{
 	client->bufferManager();
-	if (client->getHost().empty() || client->getPath().empty()) {
+	if (client->getHost().empty() || client->getPath().empty())
+	{
 		return "";
 	}
 	client->setMaxBodySize(findMaxBodySize(client, client->getHost(), client->getPath()));
@@ -600,11 +610,11 @@ void handleKeepAlive(Client *client, const HttpRequest &request)
 {
 	std::string keepAlive = request.findHeader("connection");
 	if (keepAlive.empty() || keepAlive.compare("close"))
-		return ;
+		return;
 	client->setKeepAlive(false);
 }
 
-void ServerManager::existingClient(Client *client)
+void ServerManager::clientLogic(Client *client)
 {
 	const ConfigBase *config = NULL;
 	try
@@ -681,35 +691,54 @@ void ServerManager::handleTimeout()
 	}
 }
 
-void ServerManager::router(int eventFD, int i)
+void ServerManager::router(const epoll_event &event)
 {
-	Client *client = NULL;
-
-	const epoll_event *eventArray = _polling->getEventArray();
-	client = _polling->handleExistingClient(eventFD, eventArray[i].events);
-	// si il est dans la map, le client est a NULL et va dans le else
-	if (client)
-		existingClient(client); // eventFD
+	if (clientEvent(event.data.fd, event.events))
+		return ;
 	else
 	{
-		std::map<CGI *, Client *>::const_iterator it = _CGImap.begin();
-		for (; it != _CGImap.end(); ++it)
+		std::map<CGI *, Client *>::const_iterator it = _polling->getCgiMap().begin();
+		for (; it != _polling->getCgiMap().end(); ++it)
 		{
 			// It's a CGI
-			if (it->first->getPipeOut() == eventFD)
+			if (it->first->getPipeOut() == event.data.fd)
 			{
 				if (it->first->readCgiOutput())
-					setResponseAndDeleteCGI(eventFD, *it);
+					setResponseAndDeleteCGI(event.data.fd, *it);
 				return;
 			}
 			// It's the POST write end of the CGI
-			else if (it->first->getPostPipeIn() == eventFD)
+			else if (it->first->getPostPipeIn() == event.data.fd)
 			{
 				it->first->handlePostCGI();
 				return;
 			}
 		}
 	}
+}
+
+bool ServerManager::clientEvent(int clientFD, uint32_t currEvent)
+{
+	Client *client = NULL;
+
+	client = _polling->getClientPtr(clientFD);
+	client = _polling->handleClientEvent(client, currEvent);
+	if (client)
+	{
+		clientLogic(client);
+		return true;
+	}
+	return false;
+}
+
+void ServerManager::cgiEvent(const epoll_event *event)
+{
+	if (it->first->readCgiOutput())
+		setResponseAndDeleteCGI(event->data.fd, *it);
+}
+
+void ServerManager::cgiPostEvent(const epoll_event *event)
+{
 }
 
 void ServerManager::eventLoop()
@@ -731,7 +760,7 @@ void ServerManager::eventLoop()
 			if (matchServerFD(eventFD))
 				_polling->registerNewClient(eventFD);
 			else
-				router(eventFD, i);
+				router(eventArray[i]);
 		}
 	}
 }

@@ -34,7 +34,6 @@ private:
 
 	std::vector<ServerSocket *> _serverSocketArray;
 
-	std::map<CGI*, Client*> _CGImap;
 
 	// map<pair<port, serverName &>, Server &> : We create a new key, value for each serverName of a server.
 	// If it has 3 names, them the map will have 3 entries for each of its combination <port, serverName>
@@ -66,7 +65,7 @@ public:
 	const ConfigBase *findConfigBase(Client &client, HttpRequest &request);
 	long findMaxBodySize(const Client *client, const std::string& host, std::string path);
 	std::string requestPreParsing(Client *client);
-	void existingClient(Client *client);
+	void clientLogic(Client *client);
 	bool matchServerFD(int eventFD) const;
 	void eventLoop();
 	void mainLoop();
@@ -74,9 +73,12 @@ public:
 	void throwHandler(Client *client, Tools::Exception &e, const ConfigBase *config, bool reThrow);
 	void handleResponse(Client *client);
 	void setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, Client*> &it);
-	void router(int eventFD, int i);
+	void router(const epoll_event &event);
 
 	void handleTimeout();
+	bool clientEvent(int clientFD, uint32_t currEvent);
+	void cgiEvent(const epoll_event *event);
+	void cgiPostEvent(const epoll_event *event);
 };
 
 #endif

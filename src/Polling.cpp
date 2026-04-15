@@ -71,7 +71,17 @@ Client &Polling::getClient(const unsigned int fd)
 	return *itClient->second;
 }
 
+Client *Polling::getClientPtr(const unsigned int fd)
+{
+	std::map<const unsigned int, Client *>::iterator itClient = _clientMap.find(fd);
+	if (itClient == _clientMap.end())
+		Tools::Exception("Client not found");
+	return itClient->second;
+}
+
 std::vector<Client *> &Polling::getClientVector() { return _clientVector; }
+
+std::map<CGI*, Client*> &Polling::getCgiMap() { return _CGImap; }
 /*
 =================================================================
 ===== METHODS ===================================================
@@ -156,6 +166,12 @@ bool Polling::deleteCLient(Client *client)
 	{
 		if (*it == client)
 		{
+			for (std::map<CGI *, Client *>::iterator clit = _CGImap.begin(); clit != _CGImap.end(); clit++)
+			{
+				if (clit->second == *it)
+					_CGImap.erase(clit);
+					break;
+			}
 			_clientVector.erase(it);
 			break;
 		}
@@ -228,49 +244,36 @@ void Polling::readClientInput(Client &client)
  * @brief Receives client input and client diconnection
  * @exception Throws on failure
  **/
-Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
+Client *Polling::handleClientEvent(Client *client, uint32_t currEvent)
 {
-	LOG(INFO, LIME, "Found an existing connection");
-
-	if (_clientMap.find(clientFD) == _clientMap.end())
-	{
-		LOG(INFO, "found a CGI pipe fd " + Tools::intToString(clientFD));
-		return NULL;
-	}
-	LOG(INFO, ORANGE, "Found clientFD match for FD", Tools::intToString(clientFD));
-
-	std::map<const unsigned int, Client *>::iterator itClient = _clientMap.find(clientFD);
-
-	if (itClient == _clientMap.end())
-		throw Tools::Exception("Client not found");
-
+	if (!client)
+		throw Tools::Exception("Polling: no client");
 	// ERROR
 	if (currEvent & EPOLLERR)
 	{
 		LOG(ERROR, "EPOLLERR");
 		int error = 0;
 		socklen_t len = sizeof(error);
-		if (getsockopt(clientFD, SOL_SOCKET, SO_ERROR, &error, &len) == -1) {
+		if (getsockopt(client->getFD(), SOL_SOCKET, SO_ERROR, &error, &len) == -1) {
 			LOG(ERROR, "getsockopt error");
 		}
 		if (error != 0) {
 			LOG(ERROR, Logger::getLevelColor(ERROR), "Socket error", strerror(error));
 		}
-		deleteCLient(itClient->second);
-		// itClient->second->setToBeClosed(true);
-		// itClient->second->setResponseToBeSent(-1); // No response should be sent
+		deleteCLient(client);
+		// client->setToBeClosed(true);
+		// client->setResponseToBeSent(-1); // No response should be sent
 		return NULL;
-
 	}
 
 	// CLIENT DISCONNECTED
 	if (currEvent & EPOLLHUP)
 	{
 		LOG(INFO, "EPOLLHUP");
-		readClientInput(*itClient->second);
-		itClient->second->setDoneReceiving(true);
-		itClient->second->setToBeClosed(true);
-		itClient->second->setResponseToBeSent(-1); // No response should be sent
+		readClientInput(*client);
+		client->setDoneReceiving(true);
+		client->setToBeClosed(true);
+		client->setResponseToBeSent(-1); // No response should be sent
 	}
 
 	// CLIENT IS DONE SENDING
@@ -278,24 +281,24 @@ Client *Polling::handleExistingClient(int clientFD, uint32_t currEvent)
 	if (currEvent & EPOLLRDHUP)
 	{
 		LOG(INFO, "EPOLLRDHUP");
-		itClient->second->setDoneReceiving(true);
-		itClient->second->setToBeClosed(true);
+		client->setDoneReceiving(true);
+		client->setToBeClosed(true);
 	}
 
 	// CLIENT INPUT
 	if (currEvent & EPOLLIN)
 	{
 		LOG(INFO, "EPOLLIN");
-		readClientInput(*itClient->second);
+		readClientInput(*client);
 	}
 
 	// CLIENT READY TO RECEIVE
 	if (currEvent & EPOLLOUT)
 	{
 		LOG(INFO, PINK, "EPOLLOUT");
-		itClient->second->setReadyToReceive(true);
+		client->setReadyToReceive(true);
 	}
-	return itClient->second;
+	return client;
 }
 
 void Polling::epollWaitEvent()

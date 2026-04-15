@@ -6,6 +6,7 @@
 #include "HttpResponse.hpp"
 #include "Client.hpp"
 #include "Tools.hpp"
+#include "CGI.hpp"
 
 #include <netinet/in.h>
 #include <sys/epoll.h>
@@ -28,6 +29,7 @@ private:
 	epoll_event _eventArray[MAX_EVENTS];
 	std::map<const unsigned int, Client *> _clientMap;
 	std::vector<Client *> _clientVector; // Used to retrieve the timestamp of each client, FD is used to get a O(1) loolkup
+	std::map<CGI*, Client*> _CGImap;
 	int _eventCount;
 	int _epollFD;
 	int _currEventFD;
@@ -47,7 +49,9 @@ public:
 	int getEventCount() const;
 	int getNewClientFlags() const;
 	Client &getClient(const unsigned int fd);
+	Client *getClientPtr(const unsigned int fd);
 	std::vector<Client *> &getClientVector();
+	std::map<CGI*, Client*> &getCgiMap();
 
 	const epoll_event *getEventArray() const;
 
@@ -62,7 +66,7 @@ public:
 	void deleteFdFromEpoll(int targetFD);
 	bool deleteCLient(Client *client);
 	void registerNewClient(int eventFD);
-	Client *handleExistingClient(int eventFD, uint32_t currEvent);
+	Client *handleClientEvent(Client *client, uint32_t currEvent);
 	void readClientInput(Client &client);
 
 	void successfulNewSocket(int newSocket, sockaddr_in& clientAddr);
