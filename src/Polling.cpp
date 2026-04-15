@@ -9,8 +9,7 @@
 =================================================================
 */
 
-Polling::Polling(const std::set<int> &servSockFDs) : 
-	_newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
+Polling::Polling(const std::set<int> &servSockFDs) : _newClientFlags(EPOLLIN | EPOLLRDHUP | EPOLLERR)
 {
 	createEpoll();
 	LOG(INFO, PURPLE, "epoll CONSTRUCTOR, socket size is", Tools::intToString(servSockFDs.size()));
@@ -26,8 +25,11 @@ Polling::~Polling()
 	for (std::map<const unsigned int, Client *>::iterator it = _clientMap.begin(); it != _clientMap.end();)
 	{
 		std::map<const unsigned int, Client *>::iterator curr = it++;
-		deleteCLient(curr->second);
+		deleteClient(curr->second);
 	}
+	// Should be useless, but just in case.
+	for (std::map<CGI *, Client *>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it)
+		delete it->first;
 	Tools::closeAndResetFD(_epollFD);
 }
 
@@ -81,7 +83,7 @@ Client *Polling::getClientPtr(const unsigned int fd)
 
 std::vector<Client *> &Polling::getClientVector() { return _clientVector; }
 
-std::map<CGI*, Client*> &Polling::getCgiMap() { return _CGImap; }
+std::map<CGI *, Client *> &Polling::getCgiMap() { return _CGImap; }
 /*
 =================================================================
 ===== METHODS ===================================================
@@ -119,7 +121,7 @@ void Polling::setClientEPOLLOUT(Client *client, bool add)
 {
 	int mask = _newClientFlags;
 	if (add)
-		mask |= EPOLLOUT; 
+		mask |= EPOLLOUT;
 	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_MOD, mask);
 }
 
@@ -129,14 +131,15 @@ void Polling::addFdToEpoll(int targetFD, int eventFlags)
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
 }
 
-void Polling::deleteFdFromEpoll(int targetFD) {
+void Polling::deleteFdFromEpoll(int targetFD)
+{
 	LOG(INFO, GREEN, "deleting fd from epoll", Tools::intToString(targetFD));
 	// epollEventAction(_epollFD, targetFD, EPOLL_CTL_DEL, 0);
 	epoll_ctl(_epollFD, EPOLL_CTL_DEL, targetFD, NULL);
 }
 
 // Exception on failure
-void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in& clientAddr)
+void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in &clientAddr)
 {
 	epollEventAction(_epollFD, targetFD, EPOLL_CTL_ADD, eventFlags);
 	Client *client = new Client(targetFD, clientAddr);
@@ -155,7 +158,7 @@ void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in
 // }
 
 // returns true if client deleted, false on error
-bool Polling::deleteCLient(Client *client)
+bool Polling::deleteClient(Client *client)
 {
 	LOG(INFO, BLUE, "DELETE CLIENT " + Tools::intToString(client->getFD()));
 	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
@@ -169,8 +172,10 @@ bool Polling::deleteCLient(Client *client)
 			for (std::map<CGI *, Client *>::iterator clit = _CGImap.begin(); clit != _CGImap.end(); clit++)
 			{
 				if (clit->second == *it)
+				{
 					_CGImap.erase(clit);
 					break;
+				}
 			}
 			_clientVector.erase(it);
 			break;
@@ -190,7 +195,7 @@ void Polling::createEpoll()
 }
 
 // Exception on failure
-void Polling::successfulNewSocket(int newSocket, sockaddr_in& clientAddr)
+void Polling::successfulNewSocket(int newSocket, sockaddr_in &clientAddr)
 {
 	LOG(INFO, PINK, "Succesfully created new socket for client");
 	fcntl(newSocket, F_SETFL, O_NONBLOCK);
@@ -225,7 +230,7 @@ void Polling::readClientInput(Client &client)
 	int readSize = recv(_currEventFD, client.getTmpBufferPtr(), BUFFERSIZE, 0);
 	if (readSize < 0)
 	{
-		deleteCLient(&client);
+		deleteClient(&client);
 		throw Tools::Exception("error at receiving client input");
 	}
 	else if (readSize > 0)
@@ -254,13 +259,15 @@ Client *Polling::handleClientEvent(Client *client, uint32_t currEvent)
 		LOG(ERROR, "EPOLLERR");
 		int error = 0;
 		socklen_t len = sizeof(error);
-		if (getsockopt(client->getFD(), SOL_SOCKET, SO_ERROR, &error, &len) == -1) {
+		if (getsockopt(client->getFD(), SOL_SOCKET, SO_ERROR, &error, &len) == -1)
+		{
 			LOG(ERROR, "getsockopt error");
 		}
-		if (error != 0) {
+		if (error != 0)
+		{
 			LOG(ERROR, Logger::getLevelColor(ERROR), "Socket error", strerror(error));
 		}
-		deleteCLient(client);
+		deleteClient(client);
 		// client->setToBeClosed(true);
 		// client->setResponseToBeSent(-1); // No response should be sent
 		return NULL;

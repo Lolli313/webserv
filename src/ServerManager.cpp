@@ -20,10 +20,7 @@ ServerManager::~ServerManager()
 		delete (*it);
 	if (_polling)
 		delete _polling;
-	for (std::map<CGI *, Client *>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it)
-	{
-		delete it->first;
-	}
+
 }
 
 ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs) : _polling(NULL)
@@ -539,7 +536,7 @@ void ServerManager::throwHandler(Client *client, Tools::Exception &e, const Conf
 		{
 			if (client->toBeClosed())
 			{
-				if (!_polling->deleteCLient(client))
+				if (!_polling->deleteClient(client))
 					throw Tools::Exception("Error at deleting client");
 				client = NULL;
 			}
@@ -549,7 +546,7 @@ void ServerManager::throwHandler(Client *client, Tools::Exception &e, const Conf
 
 	if (client && client->toBeClosed())
 	{
-		if (!_polling->deleteCLient(client))
+		if (!_polling->deleteClient(client))
 			throw Tools::Exception("Error at deleting client");
 		client = NULL;
 	}
@@ -640,7 +637,7 @@ void ServerManager::clientLogic(Client *client)
 		// client->printStatus();
 		if (client->toBeClosed())
 		{
-			_polling->deleteCLient(client);
+			_polling->deleteClient(client);
 			return;
 		}
 	}
@@ -731,15 +728,15 @@ bool ServerManager::clientEvent(int clientFD, uint32_t currEvent)
 	return false;
 }
 
-void ServerManager::cgiEvent(const epoll_event *event)
-{
-	if (it->first->readCgiOutput())
-		setResponseAndDeleteCGI(event->data.fd, *it);
-}
+// void ServerManager::cgiEvent(const epoll_event *event)
+// {
+// 	if (it->first->readCgiOutput())
+// 		setResponseAndDeleteCGI(event->data.fd, *it);
+// }
 
-void ServerManager::cgiPostEvent(const epoll_event *event)
-{
-}
+// void ServerManager::cgiPostEvent(const epoll_event *event)
+// {
+// }
 
 void ServerManager::eventLoop()
 {
