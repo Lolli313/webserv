@@ -161,7 +161,7 @@ void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in
 bool Polling::deleteClient(Client *client)
 {
 	LOG(INFO, BLUE, "DELETE CLIENT " + Tools::intToString(client->getFD()));
-	epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
+	// epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
 	if ((_clientMap.erase(client->getFD())) != 1)
 		return (false);
 	Tools::closeAndResetFD(client->getRefFD());
