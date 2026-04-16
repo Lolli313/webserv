@@ -35,6 +35,7 @@ CGI::CGI(const HttpRequest &request, const ConfigBase *config) :
 
 CGI::~CGI()
 {
+	LOG(INFO, RED_BRIGHT, "Calling CGI destructor");
 	Tools::closeAndResetFD(_postPipesFDs[0]);
 	Tools::closeAndResetFD(_postPipesFDs[1]);
 	Tools::closeAndResetFD(_pipeFDs[0]);

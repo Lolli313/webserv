@@ -176,7 +176,7 @@ void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in
 // returns true if client deleted, false on error
 bool Polling::deleteClient(Client *client)
 {
-	LOG(INFO, BLUE, "DELETE CLIENT " + Tools::intToString(client->getFD()));
+	LOG(INFO, BLUE, "DELETE CLIENT " + Tools::intToString(client->getFD()));	
 	// epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
 	if ((_clientMap.erase(client->getFD())) != 1) {
 		LOG(DEBUG, PINK, "ECHOUER DE ERASE LE CLIENT");
@@ -191,6 +191,7 @@ bool Polling::deleteClient(Client *client)
 			{
 				if (clit->second == *it)
 				{
+					delete clit->first;
 					_CGImap.erase(clit);
 					break;
 				}

@@ -661,61 +661,46 @@ bool ServerManager::matchServerFD(int eventFD) const
 	return false;
 }
 
-void ServerManager::cgiTimeout() {
-    std::vector<CGI*> toDelete;
+void ServerManager::cgiTimeout()
+{
+	pid_t pid = 0;
+	int status = 0;
 
-    for (std::map<CGI*, Client*>::iterator it = _polling->getCgiMap().begin();
-         it != _polling->getCgiMap().end(); ++it) {
-        CGI* cgi = it->first;
-        int status;
-        pid_t result = waitpid(cgi->getPid(), &status, WNOHANG);
+	std::map<CGI *, Client *> &cgis = _polling->getCgiMap();
+	// for each CGI that is still active, check if it has timed out.
+	for (std::map<CGI*, Client*>::reverse_iterator it = _polling->getCgiMap().rbegin(); it != _polling->getCgiMap().rend();)
+	{
+		pid = waitpid(it->first->getPid(), &status, WNOHANG);
+		if (pid == 0)
+		{
+			if (std::time(0) - it->first->getTimeStamp() > CGI_TIMEOUT)
+			{
+				kill(it->first->getPid(), SIGKILL);
+				it->second->setToBeClosed(true);
 
-        if (result == -1 || (WIFEXITED(status) && WEXITSTATUS(status) != 0)) {
-            toDelete.push_back(cgi);
-        } else if (result == 0 && cgi->getTimeStamp() > TIMEOUT) {
-            kill(cgi->getPid(), SIGKILL);
-            toDelete.push_back(cgi);
-        }
-    }
+				Tools::Exception e(504, "cgiTimeout: Script took too long to execute");
+				throwHandler(it->second, e, NULL, false);
+				it = cgis.rbegin();
+				continue;
+			}
+		}
+		else if (pid == -1) {
+			it->second->setToBeClosed(true);
+			throw Tools::Exception(502, "cgiTimeout: CGI has somehow failed bro");
+		}
+		else if (pid > 0) {
+			if (WIFEXITED(status))
+				LOG(INFO, SKY_BLUE, "CGI exited normally");
+			else if (WIFSIGNALED(status)) {
+				LOG(INFO, RED, "CGI script was killed");
+			}
+		}
+		it++;
 
-    for (std::vector<CGI*>::iterator it = toDelete.begin(); it != toDelete.end(); ++it) {
-        CGI* cgi = *it;
-        std::map<CGI*, Client*>::iterator cgiIt = _polling->getCgiMap().find(cgi);
-        if (cgiIt != _polling->getCgiMap().end()) {
-            // close(cgi->getPipeFd());
-			Tools::closeAndResetFD(cgi->getPipeOut());
-            _polling->getCgiMap().erase(cgiIt);
-            delete cgi;
-        }
-    }
+		pid = 0;
+		status = 0;
+	}
 }
-
-// void ServerManager::cgiTimeout()
-// {
-// 	int error = 0;
-// 	int status = 0;
-
-// 	// for each CGI that is still active, check if it has timed out.
-// 	for (std::map<CGI*, Client*>::iterator it = _polling->getCgiMap().begin(); it != _polling->getCgiMap().end(); it++)
-// 	{
-// 		error = waitpid(it->first->getPid(), &status, WNOHANG);
-// 		if (error == 0)
-// 		{
-// 			if (it->first->getTimeStamp() > TIMEOUT)
-// 			{
-// 				kill(it->first->getPid(), SIGKILL);
-// 				throw Tools::Exception(504, "cgiTimeout: took a lil nap, getting killed bc of it... (timeout)");
-// 			}
-// 		}
-// 		if (error == -1 || status != 0) {
-// 			_polling->deleteClient(it->second);
-// 			throw Tools::Exception(502, "cgiTimeout: CGI has somehow failed bro");
-// 		}
-
-// 		error = 0;
-// 		status = 0;
-// 	}
-// }
 
 
 void ServerManager::handleTimeout()
@@ -732,7 +717,6 @@ void ServerManager::handleTimeout()
 			++it;
 			continue;
 		}
-		// std::cout << (currTime - client->getTimestamp()) << std::endl;
 		if ((currTime - client->getTimestamp()) > TIMEOUT)
 		{
 			client->setToBeClosed(true);
@@ -746,36 +730,6 @@ void ServerManager::handleTimeout()
 		++it;
 	}
 }
-
-/*void ServerManager::router(int eventFD)
-{
-	Client *client = NULL;
-
-	client = _polling->handleExistingClient(eventFD, _polling->getEventArray()->events);
-	// si il est dans la map, le client est a NULL et va dans le else
-	if (client)
-		existingClient(client); // eventFD
-	else
-	{
-		std::map<CGI *, Client *>::const_iterator it = _CGImap.begin();
-		for (; it != _CGImap.end(); ++it)
-		{
-			// It's a CGI
-			if (it->first->getPipeOut() == eventFD)
-			{
-				if (it->first->readCgiOutput())
-					setResponseAndDeleteCGI(eventFD, *it);
-				return;
-			}
-			// It's the POST write end of the CGI
-			else if (it->first->getPostPipeIn() == eventFD)
-			{
-				it->first->handlePostCGI();
-				return;
-			}
-		}
-	}
-}*/
 
 void ServerManager::router(const epoll_event &event)
 {
@@ -807,23 +761,6 @@ void ServerManager::router(const epoll_event &event)
 		}
 	}
 }
-
-// bool ServerManager::clientEvent(int clientFD, uint32_t currEvent)
-// {
-// 	Client *client = NULL;
-
-// 	client = _polling->getClientPtr(clientFD);
-// 	if (!client)
-// 		return false;
-
-// 	client = _polling->handleClientEvent(clientFD, currEvent);
-// 	if (client)
-// 	{
-// 		clientLogic(client);
-// 		return true;
-// 	}
-// 	return false;
-// }
 
 void ServerManager::eventLoop()
 {

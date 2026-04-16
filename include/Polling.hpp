@@ -21,7 +21,8 @@
 #include <map>
 #include <set>
 
-#define TIMEOUT 5
+#define TIMEOUT 10
+#define CGI_TIMEOUT ((TIMEOUT > 5) ? (TIMEOUT - 5) : 0)
 #define EPOLL_TIMEOUT 1000
 
 extern bool g_isChild;
