@@ -661,61 +661,121 @@ bool ServerManager::matchServerFD(int eventFD) const
 	return false;
 }
 
-void ServerManager::cgiTimeout()
-{
-	int error = 0;
-	int status = 0;
+void ServerManager::cgiTimeout() {
+    std::vector<CGI*> toDelete;
 
-	// for each CGI that is still active, check if it has timed out.
-	for (std::map<CGI*, Client*>::iterator it = _polling->getCgiMap().begin(); it != _polling->getCgiMap().end(); it++)
-	{
-		error = waitpid(it->first->getPid(), &status, WNOHANG);
-		if (error == 0)
-		{
-			if (it->first->getTimeStamp() > TIMEOUT)
-			{
-				kill(it->first->getPid(), SIGKILL);
-				throw Tools::Exception(504, "cgiTimeout: took a lil nap, getting killed bc of it... (timeout)");
-			}
-		}
-		if (error == -1 || status != 0) {
-			_polling->deleteClient(it->second);
-			throw Tools::Exception(502, "cgiTimeout: CGI has somehow failed bro");
-		}
+    for (std::map<CGI*, Client*>::iterator it = _polling->getCgiMap().begin();
+         it != _polling->getCgiMap().end(); ++it) {
+        CGI* cgi = it->first;
+        int status;
+        pid_t result = waitpid(cgi->getPid(), &status, WNOHANG);
 
-		error = 0;
-		status = 0;
-	}
+        if (result == -1 || (WIFEXITED(status) && WEXITSTATUS(status) != 0)) {
+            toDelete.push_back(cgi);
+        } else if (result == 0 && cgi->getTimeStamp() > TIMEOUT) {
+            kill(cgi->getPid(), SIGKILL);
+            toDelete.push_back(cgi);
+        }
+    }
+
+    for (std::vector<CGI*>::iterator it = toDelete.begin(); it != toDelete.end(); ++it) {
+        CGI* cgi = *it;
+        std::map<CGI*, Client*>::iterator cgiIt = _polling->getCgiMap().find(cgi);
+        if (cgiIt != _polling->getCgiMap().end()) {
+            // close(cgi->getPipeFd());
+            _polling->getCgiMap().erase(cgiIt);
+            delete cgi;
+        }
+    }
 }
 
-void ServerManager::handleTimeout()
-{
-	const std::time_t currTime = std::time(0);
-	std::vector<Client *> &clients = _polling->getClientVector();
+// void ServerManager::cgiTimeout()
+// {
+// 	int error = 0;
+// 	int status = 0;
 
-	for (std::vector<Client *>::reverse_iterator it = clients.rbegin();
-		 it != clients.rend();)
-	{
-		Client *client = *it;
-		if (!client)
-		{
-			++it;
-			continue;
-		}
-		// std::cout << (currTime - client->getTimestamp()) << std::endl;
-		if ((currTime - client->getTimestamp()) > TIMEOUT)
-		{
-			client->setToBeClosed(true);
-			std::string message = "timeout for client fd = " + Tools::intToString(client->getFD());
-			Tools::Exception timeoutException(408, message);
-			// Call throwHandler without throwing to bypass the normal logic.
-			throwHandler(client, timeoutException, NULL, false);
-			it = clients.rbegin();
-			continue;
-		}
-		++it;
-	}
+// 	// for each CGI that is still active, check if it has timed out.
+// 	for (std::map<CGI*, Client*>::iterator it = _polling->getCgiMap().begin(); it != _polling->getCgiMap().end(); it++)
+// 	{
+// 		error = waitpid(it->first->getPid(), &status, WNOHANG);
+// 		if (error == 0)
+// 		{
+// 			if (it->first->getTimeStamp() > TIMEOUT)
+// 			{
+// 				kill(it->first->getPid(), SIGKILL);
+// 				throw Tools::Exception(504, "cgiTimeout: took a lil nap, getting killed bc of it... (timeout)");
+// 			}
+// 		}
+// 		if (error == -1 || status != 0) {
+// 			_polling->deleteClient(it->second);
+// 			throw Tools::Exception(502, "cgiTimeout: CGI has somehow failed bro");
+// 		}
+
+// 		error = 0;
+// 		status = 0;
+// 	}
+// }
+
+void ServerManager::handleTimeout() {
+    const std::time_t currTime = std::time(0);
+    std::vector<Client*> &clients = _polling->getClientVector();
+    std::vector<Client*> timedOutClients;
+
+    for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+        Client* client = *it;
+        if (!client) continue;
+
+        if ((currTime - client->getTimestamp()) > TIMEOUT) {
+            timedOutClients.push_back(client);
+        }
+    }
+
+    for (std::vector<Client*>::iterator it = timedOutClients.begin(); it != timedOutClients.end(); ++it) {
+        Client* client = *it;
+
+		std::string message = "timeout for client fd = " + Tools::intToString(client->getFD());
+		Tools::Exception timeoutException(408, message);
+
+		try {
+            throwHandler(client, timeoutException, NULL, false);
+        } catch (...) {}
+
+        std::vector<Client*>::iterator clientIt = std::find(clients.begin(), clients.end(), client);
+        if (clientIt != clients.end()) {
+            _polling->deleteClient(*clientIt);
+            clients.erase(clientIt);
+        }
+    }
 }
+
+// void ServerManager::handleTimeout()
+// {
+// 	const std::time_t currTime = std::time(0);
+// 	std::vector<Client *> &clients = _polling->getClientVector();
+
+// 	for (std::vector<Client *>::reverse_iterator it = clients.rbegin();
+// 		 it != clients.rend();)
+// 	{
+// 		Client *client = *it;
+// 		if (!client)
+// 		{
+// 			++it;
+// 			continue;
+// 		}
+// 		// std::cout << (currTime - client->getTimestamp()) << std::endl;
+// 		if ((currTime - client->getTimestamp()) > TIMEOUT)
+// 		{
+// 			client->setToBeClosed(true);
+// 			std::string message = "timeout for client fd = " + Tools::intToString(client->getFD());
+// 			Tools::Exception timeoutException(408, message);
+// 			// Call throwHandler without throwing to bypass the normal logic.
+// 			throwHandler(client, timeoutException, NULL, false);
+// 			it = clients.rbegin();
+// 			continue;
+// 		}
+// 		++it;
+// 	}
+// }
 
 /*void ServerManager::router(int eventFD)
 {
@@ -805,7 +865,11 @@ void ServerManager::eventLoop()
 			if (errno == EINTR)
 				return;
 		}
+
+		// tentative de gestion des timeout (c'est Charles qui code source tkt)
 		handleTimeout();
+		cgiTimeout();
+
 		const epoll_event *eventArray = _polling->getEventArray();
 		for (int i = 0; i < _polling->getEventCount(); i++)
 		{

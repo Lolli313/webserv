@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import time
+
+# pour tester le timeout
+time.sleep(15)
 
 # En-tête HTTP obligatoire pour CGI
 print("Content-Type: text/html; charset=utf-8")
