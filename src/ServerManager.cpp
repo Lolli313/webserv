@@ -643,8 +643,10 @@ void ServerManager::clientLogic(Client *client)
 	}
 	catch (Tools::Exception &e)
 	{
-		if (e.getReturnCode() == 42)
+		if (e.getReturnCode() == 42) {
+			// _polling->deleteClient(client);
 			throw;
+		}
 		throwHandler(client, e, config, true);
 	}
 }

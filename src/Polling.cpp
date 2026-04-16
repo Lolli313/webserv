@@ -27,17 +27,17 @@ Polling::~Polling()
 
 	for (std::map<const unsigned int, Client *>::iterator it = _clientMap.begin(); it != _clientMap.end();)
 	{
-		if (g_isChild) {
-			Tools::closeAndResetFD(it->second->getRefFD());
-			it++;
-		}
-		else {
+		// if (g_isChild) {
+		// 	Tools::closeAndResetFD(it->second->getRefFD());
+		// 	it++;
+		// }
+		// else {
 			std::map<const unsigned int, Client *>::iterator curr = it++;
 			deleteClient(curr->second);
-		}
+		// }
 	}
-	if (g_isChild)
-		return;
+	// if (g_isChild)
+	// 	return;
 
 	// Should be useless, but just in case.
 	for (std::map<CGI *, Client *>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it) {
