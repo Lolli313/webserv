@@ -25,7 +25,8 @@ Client::Client(int fd) :
 	_keepAlive(true), 
 	_readyToReceive(false), 
 	_toBeClosed(false),
-	_timestamp(std::time(0))
+	_timestamp(std::time(0)),
+	_connectedPort(-1)
 {
 	LOG(INFO, CYAN_BRIGHT, "NEW CLIENT FD", Tools::intToString(fd));
 }
@@ -40,7 +41,8 @@ Client::Client(int fd, sockaddr_in& clientAddr) :
 	_keepAlive(true), 
 	_readyToReceive(false), 
 	_toBeClosed(false),
-	_timestamp(std::time(0))
+	_timestamp(std::time(0)),
+	_connectedPort(-1)
 {
 	LOG(INFO, CYAN_BRIGHT, "NEW CLIENT FD", Tools::intToString(fd));
 }
@@ -166,6 +168,16 @@ void Client::addBytesSent(std::size_t bytes) { _bytesSent += bytes; }
 void Client::updateTimestamp() { _timestamp = std::time(0); }
 const std::time_t &Client::getTimestamp() const { return _timestamp; }
 const std::time_t &Client::getTimestampInSeconds() const { return _timestamp; }
+int Client::getConnectedPort() { 
+	if (_connectedPort >= 0)
+		return _connectedPort;
+	sockaddr_in serverAddr;
+	socklen_t len = sizeof(serverAddr);
+	
+	getsockname(_clientFD, (sockaddr*)&serverAddr, &len);
+	_connectedPort = ntohs(serverAddr.sin_port);
+	return _connectedPort;
+}
 
 /*
 =================================================================

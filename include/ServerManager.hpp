@@ -59,12 +59,12 @@ public:
 	void setupServers(const std::vector<ServerBlockConfig> &serverConfigs);
 	std::map<std::pair<int, std::string>, Server*> setupServersMap();
 	std::set<int> setupServSockFDs();
-	const std::string& findPort(int eventFD);
+	const std::string findPort(Client *client);
 	Server* findServer(const std::string& host, const std::string& port, HttpRequest& request);
 	Server* findServer(const std::string& host, const std::string& port);
 	void checkRequestValidity(const Client &client, const HttpRequest &httpRequest, int eventFD);
 	const ConfigBase *findConfigBase(Client &client, HttpRequest &request);
-	long findMaxBodySize(const Client *client, const std::string& host, std::string path);
+	long findMaxBodySize(Client *client, const std::string& host, std::string path);
 	std::string requestPreParsing(Client *client);
 	void clientLogic(Client *client);
 	bool matchServerFD(int eventFD) const;

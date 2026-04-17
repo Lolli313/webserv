@@ -40,6 +40,7 @@ private:
 	bool _toBeClosed; // CLient should be closed, can be set by EPOLLHUP
 
 	std::time_t _timestamp; // Client last action, used for TIMEOUT
+	int _connectedPort;
 
 	Client &operator=(const Client &obj);
 	
@@ -103,6 +104,8 @@ public:
 	std::string bodyVerification();
 
 	void printStatus() const;
+
+	int getConnectedPort();
 };
 
 #endif

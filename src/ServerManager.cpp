@@ -145,15 +145,9 @@ void TEST_RESPONSE(Client *client, int code, const std::string &message, const s
 /**
  * @brief Find and return the correct port based on the client's socket FD
  */
-const std::string &ServerManager::findPort(int eventFD)
+const std::string ServerManager::findPort(Client *client)
 {
-	std::vector<ServerSocket *>::const_iterator it = _serverSocketArray.begin();
-	for (; it != _serverSocketArray.end(); it++)
-	{
-		if (eventFD == (*it)->getServSockFD())
-			return (*it)->getPort();
-	}
-	return _serverSocketArray[0]->getPort();
+	return Tools::intToString(client->getConnectedPort());
 }
 
 /**
@@ -204,6 +198,9 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 	throw Tools::Exception(500, "Error finding server");
 }
 
+/**
+ * @brief Find the correct `Server` object based on request's `Server Name` and `Port`, used in findMaxBodySize()
+ */
 Server *ServerManager::findServer(const std::string &host, const std::string &port)
 {
 	std::pair<std::string, std::string> hostPair = buildHostPair(host, port);
@@ -228,7 +225,8 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
  */
 const ConfigBase *ServerManager::findConfigBase(Client &client, HttpRequest &request)
 {
-	std::string port = findPort(client.getFD());
+	std::string port = findPort(&client);
+	LOG(DEBUG, RED, "=================== " + port);
 	(void)client;
 	std::map<std::string, std::string>::const_iterator it = request.getHeader().find("host");
 	if (it == request.getHeader().end())
@@ -241,9 +239,9 @@ const ConfigBase *ServerManager::findConfigBase(Client &client, HttpRequest &req
 	return &server->getPathConfig(modifiableString);
 }
 
-long ServerManager::findMaxBodySize(const Client *client, const std::string &host, std::string path)
+long ServerManager::findMaxBodySize(Client *client, const std::string &host, std::string path)
 {
-	std::string port = findPort(client->getFD());
+	std::string port = findPort(client);
 
 	Server *server = findServer(host, port);
 	std::string modifiableString(path);
