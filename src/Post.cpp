@@ -35,7 +35,7 @@ void Post::parseBody() {
         if (it != _request.getHeader().end()) {
             head["content-disposition"] = it->second;
         } else {
-            throw Tools::Exception(400, "Post: No Name");
+            throw Tools::Exception(400, "Post: No content-disposition");
             // head["Content-Disposition"] = "name=\"post\"";
         }
         head["body"] = _request.getBody();
@@ -112,13 +112,13 @@ void Post::saveInFile() const {
         const std::string& name = it->second;
         size_t namePos = name.find("name=\"");
         if (namePos == std::string::npos) {
-            throw Tools::Exception(400, "Post: No Name");
+            throw Tools::Exception(400, "Post: No Name in content-disposition");
             // filename = "post";
         } else {
             size_t start = namePos + 6;
             size_t end = name.find("\"", start);
             if (end == std::string::npos) {
-                throw Tools::Exception(400, "Post: No Name");
+                throw Tools::Exception(400, "Post: No quote, whatever that means");
                 // filename = "post";
             } else {
                 filename = name.substr(start, end - start);
