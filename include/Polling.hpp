@@ -21,7 +21,7 @@
 #include <map>
 #include <set>
 
-#define TIMEOUT 10
+#define TIMEOUT 60
 #define CGI_TIMEOUT ((TIMEOUT > 5) ? (TIMEOUT - 5) : 0)
 #define EPOLL_TIMEOUT 1000
 
