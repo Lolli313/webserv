@@ -110,13 +110,22 @@ void Post::saveInFile() const {
         }
         std::string filename;
         const std::string& name = it->second;
-        size_t namePos = name.find("name=\"");
+        size_t namePos = name.find("name=");
         if (namePos == std::string::npos) {
             throw Tools::Exception(400, "Post: No Name in content-disposition");
             // filename = "post";
         } else {
-            size_t start = namePos + 6;
-            size_t end = name.find("\"", start);
+            std::size_t start = std::string::npos;
+            std::size_t end = std::string::npos;
+            if (name[namePos + 5] == '\"') {
+                // std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAA" << name[namePos + 5] << std::endl;
+                start = namePos + 6;
+                end = name.find("\"", start);
+            } else if (name[namePos + 5] != '\"') {
+                // std::cout << "BBBBBBBBBBBBBBBBBBBBBBBBBBBB" << name[namePos + 5] << std::endl;
+                start = namePos + 5;
+                end = name.find_first_of(" \r\n", start);
+            }
             if (end == std::string::npos) {
                 throw Tools::Exception(400, "Post: No quote, whatever that means");
                 // filename = "post";
@@ -146,7 +155,7 @@ void Post::saveInFile() const {
             // std::clog << "formatType : " << formatType << " contentType : " << contentType << std::endl;
             filename += formatType;
         }
-        std::ofstream outFile(("files/" + filename).c_str(), std::ios::out | std::ios::binary);
+        std::ofstream outFile(("uploads/" + filename).c_str(), std::ios::out | std::ios::binary);
         if (!outFile) {
             throw Tools::Exception(500, "Post: Can't create file");
         }
