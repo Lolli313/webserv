@@ -611,6 +611,7 @@ void handleKeepAlive(Client *client, const HttpRequest &request)
 void ServerManager::clientLogic(Client *client)
 {
 	const ConfigBase *config = NULL;
+	LOG(DEBUG, BLUE_BRIGHT, "clientLogic");
 	try
 	{
 		client->updateTimestamp();
@@ -792,6 +793,7 @@ void ServerManager::router(const epoll_event &event)
 		clientLogic(client);
 	else
 	{
+		LOG(DEBUG, BLUE_BRIGHT, "ELSE ROUTER");
 		std::map<CGI *, Client *>::const_iterator it = _polling->getCgiMap().begin();
 		for (; it != _polling->getCgiMap().end(); ++it)
 		{
@@ -800,15 +802,20 @@ void ServerManager::router(const epoll_event &event)
 			{
 				if (it->first->readCgiOutput())
 					setResponseAndDeleteCGI(event.data.fd, *it);
+				LOG(DEBUG, "PIPEOUT");
 				return;
 			}
 			// It's the POST write end of the CGI
 			else if (it->first->getPostPipeIn() == event.data.fd)
 			{
 				it->first->handlePostCGI();
+				LOG(DEBUG, "POSTPIPE");
 				return;
 			}
+			LOG(DEBUG, "CGI ELSE");
 		}
+		LOG(INFO, "router: GHOST FD FOUND");
+		Tools::closeAndResetFD(eventFD);
 	}
 }
 
