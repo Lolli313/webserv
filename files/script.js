@@ -92,24 +92,74 @@ async function validateAndSend() {
     submitButton.classList.add('active');
 
     try {
-        let url = `http://localhost:8080${path}`;
+        let url;
+        if (selectedMethod === 'DELETE') {
+            // Construire l'URL en intégrant le "name" directement dans le path
+            // Exemple : si path = "/" et name = "mon.json" → "/mon.json"
+            const basePath = path.endsWith('/') ? path : `${path}/`;
+            url = `http://localhost:7080${basePath}${name}`;
+        } else {
+            url = `http://localhost:7080${path}`;
+        }
+
         let options = { method: selectedMethod };
 
-        // Configuration spécifique pour POST
         if (selectedMethod === 'POST') {
             if (bodyText) {
                 // Envoi du body.json comme texte brut
                 options.headers = { 'Content-Type': 'application/json' };
-                options.body = bodyText; // Envoie le contenu brut du body
+                options.body = bodyText;
             } else if (fileInput.files.length > 0) {
-                // Envoi du fichier avec le nom du champ personnalisé (name)
-                const formData = new FormData();
+                // Envoi du fichier avec un Content-Type et un nom personnalisés
                 const file = fileInput.files[0];
-                formData.append(name, file, file.name); // Utilise le nom original du fichier
-                uploadedFiles = [file];
-                options.body = formData;
+                const fileExtension = name.split('.').pop().toLowerCase();
+                let contentType = ''; // Type par défaut
+
+                // Déterminer le Content-Type en fonction de l'extension
+                switch (fileExtension) {
+                    case 'txt':
+                        contentType = 'text/plain';
+                        break;
+                    case 'json':
+                        contentType = 'application/json';
+                        break;
+                    case 'png':
+                        contentType = 'image/png';
+                        break;
+                    case 'jpg':
+                    case 'jpeg':
+                        contentType = 'image/jpeg';
+                        break;
+                    case 'pdf':
+                        contentType = 'application/pdf';
+                        break;
+                }
+
+                // Générer une boundary unique
+                const boundary = '----geckoboundary' + Math.random().toString(16).substring(2, 12);
+
+                // Extraire le nom sans extension pour le champ "name"
+                const fieldName = name.split('.')[0];
+
+                // Créer le corps de la requête multipart manuellement
+                const bodyParts = [];
+                bodyParts.push(`--${boundary}`);
+                bodyParts.push(`Content-Disposition: form-data; name="${fieldName}"; filename="${name}"`);
+                bodyParts.push(`Content-Type: ${contentType}`);
+                bodyParts.push(''); // Ligne vide
+                bodyParts.push(await file.text());
+                bodyParts.push(`--${boundary}--`);
+
+                const body = bodyParts.join('\r\n');
+
+                // Définir les en-têtes et le corps
+                options.headers = {
+                    'Content-Type': `multipart/form-data; boundary=${boundary}`,
+                };
+                options.body = body;
             }
         }
+
 
         // Envoi de la requête
         const response = await fetch(url, options);
