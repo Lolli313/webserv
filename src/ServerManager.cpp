@@ -225,7 +225,6 @@ Server *ServerManager::findServer(const std::string &host, const std::string &po
 const ConfigBase *ServerManager::findConfigBase(Client &client, HttpRequest &request)
 {
 	std::string port = findPort(&client);
-	LOG(DEBUG, RED, "=================== " + port);
 	(void)client;
 	std::map<std::string, std::string>::const_iterator it = request.getHeader().find("host");
 	if (it == request.getHeader().end())
@@ -648,6 +647,11 @@ void ServerManager::clientLogic(Client *client)
 			throw;
 		}
 		throwHandler(client, e, config, true);
+	}
+	catch (std::exception &e)
+	{
+		Tools::Exception error(500, e.what());
+		throwHandler(client, error, config, true);
 	}
 }
 
