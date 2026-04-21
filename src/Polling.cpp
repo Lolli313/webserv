@@ -27,20 +27,12 @@ Polling::~Polling()
 
 	for (std::map<const unsigned int, Client *>::iterator it = _clientMap.begin(); it != _clientMap.end();)
 	{
-		// if (g_isChild) {
-		// 	Tools::closeAndResetFD(it->second->getRefFD());
-		// 	it++;
-		// }
-		// else {
-			std::map<const unsigned int, Client *>::iterator curr = it++;
-			deleteClient(curr->second);
-		// }
+		std::map<const unsigned int, Client *>::iterator curr = it++;
+		deleteClient(curr->second);
 	}
-	// if (g_isChild)
-	// 	return;
-
 	// Should be useless, but just in case.
-	for (std::map<CGI *, Client *>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it) {
+	for (std::map<CGI *, Client *>::iterator it = _CGImap.begin(); it != _CGImap.end(); ++it)
+	{
 		int temp = it->first->getPipeOut();
 		Tools::closeAndResetFD(temp);
 		int temp2 = it->first->getPostPipeIn();
@@ -176,9 +168,10 @@ void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in
 // returns true if client deleted, false on error
 bool Polling::deleteClient(Client *client)
 {
-	LOG(INFO, BLUE, "DELETE CLIENT " + Tools::intToString(client->getFD()));	
+	LOG(INFO, BLUE, "DELETE CLIENT " + Tools::intToString(client->getFD()));
 	// epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
-	if ((_clientMap.erase(client->getFD())) != 1) {
+	if ((_clientMap.erase(client->getFD())) != 1)
+	{
 		LOG(DEBUG, PINK, "ECHOUER DE ERASE LE CLIENT");
 		return (false);
 	}
@@ -187,7 +180,7 @@ bool Polling::deleteClient(Client *client)
 	{
 		if (*it == client)
 		{
-			for (std::map<CGI *, Client *>::iterator clit = _CGImap.begin(); clit != _CGImap.end(); )
+			for (std::map<CGI *, Client *>::iterator clit = _CGImap.begin(); clit != _CGImap.end();)
 			{
 				if (clit->second == client)
 				{
@@ -298,10 +291,12 @@ Client *Polling::handleClientEvent(int clientFD, uint32_t currEvent)
 		LOG(ERROR, "EPOLLERR");
 		int error = 0;
 		socklen_t len = sizeof(error);
-		if (getsockopt(clientFD, SOL_SOCKET, SO_ERROR, &error, &len) == -1) {
+		if (getsockopt(clientFD, SOL_SOCKET, SO_ERROR, &error, &len) == -1)
+		{
 			LOG(ERROR, "getsockopt error");
 		}
-		if (error != 0) {
+		if (error != 0)
+		{
 			LOG(ERROR, Logger::getLevelColor(ERROR), "Socket error", strerror(error));
 		}
 		itClient->second->setToBeClosed(true);

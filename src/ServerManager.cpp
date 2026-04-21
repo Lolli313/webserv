@@ -360,6 +360,7 @@ void ServerManager::setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, 
 		const ConfigBase *config = it.first->getConfig();
 		delete it.first;
 		throwHandler(it.second, e, config, true);
+		return ;
 	}
 	_polling->getCgiMap().erase(it.first);
 	delete it.first;
@@ -706,8 +707,6 @@ void ServerManager::cgiTimeout()
 	pid_t pid = 0;
 	int status = 0;
 
-	LOG(DEBUG, "cgiTimeout: In CGI timeout");
-
 	std::map<CGI *, Client *> &cgis = _polling->getCgiMap();
 
 	for (std::map<CGI *, Client *>::iterator it = cgis.begin(); it != cgis.end(); /* no increment here */)
@@ -749,6 +748,7 @@ void ServerManager::cgiTimeout()
 				LOG(INFO, RED, "CGI script was killed");
 
 			// C++98 safe map erasure
+			delete it->first;
 			cgis.erase(it++);
 		}
 	}
