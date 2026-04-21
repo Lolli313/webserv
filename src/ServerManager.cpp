@@ -20,7 +20,6 @@ ServerManager::~ServerManager()
 		delete (*it);
 	if (_polling)
 		delete _polling;
-
 }
 
 ServerManager::ServerManager(const std::vector<ServerBlockConfig> &serverConfigs) : _polling(NULL)
@@ -641,7 +640,8 @@ void ServerManager::clientLogic(Client *client)
 	}
 	catch (Tools::Exception &e)
 	{
-		if (e.getReturnCode() == 42) {
+		if (e.getReturnCode() == 42)
+		{
 			// _polling->deleteClient(client);
 			throw;
 		}
@@ -659,47 +659,99 @@ bool ServerManager::matchServerFD(int eventFD) const
 	return false;
 }
 
+// void ServerManager::cgiTimeout()
+// {
+// 	pid_t pid = 0;
+// 	int status = 0;
+
+// 	std::map<CGI *, Client *> &cgis = _polling->getCgiMap();
+// 	// for each CGI that is still active, check if it has timed out.
+// 	for (std::map<CGI*, Client*>::reverse_iterator it = _polling->getCgiMap().rbegin(); it != _polling->getCgiMap().rend();)
+// 	{
+// 		pid = waitpid(it->first->getPid(), &status, WNOHANG);
+// 		if (pid == 0)
+// 		{
+// 			if (std::time(0) - it->first->getTimeStamp() > CGI_TIMEOUT)
+// 			{
+// 				kill(it->first->getPid(), SIGKILL);
+// 				it->second->setToBeClosed(true);
+
+// 				Tools::Exception e(504, "cgiTimeout: Script took too long to execute");
+// 				throwHandler(it->second, e, NULL, false);
+// 				it = cgis.rbegin();
+// 				continue;
+// 			}
+// 		}
+// 		else if (pid == -1) {
+// 			it->second->setToBeClosed(true);
+// 			throw Tools::Exception(502, "cgiTimeout: CGI has somehow failed bro");
+// 		}
+// 		else if (pid > 0) {
+// 			if (WIFEXITED(status))
+// 				LOG(INFO, SKY_BLUE, "CGI exited normally");
+// 			else if (WIFSIGNALED(status)) {
+// 				LOG(INFO, RED, "CGI script was killed");
+// 			}
+// 		}
+// 		it++;
+
+// 		pid = 0;
+// 		status = 0;
+// 	}
+// }
+
 void ServerManager::cgiTimeout()
 {
 	pid_t pid = 0;
 	int status = 0;
 
+	LOG(DEBUG, "cgiTimeout: In CGI timeout");
+
 	std::map<CGI *, Client *> &cgis = _polling->getCgiMap();
-	// for each CGI that is still active, check if it has timed out.
-	for (std::map<CGI*, Client*>::reverse_iterator it = _polling->getCgiMap().rbegin(); it != _polling->getCgiMap().rend();)
+
+	for (std::map<CGI *, Client *>::iterator it = cgis.begin(); it != cgis.end(); /* no increment here */)
 	{
 		pid = waitpid(it->first->getPid(), &status, WNOHANG);
+
 		if (pid == 0)
 		{
-			if (std::time(0) - it->first->getTimeStamp() > CGI_TIMEOUT)
+			if (std::time(NULL) - it->first->getTimeStamp() > CGI_TIMEOUT)
 			{
 				kill(it->first->getPid(), SIGKILL);
 				it->second->setToBeClosed(true);
 
 				Tools::Exception e(504, "cgiTimeout: Script took too long to execute");
 				throwHandler(it->second, e, NULL, false);
-				it = cgis.rbegin();
+				Client *client = it->second;
+				cgis.erase(it++);
+				_polling->deleteClient(client);
 				continue;
 			}
+			++it; // Move to next if not timed out
 		}
-		else if (pid == -1) {
+		else if (pid == -1)
+		{
 			it->second->setToBeClosed(true);
-			throw Tools::Exception(502, "cgiTimeout: CGI has somehow failed bro");
+			Tools::Exception e(502, "cgiTimeout: waitpid returned -1, CGI has somehow failed");
+			throwHandler(it->second, e, NULL, false);
+
+			// C++98 safe map erasure
+			Client *client = it->second;
+			cgis.erase(it++);
+			_polling->deleteClient(client);
 		}
-		else if (pid > 0) {
+		else if (pid > 0)
+		{
 			if (WIFEXITED(status))
 				LOG(INFO, SKY_BLUE, "CGI exited normally");
-			else if (WIFSIGNALED(status)) {
+			else if (WIFSIGNALED(status))
 				LOG(INFO, RED, "CGI script was killed");
-			}
-		}
-		it++;
 
-		pid = 0;
-		status = 0;
+			// C++98 safe map erasure
+			cgis.erase(it++);
+		}
 	}
 }
-
 
 void ServerManager::handleTimeout()
 {

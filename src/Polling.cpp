@@ -187,14 +187,16 @@ bool Polling::deleteClient(Client *client)
 	{
 		if (*it == client)
 		{
-			for (std::map<CGI *, Client *>::iterator clit = _CGImap.begin(); clit != _CGImap.end(); clit++)
+			for (std::map<CGI *, Client *>::iterator clit = _CGImap.begin(); clit != _CGImap.end(); )
 			{
-				if (clit->second == *it)
+				if (clit->second == client)
 				{
 					delete clit->first;
-					_CGImap.erase(clit);
+					_CGImap.erase(clit++);
 					// break; There can be more than one CGi per client I guess
 				}
+				else
+					clit++;
 			}
 			_clientVector.erase(it);
 			break;
