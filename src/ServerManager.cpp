@@ -492,7 +492,7 @@ void ServerManager::throwHandler(Client *client, Tools::Exception &e, const Conf
 		else
 			responseString = handleOtherCodes(config, e.getReturnCode());
 
-		LOG(DEBUG, responseString);
+		LOG(INFO, responseString);
 		client->refreshClient();
 		client->setResponseBuff(responseString);
 		try
@@ -589,14 +589,13 @@ void handleKeepAlive(Client *client, const HttpRequest &request)
 void ServerManager::clientLogic(Client *client)
 {
 	const ConfigBase *config = NULL;
-	LOG(DEBUG, BLUE_BRIGHT, "clientLogic");
 	try
 	{
 		client->updateTimestamp();
 		std::string tmpRequest = requestPreParsing(client);
 		if (client->doneReceiving())
 		{
-			LOG(DEBUG, BLUE_BRIGHT, "CLIENT IS DONE RECEIVING");
+			LOG(INFO, BLUE_BRIGHT, "CLIENT IS DONE RECEIVING");
 			HttpRequest request(client->getClientAddr());
 			request.parse(tmpRequest);
 			handleKeepAlive(client, request);
@@ -712,7 +711,7 @@ void ServerManager::handleTimeout()
 			client->setToBeClosed(true);
 			std::string message = "timeout for client fd = " + Tools::intToString(client->getFD());
 			Tools::Exception timeoutException(408, message);
-			
+
 			// Call throwHandler without throwing to bypass the normal logic.
 			throwHandler(client, timeoutException, NULL, false);
 			it = clients.rbegin();
@@ -725,7 +724,6 @@ void ServerManager::handleTimeout()
 void ServerManager::router(const epoll_event &event)
 {
 	Client *client = NULL;
-	LOG(DEBUG, PURPLE, "In router");
 
 	int eventFD = event.data.fd;
 	client = _polling->handleClientEvent(eventFD, event.events);
@@ -733,7 +731,6 @@ void ServerManager::router(const epoll_event &event)
 		clientLogic(client);
 	else
 	{
-		LOG(DEBUG, BLUE_BRIGHT, "ELSE ROUTER");
 		std::map<CGI *, Client *>::const_iterator it = _polling->getCgiMap().begin();
 		for (; it != _polling->getCgiMap().end(); ++it)
 		{
@@ -742,19 +739,15 @@ void ServerManager::router(const epoll_event &event)
 			{
 				if (it->first->readCgiOutput())
 					setResponseAndDeleteCGI(event.data.fd, *it);
-				LOG(DEBUG, "PIPEOUT");
 				return;
 			}
 			// It's the POST write end of the CGI
 			else if (it->first->getPostPipeIn() == event.data.fd)
 			{
 				it->first->handlePostCGI();
-				LOG(DEBUG, "POSTPIPE");
 				return;
 			}
-			LOG(DEBUG, "CGI ELSE");
 		}
-		LOG(INFO, "router: GHOST FD FOUND");
 		Tools::closeAndResetFD(eventFD);
 	}
 }

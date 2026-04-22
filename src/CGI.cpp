@@ -329,7 +329,6 @@ bool CGI::readCgiOutput()
 	bytesRead = read(_pipeFDs[0], buffer, BUFFERSIZE);
 	if (bytesRead > 0)
 	{
-		LOG(DEBUG, PURPLE, "Amount of bytes read: " + Tools::intToString(bytesRead));
 		_buffer.append(buffer);
 		return false;
 	}
@@ -496,7 +495,7 @@ const std::string CGI::getResponse()
 
 	HttpResponse response(HttpTools::getReturnPair(_responseStatus));
 	response.addDateHeader();
-	
+
 	// remove CGI response's CONTENT_LENGTH header and replace it later with our own
 	removeHeader(headers, CONTENT_LENGTH);
 	response.setResponseHeaders(headers);

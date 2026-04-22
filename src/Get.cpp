@@ -257,7 +257,6 @@ const std::string Get::executeGet(const HttpRequest &request, const ConfigBase *
 {
 	Get get(request, config);
 	get.checkRequest();
-	LOG(DEBUG, YELLOW_BRIGHT, "GET PUREPATH = " + request.getPurePath());
 	get.checkAndSetFile(request.getPurePath());
 
 	HttpResponse response(HttpTools::getReturnPair(200));

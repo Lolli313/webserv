@@ -243,7 +243,6 @@ void Polling::readClientInput(Client &client)
 	}
 	else if (readSize > 0)
 	{
-		LOG(DEBUG, PINK, "READING CLIENT INPUT");
 		client.getBuffer().append(client.getTmpBufferPtr(), readSize);
 	}
 	else
