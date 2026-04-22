@@ -32,7 +32,8 @@ HttpRequest::HttpRequest(const sockaddr_in& clientAddr) :
 	_header(),
 	_boundary(""),
 	_body(""),
-	_clientAddr(clientAddr) {}
+	_clientAddr(clientAddr),
+	_clientIP("") {}
 
 HttpRequest::HttpRequest(const HttpRequest &other) :
 	_methodStr(other._methodStr),
@@ -44,6 +45,7 @@ HttpRequest::HttpRequest(const HttpRequest &other) :
 	_boundary(other._boundary),
 	_body(other._body),
 	_clientAddr(other._clientAddr),
+	_clientIP(other._clientIP),
 	_port(other._port),
 	_serverName(other._serverName) {}
 
@@ -58,6 +60,7 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 		_boundary = other._boundary;
 		_body = other._body;
 		_clientAddr = other._clientAddr;
+		_clientIP = other._clientIP;
 		_port = other._port;
 		_serverName = other._serverName;
 	}
@@ -65,6 +68,23 @@ HttpRequest &HttpRequest::operator=(const HttpRequest &other) {
 }
 
 HttpRequest::~HttpRequest()	{}
+
+/*
+=================================================================
+===== GETTERS / SETTERS  ========================================
+=================================================================
+*/
+
+const std::string& HttpRequest::getClientIP() {
+	if (!_clientIP.empty())
+		return _clientIP;
+
+	unsigned char *ip = (unsigned char *)&_clientAddr.sin_addr.s_addr;
+	std::stringstream ss;
+	ss << (int)ip[0] << "." << (int)ip[1] << "." << (int)ip[2] << "." << (int)ip[3];
+	_clientIP = ss.str();
+	return _clientIP;
+}
 
 /*
 ================================================================================

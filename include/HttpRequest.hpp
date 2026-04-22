@@ -39,6 +39,7 @@ private:
 	std::string _body;
 
 	sockaddr_in _clientAddr;
+	std::string _clientIP;
 	std::string _port;
 	std::string _serverName;
 
@@ -62,6 +63,7 @@ public:
 	const std::string &getBoundary() const { return _boundary; }
 	const std::string &getBody() const { return _body; }
 	const sockaddr_in &getClientAddr() const { return _clientAddr; }
+	const std::string& getClientIP();
 	const std::string& getPort() const { return _port; }
 	const std::string& getServerName() const { return _serverName; }
 

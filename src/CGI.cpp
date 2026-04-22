@@ -216,9 +216,11 @@ void CGI::buildEnv(char **&env, std::vector<std::string> &envVector)
 	envVector.push_back(buildMetaVariable("GATEWAY_INTERFACE", "CGI/1.1"));
 	envVector.push_back(buildMetaVariable("QUERY_STRING", transformMapToQueryString(_request.getQueryParams())));
 
-	char *ip = inet_ntoa(_request.getClientAddr().sin_addr);
-	std::string ipStr = (ip) ? ip : "127.0.0.1";
-	envVector.push_back(buildMetaVariable("REMOTE_ADDR", ipStr));
+	// char *ip = inet_ntoa(_request.getClientAddr().sin_addr);
+	// std::string ipStr = (ip) ? ip : "127.0.0.1";
+	// envVector.push_back(buildMetaVariable("REMOTE_ADDR", ipStr));
+
+	envVector.push_back(buildMetaVariable("REMOTE_ADDR", _request.getClientIP()));
 	envVector.push_back(buildMetaVariable("REQUEST_METHOD", _request.getMethod()));
 	envVector.push_back(buildMetaVariable("SERVER_NAME", _request.getServerName()));
 	envVector.push_back(buildMetaVariable("SERVER_PORT", _request.getPort()));
