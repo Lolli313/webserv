@@ -28,7 +28,7 @@ private:
 	LocationConfig _serversLocationConfigBaseWorkaroundBecauseOfArttu;
 public:
 	Server(const Server &obj);
-	Server(const std::string &port);
+	Server(std::string ip, const std::string &port);
 	Server(const ServerBlockConfig &config, ServerSocket *socket);
 	// Server(const ServerBlockConfig &config, const ServerSocket *servSocket);
 	~Server();

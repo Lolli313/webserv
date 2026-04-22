@@ -12,6 +12,7 @@
 class ParseConfig
 {
 private:
+
 	const std::string _fileName;
 	std::vector<ServerBlockConfig> _serverBlockConfigVector;
 

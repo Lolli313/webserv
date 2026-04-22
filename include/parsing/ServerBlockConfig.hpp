@@ -19,6 +19,9 @@
 class ServerBlockConfig : public ConfigBase
 {
 private:
+
+	std::string _ip;
+
 	std::string _port;
 	std::set<std::string> _serverNames;
 	std::map<std::string, LocationConfig> _locationConfigs; // map<path, LocationConfig>
@@ -47,8 +50,10 @@ public:
 	const std::string& getPort() const;
 	const std::set<std::string>& getServerNames() const;
 	const std::map<std::string, LocationConfig>& getLocationConfigs() const;
+	const std::string getIp() const {return _ip; }
 
 	void setPort(const std::string& src);
+	void setIp(const std::string& src);
 	void setServerNames(const std::set<std::string>& src);
 	void setLocationConfigs(const std::map<std::string, LocationConfig>& src);
 

@@ -15,7 +15,7 @@
 // }
 
 // Exception on failure
-ServerSocket::ServerSocket(std::string port) : _port(port), _servSockFD(-1), _netwConf(NetworkConfig(port))
+ServerSocket::ServerSocket(std::string ip, std::string port) : _port(port), _servSockFD(-1), _netwConf(NetworkConfig(ip ,port))
 {
 	try
 	{

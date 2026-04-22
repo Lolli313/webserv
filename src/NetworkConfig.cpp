@@ -95,9 +95,14 @@ void NetworkConfig::prepareAddressInfo(const std::string &ipAddr, const std::str
 	struct addrinfo prep;
 	std::memset(&prep, 0, sizeof(addrinfo));
 
-	prep.ai_family = AF_INET;
+	prep.ai_family = AF_UNSPEC;
 	prep.ai_socktype = SOCK_STREAM;
+	prep.ai_flags = AI_PASSIVE;
+
+	// const char *node = ipAddr.empty() || ipAddr == "0.0.0.0" || ipAddr == "::" ? NULL : ipAddr.c_str();
+
 	LOG(INFO, LIGHT_BLUE, ipAddr + " and " + port);
+
 	int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &prep, &_info);
 	if (status != 0)
 		throw Tools::Exception(gai_strerror(status));

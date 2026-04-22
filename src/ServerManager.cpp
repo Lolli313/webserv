@@ -97,7 +97,7 @@ void ServerManager::setupServers(const std::vector<ServerBlockConfig> &serverCon
 		if (!found)
 		{
 			// Create the socket here
-			_serverSocketArray.push_back(new ServerSocket(mit->getPort()));
+			_serverSocketArray.push_back(new ServerSocket(mit->getIp(), mit->getPort()));
 			_serverArray.push_back(new Server(*mit, _serverSocketArray.back()));
 		}
 		else

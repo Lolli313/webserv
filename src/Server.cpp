@@ -6,7 +6,7 @@
 =================================================================
 */
 
-Server::Server(const std::string &port) : ConfigBase(*this), _servSocket(new ServerSocket(port)), _port(port)
+Server::Server(std::string ip, const std::string &port) : ConfigBase(*this), _servSocket(new ServerSocket(ip, port)), _port(port)
 {
 	LOG(INFO, "Server constructor for _port = " + _port);
 }

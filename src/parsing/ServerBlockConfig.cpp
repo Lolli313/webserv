@@ -1,4 +1,6 @@
 #include "parsing/ServerBlockConfig.hpp"
+#include <sstream>
+#include <string>
 
 /*
 =================================================================
@@ -50,6 +52,7 @@ const std::set<std::string>& ServerBlockConfig::getServerNames() const { return 
 const std::map<std::string, LocationConfig>& ServerBlockConfig::getLocationConfigs() const { return _locationConfigs; }
 
 void ServerBlockConfig::setPort(const std::string& src) { _port = src; }
+void ServerBlockConfig::setIp(const std::string& src) { _ip = src; }
 void ServerBlockConfig::setServerNames(const std::set<std::string>& src) { _serverNames = src; }
 void ServerBlockConfig::setLocationConfigs(const std::map<std::string, LocationConfig>& src) { _locationConfigs = src; }
 
@@ -86,15 +89,71 @@ const std::map<std::string, ServerBlockConfig::DirectiveHandler> ServerBlockConf
 =================================================================
 */
 
+// A VERIFIER
+bool isValidIP(const std::string& ip) {
+    std::istringstream iss(ip);
+    std::string octet;
+    int octetValue;
+    int dotCount = 0;
+
+    while (std::getline(iss, octet, '.')) {
+        // Vérifie qu'il y a exactement 4 octets
+        if (dotCount > 3) {
+            return false;
+        }
+
+        // Vérifie que l'octet n'est pas vide
+        if (octet.empty()) {
+            return false;
+        }
+
+        // Vérifie que l'octet est un nombre
+        for (size_t i = 0; i < octet.size(); ++i) {
+            if (!isdigit(octet[i])) {
+                return false;
+            }
+        }
+
+        // Convertit l'octet en entier
+        octetValue = atoi(octet.c_str());
+
+        // Vérifie que l'octet est entre 0 et 255
+        if (octetValue < 0 || octetValue > 255) {
+            return false;
+        }
+
+        // Vérifie qu'il n'y a pas de zéros initiaux (sauf pour "0")
+        if (octet.size() > 1 && octet[0] == '0') {
+            return false;
+        }
+
+        dotCount++;
+    }
+
+    // Vérifie qu'il y a exactement 4 octets
+    return (dotCount == 4);
+}
+
 bool ServerBlockConfig::parseListen(std::vector<std::string>& tokens) {
 	std::string& port(tokens[1]);
 	if (tokens.size() != 2 || !Tools::checkAndRemoveSemicolon(port))
 		return false;
 
+	std::string ip;
+
+	std::istringstream cutter(port);
+	if (!std::getline(cutter, ip, ':')) { return false;}
+	std::getline(cutter, port);
+
 	if (!Tools::isValidPort(port))
 		return false;
+
+	if (!isValidIP(ip)) {
+		return false;
+	}
 	
 	_port = port;
+	_ip = ip;
 	return true;
 }
 

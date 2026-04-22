@@ -22,7 +22,7 @@ private:
 	ServerSocket &operator=(const ServerSocket &obj);
 
 public:
-	ServerSocket(std::string port);
+	ServerSocket(std::string ip, std::string port);
 	ServerSocket(const ServerSocket &obj);
 	~ServerSocket();
 
