@@ -2,6 +2,7 @@
 
 #include "HttpResponse.hpp"
 #include "HttpRequest.hpp"
+#include "ConfigBase.hpp"
 
 #include <vector>
 #include <string>
@@ -26,8 +27,8 @@ class Post {
 
         void parseBody();
         void print() const;
-        void saveInFile() const;
+        void saveInFile(const HttpRequest &request, const ConfigBase *config) const;
 
-        static const std::string executePost(const HttpRequest &request);
+        static const std::string executePost(const HttpRequest &request, const ConfigBase *config);
 
 };

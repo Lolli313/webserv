@@ -332,7 +332,7 @@ const std::string ServerManager::execute(const HttpRequest &request, const Confi
 	else if (request.getMethod() == "POST")
 	{
 		checkBodySize(request.getBody().size(), static_cast<std::size_t>(config->getClientMaxBodySize()));
-		response = Post::executePost(request);
+		response = Post::executePost(request, config);
 	}
 
 	else if (request.getMethod() == "DELETE")

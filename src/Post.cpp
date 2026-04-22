@@ -1,4 +1,5 @@
 #include "Post.hpp"
+#include "ConfigBase.hpp"
 
 /*
 ================================================================================
@@ -101,7 +102,7 @@ void Post::print() const {
 	
 }
 
-void Post::saveInFile() const {
+void Post::saveInFile(const HttpRequest &request, const ConfigBase *config) const {
     // this->print();
     for (size_t i = 0; i < _header.size(); ++i) {
         std::map<std::string, std::string>::const_iterator it = _header[i].find("content-disposition");
@@ -157,7 +158,13 @@ void Post::saveInFile() const {
             // std::clog << "formatType : " << formatType << " contentType : " << contentType << std::endl;
             filename += formatType;
         }
-        std::ofstream outFile(("files/uploads/" + filename).c_str(), std::ios::out | std::ios::binary);
+
+        std::string path = request.getPurePath();
+        if (path.length() == 0 || path[path.length() - 1] != '/') {
+            path += '/';
+        }
+
+        std::ofstream outFile((config->getRoot() + path + filename).c_str(), std::ios::out | std::ios::binary);
         if (!outFile) {
             throw Tools::Exception(500, "Post: Can't create file");
         }
@@ -167,11 +174,11 @@ void Post::saveInFile() const {
     }
 }
 
-const std::string Post::executePost(const HttpRequest &request)
+const std::string Post::executePost(const HttpRequest &request, const ConfigBase *config)
 {
     Post post(request);
     post.parseBody();
-    post.saveInFile();
+    post.saveInFile(request, config);
 
     HttpResponse response(HttpTools::getReturnPair(201));
 	for (std::map<std::string, std::string>::const_iterator it = request.getHeader().begin(); it != request.getHeader().end(); ++it) {
