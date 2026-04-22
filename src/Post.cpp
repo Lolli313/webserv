@@ -37,7 +37,6 @@ void Post::parseBody() {
             head["content-disposition"] = it->second;
         } else {
             throw Tools::Exception(400, "Post: No content-disposition");
-            // head["Content-Disposition"] = "name=\"post\"";
         }
         head["body"] = _request.getBody();
         _header.push_back(head);
@@ -115,22 +114,18 @@ void Post::saveInFile(const HttpRequest &request, const ConfigBase *config) cons
         size_t namePos = name.find("name=");
         if (namePos == std::string::npos) {
             throw Tools::Exception(400, "Post: No Name in content-disposition");
-            // filename = "post";
         } else {
             std::size_t start = std::string::npos;
             std::size_t end = std::string::npos;
             if (name[namePos + 5] == '\"') {
-                // std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAA" << name[namePos + 5] << std::endl;
                 start = namePos + 6;
                 end = name.find("\"", start);
             } else if (name[namePos + 5] != '\"') {
-                // std::cout << "BBBBBBBBBBBBBBBBBBBBBBBBBBBB" << name[namePos + 5] << std::endl;
                 start = namePos + 5;
                 end = name.find_first_of(" ;\r\n", start);
             }
             if (start == std::string::npos || end == std::string::npos) {
                 throw Tools::Exception(400, "Post: No quote, whatever that means");
-                // filename = "post";
             } else {
                 filename = name.substr(start, end - start);
             }
@@ -138,16 +133,6 @@ void Post::saveInFile(const HttpRequest &request, const ConfigBase *config) cons
 
         it = _header[i].find("content-type");
         if (it != _header[i].end()) {
-            //
-            // const std::string& format = it->second;
-            // size_t start = format.find("/");
-            // std::string formatType = format.substr(start + 1);
-            // size_t end = formatType.find_first_of(" \r\n\t;");
-            //
-            // if (end != std::string::npos) {
-            //     formatType.erase(end);
-            // }
-
             std::string contentType = it->second;
             size_t start = contentType.find_first_not_of(" \t\r\n");
 			if (start != std::string::npos) {
@@ -155,7 +140,6 @@ void Post::saveInFile(const HttpRequest &request, const ConfigBase *config) cons
                 contentType = contentType.substr(start, end - start);
 			}
             std::string formatType = HttpTools::getContentType(contentType);
-            // std::clog << "formatType : " << formatType << " contentType : " << contentType << std::endl;
             filename += formatType;
         }
 
@@ -193,6 +177,5 @@ const std::string Post::executePost(const HttpRequest &request, const ConfigBase
 	}
 	response.addDateHeader();
 	response.setBody(request.getBody());
-    // LOG(DEBUG, PINK, response.getFinalResponse());
     return response.getFinalResponse();
 }

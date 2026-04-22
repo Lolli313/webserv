@@ -9,18 +9,12 @@ Get::Get(const HttpRequest &request, const ConfigBase *config) : _fd(-1), _reque
 
 Get::~Get() { Tools::closeAndResetFD(_fd); }
 
-// Get::Get(const Get &obj) { *this = obj; }
 
 /*
 =================================================================
 ===== OPERATORS =================================================
 =================================================================
 */
-// Get &Get::operator=(const Get &obj)
-// {
-// 	(void)obj;
-// 	return (*this);
-// }
 
 /*
 =================================================================
@@ -168,6 +162,13 @@ bool Get::handleIndexFile()
 	return false;
 }
 
+/**
+ * @brief Handles CGI directory listing requests.
+ * If the query string contains 'format=json', it generates a JSON list of 
+ * directory contents (scripts) and sets the autoindex state. Otherwise, 
+ * it defaults to finding a standard index file.
+ * @return true if JSON was generated; false if falling back to index file.
+ */
 bool Get::handleCgiPage() {
 	std::map<std::string, std::string>::const_iterator it = _request.getQueryParams().find("format");
 	if (it != _request.getQueryParams().end() && it->second == "json") {
@@ -180,6 +181,9 @@ bool Get::handleCgiPage() {
 	return false;
 }
 
+/**
+ * @brief Checks whether the given path is a CGI location
+ */
 bool Get::isCgiLocation(const std::string& path) {
 	const std::string& folderPath = _config->getCGIPaths()._scriptFolderPath;
 	if (!folderPath.empty() && (path == folderPath || (Tools::getLastCharacter(path) == '/' && path.substr(0, path.size() - 1) == folderPath))) {

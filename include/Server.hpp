@@ -30,7 +30,6 @@ public:
 	Server(const Server &obj);
 	Server(std::string ip, const std::string &port);
 	Server(const ServerBlockConfig &config, ServerSocket *socket);
-	// Server(const ServerBlockConfig &config, const ServerSocket *servSocket);
 	~Server();
 
 	const std::string &getPort() const;

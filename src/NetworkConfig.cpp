@@ -99,8 +99,6 @@ void NetworkConfig::prepareAddressInfo(const std::string &ipAddr, const std::str
 	prep.ai_socktype = SOCK_STREAM;
 	prep.ai_flags = AI_PASSIVE;
 
-	// const char *node = ipAddr.empty() || ipAddr == "0.0.0.0" || ipAddr == "::" ? NULL : ipAddr.c_str();
-
 	LOG(INFO, LIGHT_BLUE, ipAddr + " and " + port);
 
 	int status = getaddrinfo(ipAddr.c_str(), port.c_str(), &prep, &_info);

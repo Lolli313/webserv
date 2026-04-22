@@ -40,10 +40,10 @@ int main(int ac, char **av)
 
 	}
 	catch (std::exception &e) {
-		LOG(CRITICAL, RED, "Builtin exception: ", e.what());
+		LOG(CRITICAL, "Builtin exception: ", e.what());
 	}
 	catch (...) {
-		LOG(CRITICAL, "Undefine error");
+		LOG(CRITICAL, "Undefined error");
 	}
 	return 0;
 }

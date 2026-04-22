@@ -49,7 +49,6 @@ Client::Client(int fd, sockaddr_in& clientAddr) :
 
 Client::~Client() {
 	LOG(INFO, RED_BRIGHT, "Client destructor");
-	// close(_clientFD); 
 }
 
 Client::Client(const Client &obj) :
@@ -103,7 +102,6 @@ long Client::getMaxBodySize() const { return _maxBodySize; }
 void Client::setMaxBodySize(long src) { _maxBodySize = src; }
 
 char *Client::getTmpBufferPtr() { return _tmpBuff; }
-// chat *Client::getTmpBuffer() { return _tmpBuff; }
 
 bool Client::doneReceiving() const { 
 	LOG(INFO, LIGHT_GRAY, "Done receiving", Tools::boolToString(_doneReceiving));
@@ -159,8 +157,10 @@ const std::string &Client::getResponseBuff() const { return _responseBuff; }
 void Client::setResponseBuff(const std::string &response) { _responseBuff = response; }
 
 std::size_t Client::getBytesSent() const { return _bytesSent; }
+
 // Overwrite the _bytesSent by the input
 void Client::setBytesSent(std::size_t bytes) { _bytesSent = bytes; }
+
 // Add the bytes to the total bytesSent
 void Client::addBytesSent(std::size_t bytes) { _bytesSent += bytes; }
 
@@ -168,6 +168,7 @@ void Client::addBytesSent(std::size_t bytes) { _bytesSent += bytes; }
 void Client::updateTimestamp() { _timestamp = std::time(0); }
 const std::time_t &Client::getTimestamp() const { return _timestamp; }
 const std::time_t &Client::getTimestampInSeconds() const { return _timestamp; }
+
 int Client::getConnectedPort() { 
 	if (_connectedPort >= 0)
 		return _connectedPort;
@@ -273,8 +274,6 @@ std::string Client::bodyVerification() {
 	// la il faut trouver Content-Length pour savoir si le body est finit si il y en a un
 	std::size_t posContentLengthStart = _headers.find("content-length: ");
 	if (posContentLengthStart == std::string::npos) {
-		// std::string request = _buffer.substr(0, posBodyStart);
-        // _buffer.erase(0, posBodyStart);
 		setDoneReceiving(true);
 		return _buffer;
 	}
@@ -282,39 +281,21 @@ std::string Client::bodyVerification() {
 	std::size_t posContentLengthStop = _headers.find("\r\n", posContentLengthStart);
 	if (posContentLengthStop == std::string::npos) {
 		posContentLengthStop = _posHeaderEnd;
-		// throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
 	std::string contentLengthStr = _headers.substr(posContentLengthStart + 16, posContentLengthStop - (posContentLengthStart + 16));
 	char* endPtr;
-	unsigned long contentLength = strtoul(contentLengthStr.c_str(), &endPtr, 10);
+	unsigned long contentLength = std::strtoul(contentLengthStr.c_str(), &endPtr, 10);
 	if (*endPtr != '\0' && !isspace(*endPtr)) {
 		throw Tools::Exception(400, "HttpRequest: Malformed body");
 	}
-	// LOG(DEBUG, PINK, "contentLength is " + Tools::intToString(contentLength));
-	// LOG(DEBUG, PINK, "_maxBodySize is " + Tools::intToString(_maxBodySize));
 	std::string body = _buffer.substr(posBodyStart);
 	if (contentLength == body.size()) {
-		LOG(DEBUG, PINK, Tools::intToString(body.size()));
-		LOG(DEBUG, PINK, Tools::intToString(_buffer.size()));
-		LOG(DEBUG, PINK, Tools::intToString(posBodyStart));
-		LOG(DEBUG, PINK, Tools::intToString(contentLength));
-		LOG(DEBUG, PINK, Tools::intToString(_maxBodySize));
 		setDoneReceiving(true);
 		return _buffer;
 	}
     else if (_buffer.size() - posBodyStart - 2 == contentLength && contentLength < _maxBodySize) {
-		LOG(DEBUG, PINK, Tools::intToString(body.size()));
-		LOG(DEBUG, PINK, Tools::intToString(_buffer.size()));
-		LOG(DEBUG, PINK, Tools::intToString(posBodyStart));
-		LOG(DEBUG, PINK, Tools::intToString(contentLength));
-		LOG(DEBUG, PINK, Tools::intToString(_maxBodySize));
         return _buffer;
     } else {
-		LOG(DEBUG, PINK, Tools::intToString(body.size()));
-		LOG(DEBUG, PINK, Tools::intToString(_buffer.size()));
-		LOG(DEBUG, PINK, Tools::intToString(posBodyStart));
-		LOG(DEBUG, PINK, Tools::intToString(contentLength));
-		LOG(DEBUG, PINK, Tools::intToString(_maxBodySize));
         throw Tools::Exception(413, "Wrong content size");
     }
 }

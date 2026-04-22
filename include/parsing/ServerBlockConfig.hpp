@@ -69,11 +69,7 @@ public:
 	bool parseLocation(std::vector<std::string>& tokens);
 	bool parseAllowMethods(std::vector<std::string>& tokens);
 	bool parseReturn(std::vector<std::string>& tokens);
-	// test pour les cgi
 	bool parseCgi(std::vector<std::string>& tokens);
-    // bool parseCgiPath(std::vector<std::string>& tokens);
-    // bool parseCgiPython(std::vector<std::string>& tokens);
-    // bool parseCgiPhp(std::vector<std::string>& tokens);
 
 	void initWithDefaultData();
 	void printData() const;

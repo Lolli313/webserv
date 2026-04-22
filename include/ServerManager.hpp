@@ -49,9 +49,7 @@ private:
 	ServerManager &operator=(const ServerManager &obj);
 
 public:
-	// ServerManager(const std::vector<std::string> &ports);
 	ServerManager(const std::vector<ServerBlockConfig> &serverConfigs);
-	// ServerManager(ParseConfig); // Constructor with
 	~ServerManager();
 
 	const std::string execute(const HttpRequest &request, const ConfigBase *config, Client *client);

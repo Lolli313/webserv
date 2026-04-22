@@ -19,7 +19,6 @@ private:
 	HttpRequest _request;
 	const ConfigBase *_config;
 	std::string _cgiBinPath;
-	// ConfigBase* _config;
 	std::string _executablePath;
 	std::string _buffer;
 	std::string _scriptName;
@@ -33,7 +32,6 @@ private:
 	bool _hasFinishedExecuting;
 
 public:
-	// CGI() {};
 	CGI(const HttpRequest& request, const ConfigBase *config);
 	CGI(const CGI &obj);
 	CGI &operator=(const CGI &obj);
@@ -50,23 +48,18 @@ public:
 	const int& getPipeOut() const { return _pipeFDs[0]; }
 	int& getPipeOut() { return _pipeFDs[0]; }
 	const std::string& getPath() const;
-	// const ConfigBase *getConfig() const;
 	const std::string& getBuffer() const { return _buffer; }
 	const HttpRequest& getRequest() const { return _request; }
 	const ConfigBase* getConfig() const { return _config; }
 	const int &getPid() const;
 	const std::time_t &getTimeStamp() const;
-	// bool hasCGI() const;
 
 	void setHasFinishedExecuting(bool yeeeeeesh);
 	bool getHasFinishedExecuting() const;
 
 	// Setters
 	void setPath(const std::string& src);
-	// void setConfig(ConfigBase* src);
-	// void setHasCGI(bool src);
 
-	// void cleanClose(int *fd);
 	void executeCGI();
 	bool readCgiOutput();
 	void setCGI();

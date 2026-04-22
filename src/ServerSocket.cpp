@@ -8,13 +8,6 @@
 */
 
 // Exception on failure
-// ServerSocket::ServerSocket()
-// {
-// 	createServerSocket();
-// 	setSocketOptions();
-// }
-
-// Exception on failure
 ServerSocket::ServerSocket(std::string ip, std::string port) : _port(port), _servSockFD(-1), _netwConf(NetworkConfig(ip ,port))
 {
 	try
@@ -76,8 +69,6 @@ const std::string &ServerSocket::getPort() const { return _port; }
 // Exception on failure
 void ServerSocket::createServerSocket()
 {
-	LOG(INFO, LIGHT_BLUE, Tools::intToString(_netwConf.getFamily()) + " and " + Tools::intToString(_netwConf.getSockType()) + " and " + Tools::intToString(_netwConf.getProtocol()));
-
 	_servSockFD = socket(_netwConf.getFamily(), _netwConf.getSockType(), _netwConf.getProtocol());
 	LOG(INFO, PINK, "servSocketFD inside ServerSocket class is", Tools::intToString(_servSockFD));
 	if (_servSockFD < 0)
@@ -107,7 +98,6 @@ void ServerSocket::connectSocketToPort()
 	if (bind(_servSockFD, _netwConf.getAdrr(), _netwConf.getAddrLen()) < 0)
 		throw Tools::Exception("bind");
 
-	// MAGIC NUMBER TO BE SET WITH MAX_EVENTS
 	if (listen(_servSockFD, MAX_EVENTS) < 0)
 		throw Tools::Exception("listen");
 }

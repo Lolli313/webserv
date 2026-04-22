@@ -122,25 +122,6 @@ std::set<int> ServerManager::setupServSockFDs()
 	return tempServSockFDs;
 }
 
-// Just a test response that directly sends to the client.
-void TEST_RESPONSE(Client *client, int code, const std::string &message, const std::string &path)
-{
-	(void)message;
-	(void)path;
-	LOG(DEBUG, "SENT");
-	HttpResponse response(HttpTools::getReturnPair(code));
-	// std::ifstream file(path.c_str());
-	// std::ostringstream body;
-	// body << file.rdbuf();
-	// //response.setBody(body.str());
-	// std::vector<std::pair<std::string, std::string> > tmp;
-	// tmp.push_back(std::make_pair<std::string, std::string>(CONTENT_LENGTH, Tools::intToString(body.str().size())));
-	// response.setResponseHeaders(tmp);
-	response.addDateHeader();
-	response.addHeader("Content-length", "0");
-	send(client->getFD(), response.getFinalResponse().c_str(), response.getFinalResponse().size(), MSG_NOSIGNAL);
-}
-
 /**
  * @brief Find and return the correct port based on the client's socket FD
  */
@@ -345,8 +326,7 @@ const std::string ServerManager::execute(const HttpRequest &request, const Confi
 
 void ServerManager::setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, Client *> &it)
 {
-	// Remove from epoll
-	// _polling->deleteFdFromEpoll(eventFD);
+	// Close pipe which also removes it from epoll
 	Tools::closeAndResetFD(eventFD);
 	// Parse the CGI output and get the headers
 	try
@@ -524,7 +504,6 @@ void ServerManager::throwHandler(Client *client, Tools::Exception &e, const Conf
 				if (e.getReturnCode() == excludingCodes[i])
 				{
 					client->setToBeClosed(true);
-					// throw;
 				}
 			}
 			sendResponse(client);
@@ -576,7 +555,6 @@ void ServerManager::handleResponse(Client *client)
 		LOG(INFO, PURPLE, "toBeSent", Tools::boolToString(client->responseToBeSent()));
 		if (client->readyToReceive() && client->responseToBeSent())
 		{
-			// LOG(DEBUG, "Response is " + client->getResponseBuff());
 			sendResponse(client);
 		}
 		if (client->responseSent())
@@ -643,7 +621,6 @@ void ServerManager::clientLogic(Client *client)
 	{
 		if (e.getReturnCode() == 42)
 		{
-			// _polling->deleteClient(client);
 			throw;
 		}
 		throwHandler(client, e, config, true);
@@ -664,47 +641,6 @@ bool ServerManager::matchServerFD(int eventFD) const
 	}
 	return false;
 }
-
-// void ServerManager::cgiTimeout()
-// {
-// 	pid_t pid = 0;
-// 	int status = 0;
-
-// 	std::map<CGI *, Client *> &cgis = _polling->getCgiMap();
-// 	// for each CGI that is still active, check if it has timed out.
-// 	for (std::map<CGI*, Client*>::reverse_iterator it = _polling->getCgiMap().rbegin(); it != _polling->getCgiMap().rend();)
-// 	{
-// 		pid = waitpid(it->first->getPid(), &status, WNOHANG);
-// 		if (pid == 0)
-// 		{
-// 			if (std::time(0) - it->first->getTimeStamp() > CGI_TIMEOUT)
-// 			{
-// 				kill(it->first->getPid(), SIGKILL);
-// 				it->second->setToBeClosed(true);
-
-// 				Tools::Exception e(504, "cgiTimeout: Script took too long to execute");
-// 				throwHandler(it->second, e, NULL, false);
-// 				it = cgis.rbegin();
-// 				continue;
-// 			}
-// 		}
-// 		else if (pid == -1) {
-// 			it->second->setToBeClosed(true);
-// 			throw Tools::Exception(502, "cgiTimeout: CGI has somehow failed bro");
-// 		}
-// 		else if (pid > 0) {
-// 			if (WIFEXITED(status))
-// 				LOG(INFO, SKY_BLUE, "CGI exited normally");
-// 			else if (WIFSIGNALED(status)) {
-// 				LOG(INFO, RED, "CGI script was killed");
-// 			}
-// 		}
-// 		it++;
-
-// 		pid = 0;
-// 		status = 0;
-// 	}
-// }
 
 void ServerManager::cgiTimeout()
 {
@@ -728,9 +664,6 @@ void ServerManager::cgiTimeout()
 
 				Tools::Exception e(504, "cgiTimeout: Script took too long to execute");
 				throwHandler(it->second, e, NULL, false);
-				// Client *client = it->second;
-				// cgis.erase(it++);
-				// _polling->deleteClient(client);
 				continue;
 			}
 			// ++it; // Move to next if not timed out
@@ -740,12 +673,6 @@ void ServerManager::cgiTimeout()
 			it->second->setToBeClosed(true);
 			Tools::Exception e(502, "cgiTimeout: waitpid returned -1, CGI has somehow failed");
 			throwHandler(it->second, e, NULL, false);
-
-			// C++98 safe map erasure
-			// Client *client = it->second;
-			// _polling->deleteClient(it->second);
-			// cgis.erase(it++);
-			// it++;
 		}
 		else if (pid > 0)
 		{
@@ -755,18 +682,13 @@ void ServerManager::cgiTimeout()
 			if (WEXITSTATUS(status) > 0) {
 				LOG(INFO, SKY_BLUE, "CGI exit status is " + Tools::intToString(WEXITSTATUS(status)));
 				it->second->setToBeClosed(true);
+
 				Tools::Exception e(500, "cgiTimeout: Script failed to execute");
 				throwHandler(it->second, e, NULL, false); 
-				// cgis.erase(it++);
 				continue;
 			}
 			else if (WIFSIGNALED(status))
 				LOG(INFO, RED, "CGI script was killed");
-
-			// C++98 safe map erasure
-			// it->first->setToBeClosed(true);
-			// delete it->first;
-			// cgis.erase(it++);
 		}
 	}
 }
@@ -790,6 +712,7 @@ void ServerManager::handleTimeout()
 			client->setToBeClosed(true);
 			std::string message = "timeout for client fd = " + Tools::intToString(client->getFD());
 			Tools::Exception timeoutException(408, message);
+			
 			// Call throwHandler without throwing to bypass the normal logic.
 			throwHandler(client, timeoutException, NULL, false);
 			it = clients.rbegin();

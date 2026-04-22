@@ -80,6 +80,5 @@ public:
 	void parse(const std::string &request);
 	void cookie(Cookie &cookie);
 	void executeScript();
-	// void executeResponse();
 	void print() const;
 };

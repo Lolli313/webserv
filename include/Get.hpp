@@ -33,8 +33,6 @@ private:
 	Get(const HttpRequest &request, const ConfigBase *config);
 
 public:
-	// Get(const Get &obj);
-	// Get &operator=(const Get &obj);
 	~Get();
 
 	const std::string &getPath() const;

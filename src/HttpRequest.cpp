@@ -75,6 +75,10 @@ HttpRequest::~HttpRequest()	{}
 =================================================================
 */
 
+/**
+ * @brief If not set yet, extract client's IP from sockaddr_in _clientAddr
+ * @returns Client's IP address
+ */
 const std::string& HttpRequest::getClientIP() {
 	if (!_clientIP.empty())
 		return _clientIP;
@@ -136,7 +140,6 @@ void HttpRequest::parse(const std::string &request) {
 	if (!(iss >> _methodStr >> _path >> _httpVersion)) {
     	throw Tools::Exception(400, "HttpRequest: Malformed request");
 	}
-	// if (_methodStr != "GET" && _methodStr != "POST" && _methodStr != "DELETE") {
 	if (!HttpTools::isValidMethod(_methodStr)) {
 		LOG(WARNING, LIGHT_BLUE, "HttpRequest: Unknown method");
     	throw Tools::Exception(405, "HttpRequest: Unknown method");
@@ -242,7 +245,6 @@ void HttpRequest::print() const {
     
     // Body is usually a large block, so we use the standard LOG for the content
     LOG(DEBUG, YELLOW, "Body", _body);
-    // LOG(DEBUG, RESET, _body); 
 }
 
 

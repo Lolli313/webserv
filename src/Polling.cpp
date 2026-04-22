@@ -142,7 +142,6 @@ void Polling::addFdToEpoll(int targetFD, int eventFlags)
 void Polling::deleteFdFromEpoll(int targetFD)
 {
 	LOG(INFO, GREEN, "deleting fd from epoll", Tools::intToString(targetFD));
-	// epollEventAction(_epollFD, targetFD, EPOLL_CTL_DEL, 0);
 	epoll_ctl(_epollFD, EPOLL_CTL_DEL, targetFD, NULL);
 }
 
@@ -156,20 +155,10 @@ void Polling::addFDtoEpollAndClientMap(int targetFD, int eventFlags, sockaddr_in
 	LOG(INFO, GREEN, "Adding FD " + Tools::intToString(targetFD) + " to epoll and client maps");
 }
 
-// // Exception on failure
-// // SHOULD WE USE REFERENCE OR NOT ?
-// void Polling::addClientToEpoll(Client &client)
-// {
-// 	epollEventAction(_epollFD, client.getFD(), EPOLL_CTL_ADD, EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLHUP | EPOLLOUT);
-// 	_clientMap[client.getFD()] = new Client(client);
-// 	_clientMap.insert(std::make_pair(client.getFD(), client));
-// }
-
 // returns true if client deleted, false on error
 bool Polling::deleteClient(Client *client)
 {
 	LOG(INFO, BLUE, "DELETE CLIENT " + Tools::intToString(client->getFD()));
-	// epollEventAction(_epollFD, client->getFD(), EPOLL_CTL_DEL, 0);
 	if ((_clientMap.erase(client->getFD())) != 1)
 	{
 		LOG(DEBUG, PINK, "ECHOUER DE ERASE LE CLIENT");
@@ -339,6 +328,5 @@ Client *Polling::handleClientEvent(int clientFD, uint32_t currEvent)
 
 void Polling::epollWaitEvent()
 {
-	// LOG(INFO, DEFAULT, "epoll WAITING, " + Tools::intToString(_clientMap.size()) + " clients");
 	_eventCount = epoll_wait(_epollFD, _eventArray, MAX_EVENTS, EPOLL_TIMEOUT);
 }

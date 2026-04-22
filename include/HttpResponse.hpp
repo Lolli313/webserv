@@ -32,7 +32,7 @@ private:
 	std::string _body;
 
 	// FINAL RESPONSE TO BE STRANSFERED TO THE CLIENT
-	// Is setted by the getFinalResponse call
+	// Is set by the getFinalResponse call
 	std::string _finalResponse;
 	
 	void addHeadersToResponse();

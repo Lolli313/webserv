@@ -178,11 +178,17 @@ void CGI::buildParam(std::string &fullScriptPath, char *param[3])
 	param[2] = NULL;
 }
 
+/**
+ * @brief Joins a key and value pair together separated by `=`
+ */
 const std::string buildMetaVariable(const std::string &key, const std::string &value)
 {
 	return key + "=" + value;
 }
 
+/**
+ * @brief Transform query map<key, value> into `key1=value1&kay2=value2...` string
+ */
 const std::string transformMapToQueryString(const std::map<std::string, std::string> &queryMap)
 {
 	std::map<std::string, std::string>::const_iterator it = queryMap.begin();
@@ -271,6 +277,10 @@ std::string CGI::checkAndExtractScript()
 	return fullPath;
 }
 
+/**
+ * @brief check validity of CGI script and execute it in a child process
+ * @throws  code 4xx or 5xx if script setup fails, code 42 if the script execution itself fails and child should exit cleanly
+ */
 void CGI::executeCGI()
 {
 	std::string output;
@@ -409,6 +419,9 @@ std::vector<std::pair<std::string, std::string> > CGI::parseHeaders()
 	return result;
 }
 
+/**
+ * @returns pair containing target header key + value, NULL if target header wasn't found
+ */
 std::pair<std::string, std::string> *getPairFromHeaders(std::vector<std::pair<std::string, std::string> > &headers, const std::string &target)
 {
 	for (std::vector<std::pair<std::string, std::string> >::iterator it = headers.begin(); it != headers.end(); it++)
@@ -419,6 +432,13 @@ std::pair<std::string, std::string> *getPairFromHeaders(std::vector<std::pair<st
 	return NULL;
 }
 
+/**
+ * @brief Extract HTTP status code and message from a string and assign them to the referenced parameters
+ * @param line String from where extract code and message
+ * @param status variable where extracted status code should be assigned
+ * @param statusMessage variable where extracted status message should be assigned
+ * @throws Code 500 if status code isn't valid
+ */
 void setStatus(const std::string &line, int &status, std::string &statusMessage)
 {
 	std::istringstream iss(line);
@@ -433,6 +453,9 @@ void setStatus(const std::string &line, int &status, std::string &statusMessage)
 		statusMessage = label;
 }
 
+/**
+ * @brief Remove a given header from headers vector
+ */
 void removeHeader(std::vector<std::pair<std::string, std::string> > &headers, const std::string &key)
 {
 	for (std::vector<std::pair<std::string, std::string> >::iterator it = headers.begin(); it != headers.end(); ++it)
@@ -473,6 +496,8 @@ const std::string CGI::getResponse()
 
 	HttpResponse response(HttpTools::getReturnPair(_responseStatus));
 	response.addDateHeader();
+	
+	// remove CGI response's CONTENT_LENGTH header and replace it later with our own
 	removeHeader(headers, CONTENT_LENGTH);
 	response.setResponseHeaders(headers);
 	response.setBody(_buffer);
