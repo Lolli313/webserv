@@ -443,14 +443,13 @@ bool ConfigBase::handleCgi(std::vector<std::string> &tokens, std::ifstream *infi
 		const std::string& value = tokens[1];
 
 		if (key == "path")
-			// _cgi.setPath(value);
 			_cgiPaths._scriptFolderPath = value;
 		else if (key == "python")
-			// _cgi.setPythonPath(value);
 			_cgiPaths._pythonPath = value;
 		else if (key == "php")
-			// _cgi.setPhpPath(value);
 			_cgiPaths._phpPath = value;
+		else if (key == "sh")
+			_cgiPaths._shellPath = value;
 		else
 			return false;
 	}

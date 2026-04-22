@@ -252,7 +252,7 @@ std::string CGI::checkAndExtractScript()
 	const std::string fullPath = _config->getRoot() + exec;
 	if (Tools::isDirectory(fullPath.c_str()))
 		throw Tools::Exception(403, "File path is a directory");
-	if (extension != ".py" && extension != ".php" && extension != ".c")
+	if (extension != ".py" && extension != ".php" && extension != ".sh")
 		throw Tools::Exception(403, "Invalid script extension");
 	if (!Tools::fileExists(fullPath.c_str()))
 		throw Tools::Exception(404, "Script not found");
@@ -263,8 +263,8 @@ std::string CGI::checkAndExtractScript()
 		_executablePath = _config->getCGIPaths()._pythonPath;
 	else if (extension == ".php")
 		_executablePath = _config->getCGIPaths()._phpPath;
-	else if (extension == ".c")
-		_executablePath = _config->getRoot() + "cgi-bin/a.out";
+	else if (extension == ".sh")
+		_executablePath = _config->getCGIPaths()._shellPath;;
 
 	return fullPath;
 }
@@ -317,6 +317,7 @@ bool CGI::readCgiOutput()
 	bytesRead = read(_pipeFDs[0], buffer, BUFFERSIZE);
 	if (bytesRead > 0)
 	{
+		LOG(DEBUG, PURPLE, "Amount of bytes read: " + Tools::intToString(bytesRead));
 		_buffer.append(buffer);
 		return false;
 	}
@@ -360,6 +361,7 @@ void CGI::setCGI()
  */
 std::vector<std::pair<std::string, std::string> > CGI::parseHeaders()
 {
+	LOG(DEBUG, PINK, "CGI buffer is " + _buffer);
 	std::vector<std::pair<std::string, std::string> > result;
 	std::size_t headersEnd = _buffer.find(CRLF CRLF);
 

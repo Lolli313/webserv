@@ -64,6 +64,7 @@ struct CGIPaths {
 	std::string _scriptFolderPath;
 	std::string _pythonPath;
 	std::string _phpPath;
+	std::string _shellPath;
 };
 
 /**

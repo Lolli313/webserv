@@ -290,7 +290,7 @@ void checkBodySize(std::size_t size, std::size_t max)
 bool isValidCgiPath(const HttpRequest &request, const ConfigBase *config)
 {
 	const std::string extension = Tools::extractExtension(request.getPurePath());
-	if (extension == ".py" || extension == ".php" || extension == ".c")
+	if (extension == ".py" || extension == ".php" || extension == ".sh")
 	{
 		if (!config->hasCGI())
 			throw Tools::Exception(403, "CGI usage is forbidden on this specific server");
@@ -750,7 +750,7 @@ void ServerManager::cgiTimeout()
 			if (WIFEXITED(status))
 				LOG(INFO, SKY_BLUE, "CGI exited");
 			if (WEXITSTATUS(status) > 0) {
-				LOG(INFO, SKY_BLUE, "CGI exit status is" + Tools::intToString(WEXITSTATUS(status)));
+				LOG(INFO, SKY_BLUE, "CGI exit status is " + Tools::intToString(WEXITSTATUS(status)));
 				it->second->setToBeClosed(true);
 				Tools::Exception e(500, "cgiTimeout: Script failed to execute");
 				throwHandler(it->second, e, NULL, false); 

@@ -23,7 +23,7 @@ async function loadCgiScripts() {
             // Skip hidden files if your C++ doesn't already
             if (fileName.startsWith('.')) return;
 
-            const isScript = file.name.endsWith('.py') || file.name.endsWith('.php') || file.name.endsWith('.c');
+            const isScript = file.name.endsWith('.py') || file.name.endsWith('.php') || file.name.endsWith('.sh');
             if (!isScript) return;
 
             const li = document.createElement('li');
