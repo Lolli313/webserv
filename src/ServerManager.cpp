@@ -715,6 +715,8 @@ void ServerManager::cgiTimeout()
 
 	for (std::map<CGI *, Client *>::iterator it = cgis.begin(); it != cgis.end(); it++ /* no increment here *insert favicon.ico* */)
 	{
+		if (it->first->getHasFinishedExecuting())
+			continue;
 		pid = waitpid(it->first->getPid(), &status, WNOHANG);
 
 		if (pid == 0)
@@ -747,6 +749,7 @@ void ServerManager::cgiTimeout()
 		}
 		else if (pid > 0)
 		{
+			it->first->setHasFinishedExecuting(true);
 			if (WIFEXITED(status))
 				LOG(INFO, SKY_BLUE, "CGI exited");
 			if (WEXITSTATUS(status) > 0) {
