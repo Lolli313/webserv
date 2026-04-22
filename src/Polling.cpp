@@ -186,7 +186,7 @@ bool Polling::deleteClient(Client *client)
 				{
 					delete clit->first;
 					_CGImap.erase(clit++);
-					// break; There can be more than one CGi per client I guess
+					break; // There can be more than one CGi per client I guess
 				}
 				else
 					clit++;

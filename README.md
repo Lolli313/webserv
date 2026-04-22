@@ -55,6 +55,8 @@ then press `enter` 2x
 -t (time before a client reconnects)
 -r (number of attempts)
 
+siege -c1000 -t1m http://localhost:7081
+
 ### 5. Apache Bench
 - sudo apt-get ab
 

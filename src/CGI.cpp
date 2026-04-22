@@ -16,7 +16,8 @@ CGI::CGI(const HttpRequest &request, const ConfigBase *config) :
 	_cgiBinPath(config->getCGIPaths()._scriptFolderPath),
 	_responseStatus(200),
 	_timestamp(std::time(0)),
-	_postPos(0)
+	_postPos(0),
+	_toBeClosed(false)
 {
 	try
 	{
@@ -69,6 +70,9 @@ const int &CGI::getPid() const { return _pid; }
 const std::time_t &CGI::getTimeStamp() const { return _timestamp; }
 
 void CGI::setPath(const std::string &src) { _cgiBinPath = src; }
+
+void CGI::setToBeClosed(bool yeeeeesh) { _toBeClosed = yeeeeesh; }
+bool CGI::getToBeClosed() const { return _toBeClosed; }
 
 /*
 =================================================================

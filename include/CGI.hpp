@@ -30,6 +30,7 @@ private:
 	std::time_t _timestamp;
 
 	std::size_t _postPos;
+	bool _toBeClosed;
 
 public:
 	// CGI() {};
@@ -56,6 +57,9 @@ public:
 	const int &getPid() const;
 	const std::time_t &getTimeStamp() const;
 	// bool hasCGI() const;
+
+	void setToBeClosed(bool yeeeeeesh);
+	bool getToBeClosed() const;
 
 	// Setters
 	void setPath(const std::string& src);

@@ -361,11 +361,11 @@ void ServerManager::setResponseAndDeleteCGI(int eventFD, const std::pair<CGI *, 
 		throwHandler(it.second, e, config, true);
 		return ;
 	}
-	_polling->getCgiMap().erase(it.first);
-	delete it.first;
 	it.second->setDoneReceiving(true);
 	it.second->setResponseToBeSent(true);
 	handleResponse(it.second);
+	_polling->getCgiMap().erase(it.first);
+	delete it.first;
 }
 
 /**
@@ -711,9 +711,9 @@ void ServerManager::cgiTimeout()
 	pid_t pid = 0;
 	int status = 0;
 
-	std::map<CGI *, Client *> &cgis = _polling->getCgiMap();
+	std::map<CGI *, Client *> cgis = _polling->getCgiMap();
 
-	for (std::map<CGI *, Client *>::iterator it = cgis.begin(); it != cgis.end(); /* no increment here */)
+	for (std::map<CGI *, Client *>::iterator it = cgis.begin(); it != cgis.end(); it++ /* no increment here *insert favicon.ico* */)
 	{
 		pid = waitpid(it->first->getPid(), &status, WNOHANG);
 
@@ -726,12 +726,12 @@ void ServerManager::cgiTimeout()
 
 				Tools::Exception e(504, "cgiTimeout: Script took too long to execute");
 				throwHandler(it->second, e, NULL, false);
-				Client *client = it->second;
-				cgis.erase(it++);
-				_polling->deleteClient(client);
+				// Client *client = it->second;
+				// cgis.erase(it++);
+				// _polling->deleteClient(client);
 				continue;
 			}
-			++it; // Move to next if not timed out
+			// ++it; // Move to next if not timed out
 		}
 		else if (pid == -1)
 		{
@@ -740,20 +740,30 @@ void ServerManager::cgiTimeout()
 			throwHandler(it->second, e, NULL, false);
 
 			// C++98 safe map erasure
-			Client *client = it->second;
-			cgis.erase(it++);
-			_polling->deleteClient(client);
+			// Client *client = it->second;
+			// _polling->deleteClient(it->second);
+			// cgis.erase(it++);
+			// it++;
 		}
 		else if (pid > 0)
 		{
 			if (WIFEXITED(status))
-				LOG(INFO, SKY_BLUE, "CGI exited normally");
+				LOG(INFO, SKY_BLUE, "CGI exited");
+			if (WEXITSTATUS(status) > 0) {
+				LOG(INFO, SKY_BLUE, "CGI exit status is" + Tools::intToString(WEXITSTATUS(status)));
+				it->second->setToBeClosed(true);
+				Tools::Exception e(500, "cgiTimeout: Script failed to execute");
+				throwHandler(it->second, e, NULL, false); 
+				// cgis.erase(it++);
+				continue;
+			}
 			else if (WIFSIGNALED(status))
 				LOG(INFO, RED, "CGI script was killed");
 
 			// C++98 safe map erasure
-			delete it->first;
-			cgis.erase(it++);
+			// it->first->setToBeClosed(true);
+			// delete it->first;
+			// cgis.erase(it++);
 		}
 	}
 }
