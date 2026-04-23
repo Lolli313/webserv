@@ -1,6 +1,9 @@
 # WEBSERV
-*A from scratch webserver implementing the HTTP/1.1 requirements and basic Nginx configurations.*
 
+*This project has been created as part
+of the 42 curriculum by: chboegne, tcardair, aakerblo.*
+
+*A from scratch webserver implementing the HTTP/1.1 requirements and basic Nginx configurations.*
 
 ## Context
 This project has been fully developped and conceived by chboegne, tcardair and aakerblo as part of the 42 curriculum.
@@ -36,8 +39,10 @@ As example, a default website is given. This can be changed and modified as will
 To start the web server, use the following command:
 
 ```
-./webserv <config file>
+./webserv <configuration file>
 ```
+
+Then open a browser and 
 
 ### Configuration
 
@@ -68,7 +73,7 @@ and closedir
 - developer.mozilla.org
 - geeksforgeeks.org
 - medium.com
-- man
+- man pages for functions
 
 ## Features
 
