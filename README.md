@@ -1,12 +1,18 @@
+```
+╔──────────────────────────────────────────────────╗
+│               ___.                               │
+│ __  _  __ ____\_ |__   ______ ______________  __ │
+│ \ \/ \/ _/ __ \| __ \ /  ____/ __ \_  __ \  \/ / │
+│  \     /\  ___/| \_\ \\___ \\  ___/|  | \/\   /  │
+│   \/\_/  \___  |___  /____  >\___  |__|    \_/   │
+│              \/    \/     \/     \/              │
+╚──────────────────────────────────────────────────╝
+```
 # WEBSERV
-
-*This project has been created as part
-of the 42 curriculum by: chboegne, tcardair, aakerblo.*
-
 *A from scratch webserver implementing the HTTP/1.1 requirements and basic Nginx configurations.*
 
 ## Context
-This project has been fully developped and conceived by chboegne, tcardair and aakerblo as part of the 42 curriculum.
+*This project has been created as part of the 42 curriculum by: chboegne, tcardair, aakerblo.*
 
 ## Description
 A low-level web server that adheres to HTTP/1.1 requirements (implementing the GET, POST, DELETE methods), supports configuration files similar to Nginx, and integrates CGI handling. Particular emphasis was placed on building a stress-resistant system capable of maintaining 100% availability without crashing under load.
@@ -49,7 +55,7 @@ This command compiles all of the source files into the executable *webserv*.
 
 A configuration file `webserv.conf` is given by default, you can change it to add your custom configuration following the Nginx configuration file requirements.
 
-As example, a default website is given. This can be changed and modified as will by adding your own in the `/files` directory.
+As example, a default website is given. This can be changed and modified at will by adding your own in the `/files` directory.
 
 ### Execution
 
@@ -68,15 +74,15 @@ Beyond basic browser navigation, you can use these tools to stress-test the serv
 
 - Telnet: For a low-level "handshake" test, use `telnet localhost 8080`. This allows you to manually type an HTTP request (e.g., GET / HTTP/1.1) and see the raw response headers and body exactly as the server sends them. 
 > [!NOTE]
-> The `Host' header is required for HTTP/1.1 request.
+> The `Host` header is required for HTTP/1.1 request.
 
-- Siege: To test how your server handles concurrency and high traffic, use Siege. Running a command like `siege -c 100 -t 1M http://localhost:8080` will simulate 10 simultaneous users for one minute, providing a report on availability and response times.
+- Siege: To test how your server handles concurrency and high traffic, use Siege. Running a command like `siege -c 100 -t 1M http://localhost:8080` will simulate 100 simultaneous users for one minute, providing a report on availability and response times.
 
-- Browser Network Tab: Press F12 to open the Network Tab. This is invaluable for debugging status codes, verifying Keep-Alive behavior, and inspecting specific headers like Content-Type.
+- Browser Network Tab: Press `F12` to open the Network Tab. This is invaluable for debugging status codes, verifying Keep-Alive behavior, and inspecting specific headers like Content-Type. You can create a custom request by pressing `+`.
 
 ### Configuration
 
-Our webserver is highly configurable. See more information [here](CONFIG.md)
+The webserver is highly configurable, following the Nginx config file principle. [See more information here](CONFIG.md)
 
 ## Project constraints
 This project has been achieved using only the standard library (c++98) and mostly system level functions:
@@ -93,50 +99,55 @@ and closedir
 
 ## Features
 
-The only methods we recreate is GET, POST and DELETE.
-
+The project implements the GET, POST, DELETE methods and CGIs of the HTTP/1.1 protocol, as well as cookies.
 ### GET
 
-- Purpose:
+**Purpose:** Retrieve data from a server
 
-Retrieve data from a server.
-- How it works:
+**How it works:**
 
-Used to request data from a specified resource (e.g., a webpage, API endpoint).
-Data is sent via the URL (as query parameters), making it visible and cacheable.
-Should not be used to send sensitive information (like passwords).
-- Example:
+* Requests data from a resource (e.g., webpage or API)
+* Parameters are sent in the URL (query string)
+* Data is visible and can be cached
+* Not suitable for sensitive information
 
-When you type a URL in your browser, you’re sending a GET request to fetch that webpage.
+**Example:**
+
+* Opening a webpage in your browser
+
+---
 
 ### POST
 
-- Purpose:
+**Purpose:** Send data to create or update a resource
 
-Send data to a server to create or update a resource.
-- How it works:
+**How it works:**
 
-Used to submit data to be processed (e.g., form submissions, uploading files).
-Data is sent in the request body, not the URL, making it more secure for sensitive information.
-Can trigger side effects on the server (e.g., creating a new user account).
-- Example:
+* Sends data in the request body (not the URL)
+* Used for form submissions, file uploads, etc.
+* Can trigger changes on the server (e.g., create a user)
+* Safer for sensitive data than GET
 
-Submitting a login form or posting a comment on social media.
+**Example:**
+
+* Submitting a login form
+* Posting a comment
+
+---
 
 ### DELETE
 
-- Purpose:
+**Purpose:** Remove a resource from the server
 
-Remove a resource from the server.
-- How it works:
+**How it works:**
 
-Used to delete a specified resource (e.g., a user account, a file).
-Like GET, the target is identified by the URL, but the action is destructive.
-Often requires authentication to prevent unauthorized deletions.
-- Example:
+* Identifies the resource via the URL
+* Performs a destructive action (deletion)
+* Usually requires authentication
 
-Deleting a tweet or removing a file from a storage.
+**Example:**
 
+* Deleting a post or file
 
 ### CGI (Common Gateway Interface)
 
