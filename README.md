@@ -67,11 +67,12 @@ Once the server is initialized, it will begin listening for incoming connections
 Beyond basic browser navigation, you can use these tools to stress-test the server's robustness and inspect the raw data exchange:
 
 - Telnet: For a low-level "handshake" test, use `telnet localhost 8080`. This allows you to manually type an HTTP request (e.g., GET / HTTP/1.1) and see the raw response headers and body exactly as the server sends them. 
-    > [!NOTE] The `Host' header is required for HTTP/1.1 request.
+    > [!NOTE]
+    > The `Host' header is required for HTTP/1.1 request.
 
 - Siege: To test how your server handles concurrency and high traffic, use Siege. Running a command like `siege -c 100 -t 1M http://localhost:8080` will simulate 10 simultaneous users for one minute, providing a report on availability and response times.
 
-- Browser Network Tab: Press F12 to open the Network Tab. This is invaluable for debugging status codes and inspecting specific headers like Content-Type.
+- Browser Network Tab: Press F12 to open the Network Tab. This is invaluable for debugging status codes, verifying Keep-Alive behavior, and inspecting specific headers like Content-Type.
 
 ### Configuration
 
