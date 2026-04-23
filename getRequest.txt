@@ -1,5 +1,0 @@
-GET /hihi HTTP/1.1
-Host: localhost:8080
-
-GET /../getRequest.txt HTTP/1.1
-Host: localhost:8080

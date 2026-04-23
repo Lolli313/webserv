@@ -1,40 +1,171 @@
-# webserv
+# WEBSERV
 
-Test command:\
-server
+*This project has been created as part
+of the 42 curriculum by: chboegne, tcardair, aakerblo.*
+
+*A from scratch webserver implementing the HTTP/1.1 requirements and basic Nginx configurations.*
+
+## Context
+This project has been fully developped and conceived by chboegne, tcardair and aakerblo as part of the 42 curriculum.
+
+## Description
+A low-level web server that adheres to HTTP/1.1 requirements (implementing the GET, POST, DELETE methods), supports configuration files similar to Nginx, and integrates CGI handling. Particular emphasis was placed on building a stress-resistant system capable of maintaining 100% availability without crashing under load.
+
+## Table of Contents
+- [Context](#context)
+- [Description](#description)
+- [Usage](#usage)
+  - [Installation](#installation)
+  - [Prerequisites](#prerequisites)
+  - [Execution](#execution)
+  - [Configuration](#configuration)
+- [Project constraints](#project-constraints)
+- [Features](#features)
+  - [GET](#get)
+  - [POST](#post)
+  - [DELETE](#delete)
+- [Feature List](#feature-list)
+- [Technical Choices](#technical-choices)
+  - [CGI (Common Gateway Interface)](#cgi-common-gateway-interface)
+  - [Cookies](#cookies)
+- [Resources](#resources)
+
+## Usage
+
+### Installation
+
+First you will need to clone the repository on your computer
 ```
-make && ./webserv webserv.conf
-```
-- browser client
-```
-localhost:8080
+git clone https://github.com/Lolli313/webserv.git
 ```
 
-## Manual testing
-you can use ``telnet`` to send handwritten commands.
+Then, to compile the project, go at the root of the project and use this command:
 
-
-### 3. test the nginx server
-you can use a webrowser at ``localhost:8081``, or a terminal command such as
 ```
-telnet localhost 8081
+make
 ```
 
-then you have to manually write the request, for example:
+This command compiles all of the source files into the executable *webserv*.
+
+### Prerequisites
+
+A configuration file `webserv.conf` is given by default, you can change it to add your custom configuration following the Nginx configuration file requirements.
+
+As example, a default website is given. This can be changed and modified as will by adding your own in the `/files` directory.
+
+### Execution
+
+To start the web server, use the following command:
+
 ```
-GET /ascii/body.txt HTTP/1.1
-Host: localhost
+./webserv <configuration file>
 ```
-then press `enter` 2x
 
-### 4. siege
+Then open a browser and input localhost:7080 in the address bar
 
--c (number of clients)
--t (time before a client reconnects)
--r (number of attempts)
+### Configuration
 
-siege -c100 -t20s http://localhost:8080
+Our webserver is highly configurable. See more information [here](CONFIG.md)
 
-### 5. Apache Bench
-- sudo apt-get ab
+## Project constraints
+This project has been achieved using only the standard library (c++98) and mostly system level functions:
+
+execve, pipe, strerror, gai_strerror, errno, dup,
+dup2, fork, socketpair, htons, htonl, ntohs, ntohl,
+select, poll, epoll (epoll_create, epoll_ctl,
+epoll_wait), kqueue (kqueue, kevent), socket,
+accept, listen, send, recv, chdir, bind, connect,
+getaddrinfo, freeaddrinfo, setsockopt, getsockname,
+getprotobyname, fcntl, close, read, write, waitpid,
+kill, signal, access, stat, open, opendir, readdir
+and closedir
+
+## Resources
+
+- HTTP protocol
+- RFC 7230 (HTTP/1.1)
+- RFC 3875 (CGI/1.1)
+- cppreference.com
+- nginx.org
+- youtube.com
+- dev.to
+- developer.mozilla.org
+- geeksforgeeks.org
+- medium.com
+- man pages for functions
+
+## Features
+
+The only methods we recreate is GET, POST and DELETE.
+
+### GET
+
+- Purpose:
+
+Retrieve data from a server.
+- How it works:
+
+Used to request data from a specified resource (e.g., a webpage, API endpoint).
+Data is sent via the URL (as query parameters), making it visible and cacheable.
+Should not be used to send sensitive information (like passwords).
+- Example:
+
+When you type a URL in your browser, you’re sending a GET request to fetch that webpage.
+
+### POST
+
+- Purpose:
+
+Send data to a server to create or update a resource.
+- How it works:
+
+Used to submit data to be processed (e.g., form submissions, uploading files).
+Data is sent in the request body, not the URL, making it more secure for sensitive information.
+Can trigger side effects on the server (e.g., creating a new user account).
+- Example:
+
+Submitting a login form or posting a comment on social media.
+
+### DELETE
+
+- Purpose:
+
+Remove a resource from the server.
+- How it works:
+
+Used to delete a specified resource (e.g., a user account, a file).
+Like GET, the target is identified by the URL, but the action is destructive.
+Often requires authentication to prevent unauthorized deletions.
+- Example:
+
+Deleting a tweet or removing a file from a storage.
+
+## Technical Choices
+
+We add some CGI and cookies because it's fun, a lot fun.
+
+### CGI (Common Gateway Interface)
+- Definition:
+
+CGI is a standard protocol that allows web servers to execute external programs (scripts or applications) and generate dynamic content in response to client requests. It acts as an interface between the web server and external software, enabling the server to process user input (e.g., form submissions) and return customized output.
+- Key Points:
+
+CGI scripts are often written in languages like Perl, Python, or Bash.
+Each request triggers a new process, which can impact performance for high-traffic sites.
+CGI was widely used in early dynamic web applications but has largely been replaced by more efficient technologies like FastCGI, PHP, or server-side frameworks (e.g., Node.js, Django).
+
+### Cookies
+- Definition:
+
+Cookies are small pieces of data stored on a user’s device by a web server. They are sent back to the server with each subsequent request, allowing the server to recognize the user, remember preferences, and maintain session state.
+- Key Points:
+
+Purpose: Track user sessions, personalize content, and store user preferences (e.g., login status, language settings).
+Types:
+
+Session Cookies: Temporary, deleted when the browser is closed.
+Persistent Cookies: Remain on the device until they expire or are deleted.
+
+Security: Cookies can be secured using attributes like HttpOnly (prevents JavaScript access) and Secure (transmitted only over HTTPS).
+
 
