@@ -17,7 +17,7 @@ This document describes the configuration syntax for a custom web server inspire
 
 | Directive               | Description                                                                 | Example                     |
 |-------------------------|-----------------------------------------------------------------------------|-----------------------------|
-| `listen`                | Binds the server to a specific IP and port.                                | `listen 0.0.0.0:7080;`      |
+| `listen`                | Binds the server to a specific IP and port.                                | `listen 0.0.0.0:8080;`      |
 | `server_name`           | Defines the domain name or IP address for the server.                       | `server_name localhost;`     |
 | `index`                 | Specifies the default file served when a directory is requested.           | `index index.html;`          |
 | `autoindex`             | Enables or disables automatic directory listing.                          | `autoindex off;`             |
@@ -65,7 +65,7 @@ Location blocks define rules for specific paths by overriding the global directi
 ### Basic Server with Static Files
 ```nginx
 server {
-    listen 0.0.0.0:7080;
+    listen 0.0.0.0:8080;
     server_name localhost;
 
     index index.html;
@@ -124,3 +124,4 @@ server {
 - **Performance**: Adjust `client_max_body_size` based on your needs.
 - **Maintainability**: Use `location` blocks to organize rules by path.
 - **CGI**: Ensure CGI paths and interpreters are correctly configured and secured.
+
