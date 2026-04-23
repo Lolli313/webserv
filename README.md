@@ -1,15 +1,10 @@
 # webserv
 
-Test commands:
-- server
+Test command:\
+server
 ```
-make && valgrind --leak-check=full --trace-children=yes --track-fds=yes -s ./webserv test.conf
+make && ./webserv webserv.conf
 ```
-- terminal client
-```
-c++ backup/client_backup.cpp -o client && ./client
-```
-
 - browser client
 ```
 localhost:8080
@@ -18,23 +13,6 @@ localhost:8080
 ## Manual testing
 you can use ``telnet`` to send handwritten commands.
 
-
-## nginx
-To compare our webserv with nginx (the soft we'r trying to mimic).
-
-### 1. install nginx if it's not done.
-```
-docker pull nginx
-```
-
-### 2. start the nginx server
-```
-docker run --rm \
-  -p 8081:80 \
-  -v "$(pwd)/files:/usr/share/nginx/html:ro" \
-  -v "$(pwd)/nginx.conf:/etc/nginx/nginx.conf:ro" \
-  nginx:latest
-```
 
 ### 3. test the nginx server
 you can use a webrowser at ``localhost:8081``, or a terminal command such as
@@ -55,7 +33,7 @@ then press `enter` 2x
 -t (time before a client reconnects)
 -r (number of attempts)
 
-siege -c1000 -t1m http://localhost:7081
+siege -c100 -t20s http://localhost:8080
 
 ### 5. Apache Bench
 - sudo apt-get ab
