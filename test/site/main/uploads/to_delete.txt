@@ -1,3 +1,0 @@
-This file was created for testing the DELETE method.
-If you see this, you can try to delete it using:
-curl -X DELETE http://localhost:3000/uploads/to_delete.txt

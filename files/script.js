@@ -97,9 +97,9 @@ async function validateAndSend() {
             // Construire l'URL en intégrant le "name" directement dans le path
             // Exemple : si path = "/" et name = "mon.json" → "/mon.json"
             const basePath = path.endsWith('/') ? path : `${path}/`;
-            url = `http://localhost:7080${basePath}${name}`;
+            url = `http://localhost:8080${basePath}${name}`;
         } else {
-            url = `http://localhost:7080${path}`;
+            url = `http://localhost:8080${path}`;
         }
 
         let options = { method: selectedMethod };
